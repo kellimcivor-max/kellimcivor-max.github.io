@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -504,6 +505,61 @@
       color: var(--artifact-text-primary);
     }
 
+    .why-horizontal {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .why-horizontal .card {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.95fr) minmax(0, 2.05fr);
+      gap: 10px 28px;
+      align-items: start;
+    }
+
+    .why-horizontal .tag {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      margin-bottom: 0;
+      align-self: start;
+      justify-self: start;
+    }
+
+    .why-horizontal h4 {
+      grid-column: 2;
+      grid-row: 1;
+      margin-bottom: 2px;
+    }
+
+    .why-horizontal p {
+      grid-column: 2;
+      grid-row: 2;
+    }
+
+    .why-horizontal .chip-cloud {
+      grid-column: 1 / -1;
+      grid-row: 3;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 860px) {
+      .why-horizontal .card {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+      }
+
+      .why-horizontal .tag,
+      .why-horizontal h4,
+      .why-horizontal p,
+      .why-horizontal .chip-cloud {
+        grid-column: 1;
+        grid-row: auto;
+      }
+
+      .why-horizontal .tag {
+        margin-bottom: 0;
+      }
+    }
+
     .status-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -614,27 +670,27 @@
           </div>
           <div class="hero-note">
             <div class="hero-note-label">Why now</div>
-            <strong>Turn AI momentum into operating leverage.</strong>
-            <span>Anchor the story in faster technical answers, plant execution, commercial context, finance efficiency, and permission-aware retrieval across the enterprise.</span>
+            <strong>Goodyear has an opportunity to turn AI activity into enterprise-wide advantage.</strong>
+            <span>As teams look to scale AI across operations, engineering, legal, finance, and IT, the priority is creating one secure, trusted layer that helps people find answers faster and makes current investments more useful across the business.</span>
           </div>
         </div>
       </div>
 
       <div class="hero-metrics">
         <div class="metric">
-          <div class="metric-value">53</div>
-          <div class="metric-label">Manufacturing facilities</div>
-          <div class="metric-copy">A large operational footprint creates meaningful value from cross-site troubleshooting, plant knowledge reuse, and faster execution.</div>
-        </div>
-        <div class="metric">
-          <div class="metric-value">2</div>
-          <div class="metric-label">Innovation centers</div>
-          <div class="metric-copy">Engineering, product, and innovation teams need faster access to prior work, technical context, and reusable institutional knowledge.</div>
-        </div>
-        <div class="metric">
           <div class="metric-value">6+</div>
           <div class="metric-label">AI tools in play</div>
-          <div class="metric-copy">The opportunity is to unify value across the tools Goodyear already uses, not add another disconnected destination.</div>
+          <div class="metric-copy">The opportunity is not to add another destination. It is to make the AI tools already in use more valuable by grounding them in trusted enterprise context.</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">2,300</div>
+          <div class="metric-label">Applications across 19 countries and 49 facilities</div>
+          <div class="metric-copy">With a global operating footprint and a large application landscape, the value of faster access to trusted knowledge compounds across teams, sites, and workflows.</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">53 manufacturing facilities + 2 innovation centers</div>
+          <div class="metric-label">Operational and innovation footprint</div>
+          <div class="metric-copy">That scale creates a strong case for one secure layer that helps teams reuse expertise, move faster across locations, and connect plant knowledge with innovation work.</div>
         </div>
       </div>
     </section>
@@ -655,24 +711,6 @@
           <div class="tag">The Glean difference</div>
           <h3>One horizontal AI layer across the enterprise.</h3>
           <p>Glean indexes source content directly, applies source permissions, stays open to the best models, and creates an AI foundation Goodyear can scale safely across every function.</p>
-        </div>
-      </div>
-
-      <div class="cards-3" style="margin-top:16px">
-        <div class="card">
-          <div class="tag">What we are proving</div>
-          <h4>Move from experimentation to operating impact</h4>
-          <p>This is not generic AI experimentation. The opportunity is to make AI useful, secure, and measurable across high-value Goodyear workflows.</p>
-        </div>
-        <div class="card">
-          <div class="tag">What we have already built together</div>
-          <h4>A strong discovery foundation</h4>
-          <p>Existing conversations across Ventures, IT, and partner-led discovery have already clarified the real buying criteria: ROI, governance, security, and business relevance.</p>
-        </div>
-        <div class="card">
-          <div class="tag">Account reality</div>
-          <h4>Executive relevance with clear next milestones</h4>
-          <p>There is a credible path to executive engagement. The next step is a tighter use-case and evaluation narrative tied to business value.</p>
         </div>
       </div>
 
@@ -840,10 +878,9 @@
         <div class="card"><div class="pillar-num">1</div><h4>Horizontal</h4><p>One platform across the business.</p></div>
         <div class="card"><div class="pillar-num">2</div><h4>Open</h4><p>Take advantage of model innovation without lock-in.</p></div>
         <div class="card"><div class="pillar-num">3</div><h4>Relevance</h4><p>Right answer, grounded in enterprise context.</p></div>
-        <div class="card"><div class="pillar-num">4</div><h4>Safest</h4><p>Enterprise controls are foundational.</p></div>
+        <div class="card"><div class="pillar-num">4</div><h4>Safest + Easy</h4><p>Enterprise controls are foundational, and the experience is intuitive enough for broad employee adoption.</p></div>
       </div>
-      <div class="cards-2" style="margin-top:16px">
-        <div class="card"><div class="pillar-num">5</div><h4>Easy</h4><p>If you can Google, you can Glean.</p></div>
+      <div class="cards-2 why-horizontal" style="margin-top:16px">
         <div class="card">
           <div class="tag">Only Glean connects horizontally across Goodyear</div>
           <h4>Make current AI investments more useful.</h4>
@@ -924,42 +961,46 @@
     <section id="next-steps">
       <div class="section-head">
         <h2>Next steps</h2>
-        <p>A practical client-facing path from blueprint to demo to pilot.</p>
+        <p>A practical path for Goodyear to move from alignment to a focused demo and a well-scoped pilot.</p>
       </div>
 
       <div class="status-grid">
         <div class="status ok">
           <h4>Blueprint call</h4>
-          <p>Align on the teams, systems, content sources, and workflows that matter most so the pilot is designed around real Goodyear priorities.</p>
+          <p>Align on the teams, workflows, systems, and content sources that matter most so the approach is built around Goodyear priorities from the start.</p>
         </div>
         <div class="status warn">
           <h4>Focused demo</h4>
-          <p>Show a tailored experience built around Goodyear’s highest-value use cases, security expectations, and operating environment.</p>
+          <p>Review a tailored demo centered on Goodyear use cases—showing how employees can find trusted answers faster, spend less time searching, and get more value from existing AI and knowledge investments in a secure, governed way.</p>
         </div>
         <div class="status risk">
           <h4>Pilot scoping</h4>
-          <p>Define success metrics, participating functions, core integrations, and the evaluation plan needed to prove business value quickly.</p>
+          <p>Define the participating functions, integrations, success measures, timeline, and working model for a pilot that can demonstrate value quickly and support broader rollout decisions.</p>
         </div>
       </div>
 
       <div class="cards-2" style="margin-top:16px">
         <div class="card">
-          <div class="tag">Information and intel needed</div>
+          <div class="tag">Information to prepare</div>
           <ul>
-            <li>Priority business outcomes and the first use cases to focus on</li>
-            <li>Which teams should participate in the initial blueprint and pilot</li>
+            <li>Priority business outcomes and the first use cases to evaluate</li>
+            <li>Which teams and leaders should participate in the blueprint and pilot</li>
             <li>Key systems, repositories, and content sources to include in scope</li>
-            <li>Security, governance, and access requirements for rollout readiness</li>
-            <li>How Goodyear wants to measure value during the pilot</li>
+            <li>Security, governance, and access requirements that need to be addressed</li>
+            <li>How success should be measured during the pilot</li>
           </ul>
         </div>
         <div class="card">
-          <div class="tag">Recommended sequence</div>
-          <p>Start with a blueprint call to align on business priorities and technical context, move into a tailored demo anchored on the right use cases, and then scope a pilot with clear participants, integrations, success criteria, and executive review milestones.</p>
+          <div class="tag">Recommended next steps</div>
+          <ol>
+            <li><strong>Blueprint call:</strong> Align on the highest-priority outcomes, target teams, core systems, and use cases that matter most to Goodyear.</li>
+            <li><strong>Focused demo:</strong> Review a tailored experience built around Goodyear workflows so stakeholders can see where faster access to trusted knowledge could create the most value.</li>
+            <li><strong>Pilot scoping:</strong> Finalize the participating functions, integrations, success criteria, timeline, and decision points for a practical pilot.</li>
+          </ol>
         </div>
       </div>
 
-      <div class="footer-note">Prepared for client-facing use with Goodyear-specific business language and a clear demo-to-pilot path.</div>
+      <div class="footer-note">Structured to support a practical path from evaluation to pilot.</div>
     </section>
   </main>
 
