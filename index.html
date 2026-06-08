@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glean x Goodyear | Bringing AI Excellence to the Entire Organization</title>
+  <style>
+    :root {
+      --artifact-background: var(--theme-background, #ffffff);
+      --artifact-background-light: var(--theme-background-light, #f6f6f6);
+      --artifact-background-mid: var(--theme-background-mid, #efefef);
+      --artifact-border-light: var(--theme-border-light, #e7e7e7);
+      --artifact-border-dark: var(--theme-border-dark, #cfcfcf);
+      --artifact-text-primary: var(--theme-text-primary, #1b1b1b);
+      --artifact-text-secondary: var(--theme-text-secondary, #6b6b6b);
+      --artifact-selected: var(--theme-selected, #ececec);
+      --artifact-primary-brand: var(--theme-primary-brand, #1434cb);
+      --artifact-primary-highlight: var(--theme-primary-highlight, #1b1b1b);
+      --artifact-primary-hover: var(--theme-primary-hover, #343434);
+      --artifact-text-highlight: var(--theme-text-highlight, #fff8e5);
+
+      --artifact-goodyear-blue: #1434cb;
+      --artifact-goodyear-blue-deep: #0a1d74;
+      --artifact-goodyear-blue-soft: #eef2ff;
+      --artifact-goodyear-yellow: #ffd100;
+      --artifact-goodyear-yellow-soft: #fff8d6;
+      --artifact-card-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      --artifact-card-shadow-soft: 0 6px 18px rgba(0,0,0,0.04);
+      --artifact-overlay: rgba(255,255,255,0.12);
+      --artifact-overlay-border: rgba(255,255,255,0.16);
+      --artifact-green-bg: #e9f7ef;
+      --artifact-green-text: #165b33;
+      --artifact-amber-bg: #fff4e5;
+      --artifact-amber-text: #8a4b00;
+      --artifact-red-bg: #fbeaea;
+      --artifact-red-text: #9d1c1c;
+    }
+
+    html[data-theme='dark'] {
+      --artifact-goodyear-blue-soft: #17214b;
+      --artifact-goodyear-yellow-soft: #4b400d;
+      --artifact-card-shadow: 0 10px 30px rgba(0,0,0,0.22);
+      --artifact-card-shadow-soft: 0 6px 18px rgba(0,0,0,0.18);
+      --artifact-overlay: rgba(255,255,255,0.08);
+      --artifact-overlay-border: rgba(255,255,255,0.14);
+      --artifact-green-bg: #12351f;
+      --artifact-green-text: #d8f5df;
+      --artifact-amber-bg: #4c3311;
+      --artifact-amber-text: #ffe1b0;
+      --artifact-red-bg: #4b1e1e;
+      --artifact-red-text: #ffd4d4;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: var(--artifact-background-light);
+      color: var(--artifact-text-primary);
+      line-height: 1.5;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 80;
+      backdrop-filter: blur(18px);
+      background: color-mix(in srgb, var(--artifact-background) 92%, transparent);
+      border-bottom: 1px solid var(--artifact-border-light);
+    }
+
+    .topbar-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: var(--artifact-goodyear-blue);
+      color: var(--artifact-background);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      box-shadow: var(--artifact-card-shadow-soft);
+      flex-shrink: 0;
+    }
+
+    .brand-copy {
+      min-width: 0;
+    }
+
+    .brand-line {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--artifact-text-secondary);
+      margin-top: 2px;
+    }
+
+    .topnav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .topnav a {
+      text-decoration: none;
+      color: var(--artifact-text-secondary);
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      border-radius: 999px;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .topnav a:hover,
+    .topnav a.active {
+      background: var(--artifact-selected);
+      color: var(--artifact-text-primary);
+    }
+
+    .shell {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 24px 88px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      padding: 30px 30px 24px;
+      background:
+        radial-gradient(circle at 92% 8%, rgba(255,255,255,0.18), transparent 24%),
+        linear-gradient(135deg, var(--artifact-goodyear-blue-deep), var(--artifact-goodyear-blue) 56%, #3558ff);
+      color: #ffffff;
+      box-shadow: 0 18px 44px rgba(20,52,203,0.18);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -56px;
+      top: -72px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(255,209,0,0.18);
+      filter: blur(10px);
+    }
+
+    .hero-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1.55fr 0.95fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--artifact-overlay);
+      border: 1px solid var(--artifact-overlay-border);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(36px, 5.3vw, 62px);
+      line-height: 0.94;
+      letter-spacing: -0.055em;
+      max-width: 760px;
+    }
+
+    .hero p {
+      margin: 16px 0 0;
+      max-width: 760px;
+      font-size: 17px;
+      line-height: 1.68;
+      color: rgba(255,255,255,0.84);
+    }
+
+    .hero-note-stack {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .hero-note {
+      padding: 18px;
+      border-radius: 20px;
+      background: var(--artifact-overlay);
+      border: 1px solid var(--artifact-overlay-border);
+    }
+
+    .hero-note-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.68);
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .hero-note strong {
+      display: block;
+      font-size: 17px;
+      line-height: 1.3;
+      margin-bottom: 7px;
+    }
+
+    .hero-note span {
+      display: block;
+      font-size: 14px;
+      line-height: 1.55;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 22px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .metric {
+      background: var(--artifact-background);
+      border: 1px solid var(--artifact-border-light);
+      border-radius: 22px;
+      padding: 18px;
+      color: var(--artifact-text-primary);
+      box-shadow: var(--artifact-card-shadow);
+    }
+
+    .metric-value {
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      color: var(--artifact-goodyear-blue);
+      margin-bottom: 6px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      font-weight: 800;
+      color: var(--artifact-text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .metric-copy {
+      font-size: 13px;
+      line-height: 1.58;
+      color: var(--artifact-text-secondary);
+    }
+
+    section {
+      margin-top: 34px;
+    }
+
+    .section-head {
+      margin-bottom: 16px;
+    }
+
+    .section-head h2 {
+      margin: 0 0 8px;
+      font-size: clamp(30px, 4vw, 44px);
+      line-height: 1;
+      letter-spacing: -0.045em;
+    }
+
+    .section-head p {
+      margin: 0;
+      max-width: 860px;
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--artifact-text-secondary);
+    }
+
+    .cards-2,
+    .cards-3,
+    .cards-4 {
+      display: grid;
+      gap: 16px;
+    }
+
+    .cards-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cards-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .cards-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .card {
+      background: var(--artifact-background);
+      border: 1px solid var(--artifact-border-light);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: var(--artifact-card-shadow);
+    }
+
+    .card h3,
+    .card h4 {
+      margin: 0 0 10px;
+      line-height: 1.16;
+      letter-spacing: -0.03em;
+    }
+
+    .card h3 { font-size: 23px; }
+    .card h4 { font-size: 18px; }
+
+    .card p,
+    .card li {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.68;
+      color: var(--artifact-text-secondary);
+    }
+
+    .card ul {
+      margin: 12px 0 0;
+      padding-left: 18px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--artifact-goodyear-blue-soft);
+      color: var(--artifact-goodyear-blue-deep);
+      margin-bottom: 12px;
+    }
+
+    .value-wrap {
+      background: var(--artifact-background);
+      border: 1px solid var(--artifact-border-light);
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: var(--artifact-card-shadow);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .tab-btn {
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background);
+      color: var(--artifact-text-secondary);
+      border-radius: 999px;
+      padding: 11px 15px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: var(--artifact-card-shadow-soft);
+      transition: all 0.18s ease;
+    }
+
+    .tab-btn:hover,
+    .tab-btn.active {
+      background: var(--artifact-goodyear-blue);
+      color: #ffffff;
+      border-color: var(--artifact-goodyear-blue);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .value-grid {
+      display: grid;
+      grid-template-columns: 1.18fr 0.82fr;
+      gap: 18px;
+    }
+
+    .value-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .value-item {
+      background: var(--artifact-background-light);
+      border: 1px solid var(--artifact-border-light);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .value-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 15px;
+      color: var(--artifact-text-primary);
+    }
+
+    .mini-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .mini-card {
+      background: var(--artifact-background-light);
+      border: 1px solid var(--artifact-border-light);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .mini-label {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--artifact-text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .mini-value {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      margin-bottom: 4px;
+    }
+
+    .pillars .card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pillar-num {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--artifact-goodyear-blue-soft);
+      color: var(--artifact-goodyear-blue);
+      font-weight: 900;
+      margin-bottom: 14px;
+    }
+
+    .chip-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--artifact-background-light);
+      border: 1px solid var(--artifact-border-light);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--artifact-text-primary);
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .status {
+      border-radius: 22px;
+      padding: 20px;
+      border: 1px solid var(--artifact-border-light);
+      box-shadow: var(--artifact-card-shadow);
+    }
+
+    .status.ok { background: var(--artifact-green-bg); color: var(--artifact-green-text); }
+    .status.warn { background: var(--artifact-amber-bg); color: var(--artifact-amber-text); }
+    .status.risk { background: var(--artifact-red-bg); color: var(--artifact-red-text); }
+
+    .status h4 { margin: 0 0 8px; font-size: 18px; }
+    .status p { margin: 0; color: inherit; }
+
+    .footer-note {
+      margin-top: 28px;
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--artifact-text-secondary);
+      text-align: center;
+    }
+
+    @media screen and (max-width: 980px) {
+      .hero-grid,
+      .hero-metrics,
+      .cards-2,
+      .cards-3,
+      .cards-4,
+      .value-grid,
+      .status-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .topnav {
+        justify-content: flex-start;
+      }
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0.4in 0.6in;
+        background: #fff;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .shell, main {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+      }
+
+      .topbar { position: static !important; }
+      section, .hero, .card, .value-wrap, .status { break-inside: avoid; }
+      .tab-panel { display: block !important; }
+      .tabs, button { display: none !important; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">G</div>
+        <div class="brand-copy">
+          <div class="brand-line">Glean x Goodyear | Bringing AI Excellence to the Entire Organization</div>
+          <div class="brand-sub">Client-facing executive view</div>
+        </div>
+      </div>
+      <nav class="topnav">
+        <a href="#what-built">What we built</a>
+        <a href="#value">Value</a>
+        <a href="#why-glean">Why Glean</a>
+        <a href="#partnership">Partnership</a>
+        <a href="#next-steps">Next steps</a>
+      </nav>
+    </div>
+  </div>
+
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow">Driving Goodyear Forward with enterprise AI</div>
+          <h1>Bringing AI excellence to the entire organization.</h1>
+          <p>
+            Goodyear does not need another siloed AI tool. It needs a trusted system of context that connects people, content, activity, and permissions across the business so engineering, manufacturing, commercial, finance, legal, HR, and IT can move faster with measurable value.
+          </p>
+        </div>
+        <div class="hero-note-stack">
+          <div class="hero-note">
+            <div class="hero-note-label">Executive context</div>
+            <strong>AI transformation is happening now at Goodyear.</strong>
+            <span>The next step is piloting the right use cases with a secure, governed, horizontal layer that employees will actually use.</span>
+          </div>
+          <div class="hero-note">
+            <div class="hero-note-label">Why now</div>
+            <strong>Turn AI momentum into operating leverage.</strong>
+            <span>Anchor the story in faster technical answers, plant execution, commercial context, finance efficiency, and permission-aware retrieval across the enterprise.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-metrics">
+        <div class="metric">
+          <div class="metric-value">53</div>
+          <div class="metric-label">Manufacturing facilities</div>
+          <div class="metric-copy">A large operational footprint creates meaningful value from cross-site troubleshooting, plant knowledge reuse, and faster execution.</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">2</div>
+          <div class="metric-label">Innovation centers</div>
+          <div class="metric-copy">Engineering, product, and innovation teams need faster access to prior work, technical context, and reusable institutional knowledge.</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">6+</div>
+          <div class="metric-label">AI tools in play</div>
+          <div class="metric-copy">The opportunity is to unify value across the tools Goodyear already uses, not add another disconnected destination.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="what-built">
+      <div class="section-head">
+        <h2>What we built</h2>
+        <p>A client-facing Goodyear narrative in the exact page rhythm of the source asset: one executive story spanning business value, platform differentiation, partnership, and mutual next steps.</p>
+      </div>
+
+      <div class="cards-2">
+        <div class="card">
+          <div class="tag">Why this matters now</div>
+          <h3>Goodyear does not need another siloed AI tool.</h3>
+          <p>It needs a trusted system of context that connects people, content, activity, and permissions across the business while making it easier to prove measurable business value.</p>
+        </div>
+        <div class="card">
+          <div class="tag">The Glean difference</div>
+          <h3>One horizontal AI layer across the enterprise.</h3>
+          <p>Glean indexes source content directly, applies source permissions, stays open to the best models, and creates an AI foundation Goodyear can scale safely across every function.</p>
+        </div>
+      </div>
+
+      <div class="cards-3" style="margin-top:16px">
+        <div class="card">
+          <div class="tag">What we are proving</div>
+          <h4>Move from experimentation to operating impact</h4>
+          <p>This is not generic AI experimentation. The opportunity is to make AI useful, secure, and measurable across high-value Goodyear workflows.</p>
+        </div>
+        <div class="card">
+          <div class="tag">What we have already built together</div>
+          <h4>A strong discovery foundation</h4>
+          <p>Existing conversations across Ventures, IT, and partner-led discovery have already clarified the real buying criteria: ROI, governance, security, and business relevance.</p>
+        </div>
+        <div class="card">
+          <div class="tag">Account reality</div>
+          <h4>Executive relevance with clear next milestones</h4>
+          <p>There is a credible path to executive engagement. The next step is a tighter use-case and evaluation narrative tied to business value.</p>
+        </div>
+      </div>
+
+      <div class="cards-2" style="margin-top:16px">
+        <div class="card">
+          <div class="tag">Connected and indexed in eight weeks</div>
+          <h4>What fast enterprise value can look like at Goodyear</h4>
+          <p>Across enterprise search, engineering knowledge, plant operations, finance context, legal guidance, and commercial field enablement, Glean can become the layer that connects governed knowledge across the systems teams already rely on.</p>
+        </div>
+        <div class="card">
+          <div class="tag">Proof of commitment</div>
+          <h4>A partnership model, not a rip-and-replace motion</h4>
+          <p>The right story for Goodyear is collaborative: work with existing platforms, respect security boundaries, and focus quickly on workflows where answer quality and speed matter most.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="value">
+      <div class="section-head">
+        <h2>Value being delivered across the business</h2>
+        <p>Select a function to see the operational and commercial outcomes Glean can drive.</p>
+      </div>
+
+      <div class="value-wrap">
+        <div class="tabs" id="value-tabs">
+          <button class="tab-btn active" data-panel="manufacturing-roi">Manufacturing ROI</button>
+          <button class="tab-btn" data-panel="it">IT/Security</button>
+          <button class="tab-btn" data-panel="manufacturing">Manufacturing</button>
+          <button class="tab-btn" data-panel="legal">Legal</button>
+          <button class="tab-btn" data-panel="finance">Finance</button>
+          <button class="tab-btn" data-panel="innovation">Innovation</button>
+          <button class="tab-btn" data-panel="rd">R&amp;D</button>
+        </div>
+
+        <div class="tab-panel active" id="panel-manufacturing-roi">
+          <div class="cards-4" style="margin-bottom:16px">
+            <div class="metric">
+              <div class="metric-value">141%</div>
+              <div class="metric-label">ROI over 3 years</div>
+              <div class="metric-copy">Glean TEI benchmark for overall platform ROI.</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">110 hrs</div>
+              <div class="metric-label">Saved per user / year</div>
+              <div class="metric-copy">Useful benchmark for engineers, plant support, quality, and technical operations teams.</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">96%</div>
+              <div class="metric-label">Adoption-readiness benchmark</div>
+              <div class="metric-copy">A strong signal for rollout appetite, then measured in the first 90 days by department using coverage, activity, and stickiness.</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value">20%</div>
+              <div class="metric-label">Fewer internal support requests</div>
+              <div class="metric-copy">Applicable to repetitive troubleshooting and expert-interrupt reduction.</div>
+            </div>
+          </div>
+          <div class="value-grid">
+            <div class="value-list">
+              <div class="value-item"><strong>Department-level rollout adoption</strong><span><strong>96%</strong> works best as an adoption-readiness benchmark. For manufacturing teams, prove value by tracking first-90-day coverage, active users, and repeat usage by department to see where rollout is scaling and where targeted enablement is still needed.</span></div>
+              <div class="value-item"><strong>Engineer and plant knowledge retrieval</strong><span><strong>Up to 110 hours saved per user per year</strong> based on Glean TEI benchmarks. This is especially relevant for engineers, quality teams, plant support, and technical operations teams that spend time chasing answers across systems.</span></div>
+              <div class="value-item"><strong>Support and troubleshooting deflection</strong><span><strong>20% reduction in internal support requests</strong> based on Glean TEI benchmarks. In a manufacturing setting, that can mean fewer repetitive requests to IT, plant experts, and engineering support teams.</span></div>
+              <div class="value-item"><strong>Broader manufacturing AI return profile</strong><span><strong>141% ROI over 3 years</strong> from Glean TEI benchmarks, while broader manufacturing AI programs report <strong>200–400% ROI</strong> and an average <strong>5.4% of work hours saved</strong> when GenAI is applied well.</span></div>
+            </div>
+            <div class="mini-stack">
+              <div class="mini-card"><div class="mini-label">How to use these numbers</div><div class="mini-value">Benchmark ROI</div><p>These figures are benchmark ranges for executive sizing and business-case development, not claimed Goodyear results.</p></div>
+              <div class="mini-card"><div class="mini-label">Best first manufacturing use cases</div><div class="mini-value">Troubleshooting · Technical Answers · Adoption</div><p>Start where value is easiest to measure: faster answer retrieval, reduced repetitive support work, stronger cross-site knowledge reuse, and visible rollout adoption by department.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-it">
+          <div class="value-grid">
+            <div class="value-list">
+              <div class="value-item"><strong>Security and permissions mirroring</strong><span>Meet the biggest enterprise objection directly by keeping access aligned to source permissions.</span></div>
+              <div class="value-item"><strong>Horizontal architecture</strong><span>Position Glean as the connective AI layer across existing tools instead of another destination employees must learn.</span></div>
+              <div class="value-item"><strong>Open model strategy</strong><span>Let Goodyear keep flexibility as models evolve while grounding employees in governed internal context.</span></div>
+            </div>
+            <div class="mini-stack">
+              <div class="mini-card"><div class="mini-label">Primary buyer</div><div class="mini-value">CIO / Digital Platforms</div><p>The cleanest platform buyer for a secure enterprise AI layer across multiple systems.</p></div>
+              <div class="mini-card"><div class="mini-label">High-value wedge</div><div class="mini-value">Enterprise controls</div><p>Prior discussions showed that weak outcomes were tied more to security and settings constraints than to lack of tools.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-manufacturing">
+          <div class="value-grid">
+            <div class="value-list">
+              <div class="value-item"><strong>Cross-site knowledge reuse</strong><span>Help plant, quality, supply chain, and procurement teams retrieve prior fixes, process knowledge, and operating context faster.</span></div>
+              <div class="value-item"><strong>Faster troubleshooting</strong><span>Reduce time lost during plant execution by giving teams one governed way to find trusted answers across tools and documents.</span></div>
+              <div class="value-item"><strong>Better supply chain decisions</strong><span>Support tariff, trade, sourcing, and operational workflows with faster access to the internal context teams need.</span></div>
+            </div>
+            <div class="mini-stack">
+              <div class="mini-card"><div class="mini-label">Primary buyer</div><div class="mini-value">Manufacturing + Supply Chain</div><p>A strong operations story tied to troubleshooting, working capital, quality, delivery, and cross-plant reuse.</p></div>
+              <div class="mini-card"><div class="mini-label">High-value wedge</div><div class="mini-value">Plant execution</div><p>Especially relevant where teams are still piecing together answers manually across fragmented systems.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-legal">
+          <div class="value-grid">
+            <div class="value-list">
+              <div class="value-item"><strong>Permission-aware retrieval</strong><span>Give legal and governance teams faster access to policy, precedent, and internal guidance without compromising control.</span></div>
+              <div class="value-item"><strong>Better auditability</strong><span>Keep governance central to the value story by grounding answers in existing permissions and enterprise controls.</span></div>
+              <div class="value-item"><strong>Less time searching</strong><span>Reduce repetitive effort spent locating the right internal guidance and approved materials.</span></div>
+            </div>
+            <div class="mini-stack">
+              <div class="mini-card"><div class="mini-label">Primary buyer</div><div class="mini-value">Legal / Governance</div><p>Strong for teams that need faster answers without weakening auditability, permissions, or policy control.</p></div>
+              <div class="mini-card"><div class="mini-label">High-value wedge</div><div class="mini-value">Governed access</div><p>A clean way to reinforce the same enterprise-control story that matters to IT and security stakeholders.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-finance">
+          <div class="value-grid">
+            <div class="value-list">
+              <div class="value-item"><strong>Faster planning and reporting answers</strong><span>Help finance, treasury, audit, and reporting teams retrieve trusted answers across systems and documents with less manual digging.</span></div>
+              <div class="value-item"><strong>Sharper ROI narrative</strong><span>Connect AI investment to operating leverage through measurable planning, reporting, and answer-retrieval efficiency.</span></div>
+              <div class="value-item"><strong>Less time chasing context</strong><span>Reduce repetitive work across planning, treasury, audit, and reporting workflows.</span></div>
+            </div>
+            <div class="mini-stack">
+              <div class="mini-card"><div class="mini-label">Primary buyer</div><div class="mini-value">CFO + Treasury + Audit</div><p>Strong fit where Goodyear needs clearer commercial justification and measurable business value.</p></div>
+              <div class="mini-card"><div class="mini-label">High-value wedge</div><div class="mini-value">Quantified ROI</div><p>This is the cleanest place to answer the repeated question: how does AI show up in the P&amp;L?</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-innovation">
+          <div class="value-grid">
+            <div class="value-list">
+              <div class="value-item"><strong>Pilot-to-scale acceleration</strong><span>Give innovation teams one place to connect prior experiments, partner inputs, internal findings, and reusable playbooks so successful pilots move faster.</span></div>
+              <div class="value-item"><strong>Better cross-functional visibility</strong><span>Make it easier for Ventures, digital, product, and operating teams to work from the same internal context instead of recreating it in parallel.</span></div>
+              <div class="value-item"><strong>Faster reuse of what already works</strong><span>Turn early AI and innovation activity into repeatable enterprise learning rather than one-off experiments.</span></div>
+            </div>
+            <div class="mini-stack">
+              <div class="mini-card"><div class="mini-label">Primary buyer</div><div class="mini-value">Ventures + Innovation</div><p>Strong fit for leaders moving AI from exploration into focused pilots with clearer operational sponsorship.</p></div>
+              <div class="mini-card"><div class="mini-label">High-value wedge</div><div class="mini-value">Pilot orchestration</div><p>Especially relevant where multiple AI efforts exist and the next step is choosing where to pilot, measure, and scale.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-rd">
+          <div class="value-grid">
+            <div class="value-list">
+              <div class="value-item"><strong>Technical answer retrieval</strong><span>Help engineering and product teams find prior work, lifecycle context, and reusable technical knowledge faster.</span></div>
+              <div class="value-item"><strong>Knowledge reuse at scale</strong><span>Reduce wasted effort across engineering, product strategy, and technical operations by making institutional knowledge easier to access.</span></div>
+              <div class="value-item"><strong>Faster product development work</strong><span>Give teams the context they need to move instead of search.</span></div>
+            </div>
+            <div class="mini-stack">
+              <div class="mini-card"><div class="mini-label">Primary buyer</div><div class="mini-value">CTO + Product Strategy</div><p>High-confidence value story for technical knowledge reuse, product lifecycle context, and engineering productivity.</p></div>
+              <div class="mini-card"><div class="mini-label">High-value wedge</div><div class="mini-value">Knowledge reuse</div><p>Especially relevant across Goodyear’s engineering documentation, technical operations, and product-development workflows.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="why-glean">
+      <div class="section-head">
+        <h2>Why Glean</h2>
+        <p>Five reasons Glean is the safest and easiest way to bring AI to every employee at Goodyear.</p>
+      </div>
+
+      <div class="cards-4 pillars">
+        <div class="card"><div class="pillar-num">1</div><h4>Horizontal</h4><p>One platform across the business.</p></div>
+        <div class="card"><div class="pillar-num">2</div><h4>Open</h4><p>Take advantage of model innovation without lock-in.</p></div>
+        <div class="card"><div class="pillar-num">3</div><h4>Relevance</h4><p>Right answer, grounded in enterprise context.</p></div>
+        <div class="card"><div class="pillar-num">4</div><h4>Safest</h4><p>Enterprise controls are foundational.</p></div>
+      </div>
+      <div class="cards-2" style="margin-top:16px">
+        <div class="card"><div class="pillar-num">5</div><h4>Easy</h4><p>If you can Google, you can Glean.</p></div>
+        <div class="card">
+          <div class="tag">Only Glean connects horizontally across Goodyear</div>
+          <h4>Make current AI investments more useful.</h4>
+          <p>Goodyear is already deploying and evaluating AI tools. Glean becomes the secure enterprise layer that helps employees get to trusted answers faster across those tools and the internal knowledge behind them.</p>
+          <div class="chip-cloud">
+            <span class="chip">Microsoft Copilot</span>
+            <span class="chip">Salesforce Agentforce</span>
+            <span class="chip">Bing search</span>
+            <span class="chip">Enterprise docs</span>
+            <span class="chip">Operational knowledge</span>
+            <span class="chip">Existing systems</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cards-3" style="margin-top:16px">
+        <div class="card"><div class="tag">Open architecture keeps Goodyear in control</div><h4>Use the best model for the workflow.</h4><p>Instead of forcing one model strategy everywhere, Goodyear can stay flexible while grounding outcomes in the same secure enterprise context.</p></div>
+        <div class="card"><div class="tag">Relevance drives trust, and trust drives adoption</div><h4>Answer quality matters.</h4><p>Employees only adopt AI at scale when it reliably understands what they need, who they are, and what they are allowed to see.</p></div>
+        <div class="card"><div class="tag">Purpose-built for the enterprise</div><h4>Safety is not bolted on.</h4><p>Permission mirroring, auditability, and governed retrieval are central to the value story, not an afterthought.</p></div>
+      </div>
+
+      <div class="cards-2" style="margin-top:16px">
+        <div class="card"><div class="tag">Easy enough for every employee to adopt</div><h4>Fast onboarding, familiar UX, low friction.</h4><p>Adoption comes more quickly when the experience is simple, intuitive, and rooted in the way employees already expect to search for information.</p></div>
+        <div class="card"><div class="tag">Time to value is unmatched</div><h4>Focus on workflows, not infrastructure.</h4><p>The fastest path to success is to start with the right use cases, the right stakeholders, and a rollout plan tied to measurable outcomes.</p></div>
+      </div>
+    </section>
+
+    <section id="partnership">
+      <div class="section-head">
+        <h2>Partnership</h2>
+        <p>How Glean will make Goodyear successful right away.</p>
+      </div>
+
+      <div class="cards-2">
+        <div class="card">
+          <div class="tag">Start with the right use cases</div>
+          <h4>Business-first entry points</h4>
+          <ul>
+            <li>Engineering productivity and technical answer retrieval</li>
+            <li>Maintenance and manufacturing troubleshooting</li>
+            <li>Commercial and field answer speed</li>
+            <li>Finance, treasury, audit, and reporting efficiency</li>
+            <li>Tariff, trade, and supply chain knowledge access</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="tag">The AI dream team for Goodyear success</div>
+          <h4>Delivery, architecture, and outcomes</h4>
+          <ul>
+            <li><strong>Delivery Excellence Manager</strong> to drive execution and rollout success</li>
+            <li><strong>Solutions Architect</strong> to lead technical design, integrations, security, and deployment</li>
+            <li><strong>AI Outcomes Manager</strong> to drive training, adoption, prompt optimization, and workflow impact</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cards-3" style="margin-top:16px">
+        <div class="card"><div class="tag">Connected intelligence across Goodyear</div><h4>One trusted layer across systems</h4><p>Glean helps unify the enterprise context behind engineering, plant operations, finance, legal, IT, and commercial execution.</p></div>
+        <div class="card"><div class="tag">What scalable support looks like</div><h4>More than deployment</h4><p>Rollout, enablement, adoption, and business reviews all matter if the goal is durable value across the workforce.</p></div>
+        <div class="card"><div class="tag">Customer proof points</div><h4>Adoption comes quickly when relevance is high</h4><p>Indeed, Zillow, and LinkedIn show how quickly employees adopt Glean when the user experience and answer quality are strong.</p></div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <div class="tag">Point solutions Glean can superpower or replace</div>
+        <h4>Reduce fragmentation across the AI landscape.</h4>
+        <p>Vertical copilots and isolated search tools fall short when the company needs one secure way to retrieve answers across functions. Glean gives Goodyear a horizontal layer that makes existing investments more useful.</p>
+        <div class="chip-cloud">
+          <span class="chip">Bing search</span>
+          <span class="chip">Copilot</span>
+          <span class="chip">Agentforce</span>
+          <span class="chip">Departmental AI tools</span>
+          <span class="chip">Manual document hunting</span>
+          <span class="chip">Tribal knowledge</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="next-steps">
+      <div class="section-head">
+        <h2>Next steps</h2>
+        <p>A practical client-facing path from blueprint to demo to pilot.</p>
+      </div>
+
+      <div class="status-grid">
+        <div class="status ok">
+          <h4>Blueprint call</h4>
+          <p>Align on the teams, systems, content sources, and workflows that matter most so the pilot is designed around real Goodyear priorities.</p>
+        </div>
+        <div class="status warn">
+          <h4>Focused demo</h4>
+          <p>Show a tailored experience built around Goodyear’s highest-value use cases, security expectations, and operating environment.</p>
+        </div>
+        <div class="status risk">
+          <h4>Pilot scoping</h4>
+          <p>Define success metrics, participating functions, core integrations, and the evaluation plan needed to prove business value quickly.</p>
+        </div>
+      </div>
+
+      <div class="cards-2" style="margin-top:16px">
+        <div class="card">
+          <div class="tag">Information and intel needed</div>
+          <ul>
+            <li>Priority business outcomes and the first use cases to focus on</li>
+            <li>Which teams should participate in the initial blueprint and pilot</li>
+            <li>Key systems, repositories, and content sources to include in scope</li>
+            <li>Security, governance, and access requirements for rollout readiness</li>
+            <li>How Goodyear wants to measure value during the pilot</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="tag">Recommended sequence</div>
+          <p>Start with a blueprint call to align on business priorities and technical context, move into a tailored demo anchored on the right use cases, and then scope a pilot with clear participants, integrations, success criteria, and executive review milestones.</p>
+        </div>
+      </div>
+
+      <div class="footer-note">Prepared for client-facing use with Goodyear-specific business language and a clear demo-to-pilot path.</div>
+    </section>
+  </main>
+
+  <script>
+    const navLinks = Array.from(document.querySelectorAll('.topnav a'));
+    const sections = navLinks.map(link => document.querySelector(link.getAttribute('href'))).filter(Boolean);
+    function updateNav() {
+      const y = window.scrollY + 120;
+      let active = sections[0] ? sections[0].id : null;
+      sections.forEach(section => {
+        if (section.offsetTop <= y) active = section.id;
+      });
+      navLinks.forEach(link => link.classList.toggle('active', link.getAttribute('href') === '#' + active));
+    }
+    window.addEventListener('scroll', updateNav);
+    updateNav();
+
+    const tabButtons = Array.from(document.querySelectorAll('#value-tabs .tab-btn'));
+    const panels = Array.from(document.querySelectorAll('.tab-panel'));
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const panel = button.dataset.panel;
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        button.classList.add('active');
+        const target = document.getElementById('panel-' + panel);
+        if (target) target.classList.add('active');
+      });
+    });
+
+    window.GleanBridge.postMessage({
+      actionId: 'export-pdf',
+      type: 'glean-add-menu',
+      metadata: { label: 'Export as PDF', icon: 'export' }
+    });
+    window.GleanBridge.onMessage('action', function(data) {
+      if (data.actionId === 'export-pdf') window.print();
+    });
+
+    function prepareChartsForPrint() {
+      document.querySelectorAll('[_echarts_instance_]').forEach(function(el) {
+        var chart = echarts.getInstanceByDom(el);
+        if (!chart) return;
+        var img = new Image();
+        img.src = chart.getDataURL({ type: 'png', pixelRatio: 2 });
+        img.className = 'print-chart-img';
+        img.style.cssText = 'width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';
+        el.dataset.prevPosition = el.style.position;
+        el.style.position = 'relative';
+        el.appendChild(img);
+      });
+    }
+
+    function cleanUpAfterPrint() {
+      document.querySelectorAll('[_echarts_instance_]').forEach(function(el) {
+        var img = el.querySelector('.print-chart-img');
+        if (!img) return;
+        img.remove();
+        el.style.position = el.dataset.prevPosition || '';
+        delete el.dataset.prevPosition;
+      });
+    }
+
+    window.addEventListener('beforeprint', prepareChartsForPrint);
+    window.addEventListener('afterprint', cleanUpAfterPrint);
+  </script>
+</body>
+</html>
