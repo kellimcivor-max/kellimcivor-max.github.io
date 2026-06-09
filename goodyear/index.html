@@ -1,35 +1,36 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Goodyear | Glean</title>
-  <meta name="description" content="Client-facing Goodyear enterprise AI asset" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Goodyear client-facing site</title>
+  <meta name="description" content="Client-facing Goodyear enterprise AI asset for external sharing" />
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      background: #ffffff;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
+    html, body { margin: 0; height: 100%; background: #0b1020; }
+    iframe { display: block; width: 100%; height: 100%; border: 0; background: #0b1020; }
+    .fallback {
+      position: fixed;
+      inset: auto 16px 16px 16px;
+      z-index: 10;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(11,16,32,.82);
+      color: #fff;
+      font: 14px/1.3 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+      backdrop-filter: blur(8px);
     }
-    iframe {
-      border: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-      background: #ffffff;
-    }
+    .fallback a { color: #9fd0ff; text-decoration: none; font-weight: 600; }
   </style>
 </head>
 <body>
-  <iframe
-    src="/"
-    title="Goodyear client-facing asset"
-    loading="eager"
-    referrerpolicy="no-referrer"
-  ></iframe>
+  <iframe src="https://kellimcivor-max.github.io/" title="Goodyear client-facing site"></iframe>
+  <div class="fallback">
+    If the page does not load,
+    <a href="https://kellimcivor-max.github.io/">open the dashboard directly</a>.
+  </div>
 </body>
 </html>
