@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glean x Motorola Solutions | One Intelligent Front Door for Sales Engineering</title>
+  <style>
+    :root {
+      --bg: #05080f;
+      --bg2: #0a101d;
+      --card: rgba(14, 22, 40, 0.78);
+      --card-strong: rgba(16, 26, 48, 0.95);
+      --line: rgba(255,255,255,0.09);
+      --text: #eef3fb;
+      --muted: #9fb2d4;
+      --blue: #4aa8ff;
+      --blue2: #1E90FF;
+      --cyan: #5ad1ff;
+      --green: #7ee0a8;
+      --gold: #ffcf5c;
+      --moto: #0A84FF;
+      --shadow: 0 18px 40px rgba(0,0,0,0.42);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 16%, rgba(10,132,255,0.22), transparent 30%),
+        radial-gradient(circle at 84% 14%, rgba(74,168,255,0.18), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(30,144,255,0.14), transparent 28%),
+        linear-gradient(180deg, #05080f 0%, #070d18 42%, #04070e 100%);
+      min-height: 100vh;
+    }
+    .container { width: min(1220px, calc(100% - 32px)); margin: 0 auto; }
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      backdrop-filter: blur(16px);
+      background: rgba(5,8,15,0.74);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; letter-spacing: 0.02em; }
+    .brand-badge {
+      width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center;
+      background: linear-gradient(135deg, rgba(10,132,255,0.35), rgba(90,209,255,0.28));
+      border: 1px solid rgba(255,255,255,0.14); box-shadow: var(--shadow);
+      font-weight: 900; color: #fff;
+    }
+    nav { display: flex; flex-wrap: wrap; gap: 10px; }
+    nav a { color: var(--muted); text-decoration: none; font-size: 0.95rem; padding: 10px 12px; border-radius: 999px; transition: 180ms ease; }
+    nav a:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+    .hero { padding: 48px 0 26px; }
+    .hero-wrap { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; align-items: stretch; }
+    .hero-card, .card {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: var(--radius); box-shadow: var(--shadow);
+    }
+    .hero-card { padding: 34px; position: relative; overflow: hidden; }
+    .hero-card::before {
+      content: ""; position: absolute; inset: auto -10% -25% 35%; height: 260px;
+      background: radial-gradient(circle, rgba(10,132,255,0.22), transparent 65%); pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.08);
+      color: var(--blue); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;
+    }
+    h1 { font-size: clamp(2.3rem, 5vw, 4.3rem); line-height: 1.03; margin: 18px 0 18px; max-width: 14ch; }
+    .lead { font-size: 1.1rem; color: var(--muted); line-height: 1.6; max-width: 64ch; }
+    .hero-stats { margin-top: 26px; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+    .stat-pill { padding: 16px; border-radius: 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
+    .stat-pill .value { font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; }
+    .stat-pill .label { color: var(--muted); font-size: 0.92rem; line-height: 1.4; }
+    .side-panel { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+    .callout {
+      padding: 18px; border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .callout h3, .section h2, .section h3 { margin: 0 0 10px; }
+    .callout p, .muted, .section p { color: var(--muted); line-height: 1.6; }
+    .section { padding: 18px 0 10px; }
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+    .section h2 { font-size: clamp(1.55rem, 2.7vw, 2.35rem); margin-bottom: 6px; }
+    .section-grid { display: grid; gap: 18px; }
+    .achievement-grid { grid-template-columns: repeat(12, 1fr); }
+    .achievement-main { grid-column: span 8; padding: 24px; }
+    .achievement-side { grid-column: span 4; padding: 24px; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-top: 18px; }
+    .kpi { padding: 18px; border-radius: 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07); }
+    .kpi .num { font-size: 1.45rem; font-weight: 800; margin-bottom: 8px; }
+    .kpi .desc { color: var(--muted); font-size: 0.92rem; line-height: 1.45; }
+    .connector-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-top: 18px; }
+    .connector { padding: 14px 14px 14px 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); background: rgba(5,8,15,0.4); }
+    .connector strong { display: block; margin-bottom: 5px; }
+    .connector span { color: var(--muted); font-size: 0.92rem; }
+    .total-card {
+      margin-top: 18px; padding: 18px; border-radius: 18px;
+      background: linear-gradient(135deg, rgba(10,132,255,0.14), rgba(90,209,255,0.1));
+      border: 1px solid rgba(74,168,255,0.2);
+    }
+    .total-card .big { font-size: 2.2rem; font-weight: 900; margin: 4px 0 8px; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+    .tab {
+      appearance: none; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);
+      color: var(--text); padding: 11px 14px; border-radius: 999px; cursor: pointer; transition: 160ms ease; font: inherit;
+    }
+    .tab:hover { background: rgba(255,255,255,0.08); }
+    .tab.active {
+      background: linear-gradient(135deg, rgba(10,132,255,0.3), rgba(90,209,255,0.22));
+      border-color: rgba(74,168,255,0.4); color: #fff;
+    }
+    .tab-panels .panel { display: none; }
+    .tab-panels .panel.active { display: block; }
+    .value-panel { padding: 24px; }
+    .value-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 18px; }
+    .bullet-list { display: grid; gap: 12px; margin-top: 14px; }
+    .bullet { padding: 14px 16px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+    .bullet strong { display: block; margin-bottom: 4px; }
+    .impact-box {
+      padding: 18px; border-radius: 18px; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08); display: grid; gap: 14px; height: 100%;
+    }
+    .impact-row { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .impact-row:last-child { border-bottom: 0; padding-bottom: 0; }
+    .impact-row .metric { font-size: 1.5rem; font-weight: 800; }
+    .impact-row .caption { color: var(--muted); font-size: 0.95rem; text-align: right; }
+    .pillars { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 14px; }
+    .pillar {
+      padding: 20px; border-radius: 20px; background: var(--card-strong);
+      border: 1px solid rgba(255,255,255,0.08); cursor: pointer; transition: 160ms ease;
+    }
+    .pillar:hover { transform: translateY(-2px); border-color: rgba(74,168,255,0.3); }
+    .pillar.active { outline: 2px solid rgba(74,168,255,0.4); }
+    .pillar small { text-transform: uppercase; letter-spacing: 0.08em; color: var(--blue); font-weight: 700; }
+    .pillar h3 { margin-top: 8px; }
+    .pillar-detail { margin-top: 16px; padding: 24px; display: none; }
+    .pillar-detail.active { display: block; }
+    .pill-cloud { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+    .pill-cloud span { padding: 10px 14px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); color: var(--text); }
+    .success-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .success-card, .image-card, .notes-card { padding: 22px; }
+    .success-card ul, .notes-card ul { margin: 10px 0 0 18px; padding: 0; color: var(--muted); line-height: 1.7; }
+    .proof-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; margin-top: 16px; }
+    .proof { padding: 18px; border-radius: 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
+    .proof .big { font-size: 1.6rem; font-weight: 900; margin-bottom: 6px; }
+    .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+    .flow-step { padding: 18px; border-radius: 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); position: relative; }
+    .flow-step small { color: var(--blue); font-weight: 700; letter-spacing: 0.06em; }
+    .flow-step h4 { margin: 8px 0 6px; }
+    .flow-step p { color: var(--muted); font-size: 0.92rem; line-height: 1.45; margin: 0; }
+    .open-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    textarea {
+      width: 100%; min-height: 200px; resize: vertical; border-radius: 16px; padding: 16px; font: inherit;
+      color: var(--text); background: rgba(3,6,12,0.72); border: 1px solid rgba(255,255,255,0.1); line-height: 1.6;
+    }
+    .footer { padding: 30px 0 54px; color: var(--muted); font-size: 0.95rem; }
+    .tiny { font-size: 0.85rem; color: #8296bd; }
+    .reveal { opacity: 0; transform: translateY(18px); transition: 500ms ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    @media (max-width: 1080px) {
+      .hero-wrap, .value-grid, .success-grid, .open-grid { grid-template-columns: 1fr; }
+      .achievement-main, .achievement-side { grid-column: span 12; }
+      .pillars { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .flow { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 760px) {
+      nav { display: none; }
+      .hero-card, .side-panel, .achievement-main, .achievement-side, .value-panel, .success-card, .image-card, .notes-card { padding: 18px; }
+      .hero-stats, .proof-grid, .connector-list, .kpi-grid, .flow { grid-template-columns: 1fr; }
+      .pillars { grid-template-columns: 1fr; }
+      h1 { max-width: none; }
+    }
+    @media print {
+      body { margin: 0; padding: 0.4in 0.6in; background: #fff; color: #111; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .container, main { max-width: 100% !important; width: 100% !important; }
+      .topbar { position: static !important; }
+      section, [class*="section"] { break-inside: avoid; margin-bottom: 20px !important; }
+      [class*="card"] { break-inside: avoid; padding: 18px !important; box-shadow: none !important; border: 1px solid rgba(0,0,0,0.08); }
+      .tab-panels .panel { display: block !important; }
+      .tabs { display: none !important; }
+      .pillar-detail { display: block !important; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      button, [role="button"] { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <div class="brand-badge">G</div>
+        <div>Glean x Motorola Solutions</div>
+      </div>
+      <nav>
+        <a href="#opportunity">The opportunity</a>
+        <a href="#value">SE value</a>
+        <a href="#why-glean">Why Glean</a>
+        <a href="#success">Path to value</a>
+        <a href="#open-items">Open items</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero reveal">
+      <div class="hero-wrap">
+        <div class="hero-card">
+          <div class="eyebrow">Solving for Safer Communities, powered by enterprise AI</div>
+          <h1>One intelligent front door for Sales Engineering.</h1>
+          <p class="lead">
+            Motorola Solutions' sales engineers move between 20+ portals and 35+ data sources to answer product, pricing,
+            security, and competitive questions. Glean collapses that swivel-chair work into a single conversational layer —
+            grounded, cited answers plus next-best action across every system the SE team already uses.
+          </p>
+          <div class="hero-stats">
+            <div class="stat-pill">
+              <div class="value" data-count="20">0</div>
+              <div class="label">plus customer, partner, and internal portals the team navigates today</div>
+            </div>
+            <div class="stat-pill">
+              <div class="value" data-count="35">0</div>
+              <div class="label">plus data sources and repositories fragmenting SE answers</div>
+            </div>
+            <div class="stat-pill">
+              <div class="value">1</div>
+              <div class="label">governed front door across search, assistant, and agents</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-card side-panel">
+          <div class="callout">
+            <h3>Why this matters now</h3>
+            <p>SEs shouldn't need to know where the answer lives. Today's fragmented portals create dead ends, inconsistent answers, and duplicated content that slow every deal.</p>
+          </div>
+          <div class="callout">
+            <h3>The Glean difference</h3>
+            <p>Glean sits above Motorola Solutions' existing systems — no rip-and-replace. It indexes source content directly, applies source permissions, and stays open to the best LLMs.</p>
+          </div>
+          <div class="callout">
+            <h3>What we are proving</h3>
+            <p>Start focused on Sales &amp; SE enablement, then expand horizontally to the intelligent front door for customers and partners — one platform compounding value.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="opportunity">
+      <div class="section-head">
+        <div>
+          <h2>The opportunity for Sales Engineering</h2>
+          <p class="muted">From fragmented portals to one conversational layer that understands intent, routes to answers, and drives action.</p>
+        </div>
+      </div>
+      <div class="section-grid achievement-grid">
+        <div class="card achievement-main">
+          <h3>What the SE team fights through today</h3>
+          <div class="connector-list">
+            <div class="connector"><strong>Customer &amp; partner portals</strong><span>20+ destinations to check</span></div>
+            <div class="connector"><strong>Data sources &amp; repositories</strong><span>35+ disparate systems</span></div>
+            <div class="connector"><strong>Product &amp; solution docs</strong><span>Specs, KBs, launch content</span></div>
+            <div class="connector"><strong>Pricing &amp; configuration</strong><span>Quotes, catalogs, discounting rules</span></div>
+            <div class="connector"><strong>Security &amp; compliance</strong><span>Questionnaires, certifications, policy</span></div>
+            <div class="connector"><strong>CRM &amp; opportunity data</strong><span>Account context and history</span></div>
+            <div class="connector"><strong>Tickets &amp; support cases</strong><span>Field issues and resolutions</span></div>
+            <div class="connector"><strong>Competitive intel</strong><span>Battlecards and win/loss</span></div>
+          </div>
+          <div class="total-card">
+            <div class="tiny">Where it breaks</div>
+            <div class="big">Swivel-chair work</div>
+            <div class="muted">Dead ends across customer, partner, and internal journeys; inconsistent answers; duplicated content; time lost between portals, ticketing, and CRM.</div>
+          </div>
+        </div>
+
+        <div class="card achievement-side">
+          <h3>The target operating model</h3>
+          <div class="kpi-grid">
+            <div class="kpi">
+              <div class="num">Find</div>
+              <div class="desc">Cross-source retrieval over docs, KBs, tickets, CRM &amp; web</div>
+            </div>
+            <div class="kpi">
+              <div class="num">Ask</div>
+              <div class="desc">Grounded, cited answers in a conversational UI</div>
+            </div>
+            <div class="kpi">
+              <div class="num">Do</div>
+              <div class="desc">Orchestrate next-best actions across systems</div>
+            </div>
+            <div class="kpi">
+              <div class="num">Trust</div>
+              <div class="desc">Permission-aware, on-brand, fully auditable</div>
+            </div>
+          </div>
+          <div class="total-card">
+            <div class="tiny">One conversational front door</div>
+            <div class="big">Ask &rarr; Answer &rarr; Act</div>
+            <div class="muted">Portal-spanning answers, guided next-best action, and consistent brand voice for the SE team and the audiences they serve.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="value">
+      <div class="section-head">
+        <div>
+          <h2>Value across the Sales Engineering motion</h2>
+          <p class="muted">Select a workflow to see the operational impact Glean can drive for Motorola Solutions' SE team.</p>
+        </div>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="SE value tabs">
+        <button class="tab active" data-target="enablement">SE enablement</button>
+        <button class="tab" data-target="rfp">RFP / proposal</button>
+        <button class="tab" data-target="security">Security reviews</button>
+        <button class="tab" data-target="competitive">Competitive intel</button>
+        <button class="tab" data-target="onboarding">Ramp &amp; onboarding</button>
+        <button class="tab" data-target="frontdoor">Front door</button>
+      </div>
+
+      <div class="tab-panels">
+        <div class="card panel active value-panel" id="enablement">
+          <div class="value-grid">
+            <div>
+              <h3>SEs get the right answer fast, in the moment</h3>
+              <div class="bullet-list">
+                <div class="bullet"><strong>Instant product &amp; pricing answers</strong> Pull the exact product, configuration, pricing, and security answers across every portal and repository.</div>
+                <div class="bullet"><strong>Deal confidence</strong> Respond to technical questions with grounded, cited answers instead of hunting or guessing.</div>
+                <div class="bullet"><strong>More time in front of customers</strong> Reduce internal searching so SEs spend time on discovery and solution design.</div>
+                <div class="bullet"><strong>Consistent brand voice</strong> Every answer is on-brand and drawn from approved content, not tribal knowledge.</div>
+              </div>
+            </div>
+            <div class="impact-box">
+              <div class="impact-row"><div class="metric">25%</div><div class="caption">shorter sales cycles in comparable use cases</div></div>
+              <div class="impact-row"><div class="metric">30%</div><div class="caption">larger deal size with better account context</div></div>
+              <div class="impact-row"><div class="metric">15%</div><div class="caption">lift in close rate</div></div>
+              <div class="impact-row"><div class="metric">More time</div><div class="caption">in customer conversations, less in portals</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card panel value-panel" id="rfp">
+          <div class="value-grid">
+            <div>
+              <h3>RFP and proposal cycles get dramatically faster</h3>
+              <div class="bullet-list">
+                <div class="bullet"><strong>One workspace for responses</strong> Assemble grounded, reusable content, pricing, and evidence in one governed flow.</div>
+                <div class="bullet"><strong>Less manual work</strong> Recover time lost to internal coordination and document hunting.</div>
+                <div class="bullet"><strong>Stronger response quality</strong> Improve win probability through completeness, precedent reuse, and speed.</div>
+              </div>
+            </div>
+            <div class="impact-box">
+              <div class="impact-row"><div class="metric">65%</div><div class="caption">decrease in RFP response time</div></div>
+              <div class="impact-row"><div class="metric">20-25%</div><div class="caption">of an SE's week regained</div></div>
+              <div class="impact-row"><div class="metric">Higher</div><div class="caption">win probability from faster, accurate responses</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card panel value-panel" id="security">
+          <div class="value-grid">
+            <div>
+              <h3>Security questionnaires stop being a bottleneck</h3>
+              <div class="bullet-list">
+                <div class="bullet"><strong>Precedent in seconds</strong> Surface prior answers, certifications, and approved language instantly.</div>
+                <div class="bullet"><strong>Faster review</strong> Cut time spent locating policy terms and completing standard questionnaires.</div>
+                <div class="bullet"><strong>Consistency &amp; risk control</strong> Reduce dependence on scarce security SMEs and keep answers accurate.</div>
+              </div>
+            </div>
+            <div class="impact-box">
+              <div class="impact-row"><div class="metric">70%</div><div class="caption">reduced time to answer</div></div>
+              <div class="impact-row"><div class="metric">45%</div><div class="caption">faster time locating key terms</div></div>
+              <div class="impact-row"><div class="metric">Fewer</div><div class="caption">escalations to security SMEs</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card panel value-panel" id="competitive">
+          <div class="value-grid">
+            <div>
+              <h3>Competitive answers are always current</h3>
+              <div class="bullet-list">
+                <div class="bullet"><strong>Battlecards on demand</strong> Pull the latest positioning, differentiators, and win/loss context mid-conversation.</div>
+                <div class="bullet"><strong>Confident objection handling</strong> Ground every competitive response in approved, cited intel.</div>
+                <div class="bullet"><strong>Faster field feedback loop</strong> Surface what's working across the team so intel stays fresh.</div>
+              </div>
+            </div>
+            <div class="impact-box">
+              <div class="impact-row"><div class="metric">Instant</div><div class="caption">access to current competitive intel</div></div>
+              <div class="impact-row"><div class="metric">Higher</div><div class="caption">confidence in objection handling</div></div>
+              <div class="impact-row"><div class="metric">Consistent</div><div class="caption">positioning across every SE</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card panel value-panel" id="onboarding">
+          <div class="value-grid">
+            <div>
+              <h3>New SEs ramp far faster</h3>
+              <div class="bullet-list">
+                <div class="bullet"><strong>Self-serve context</strong> New hires find product, process, and historical decisions without tribal knowledge.</div>
+                <div class="bullet"><strong>Faster first deals</strong> Accelerate time to first supported deal and smooth territory transitions.</div>
+                <div class="bullet"><strong>Always-on enablement</strong> Guided tasks and recommendations help SEs know where to start.</div>
+              </div>
+            </div>
+            <div class="impact-box">
+              <div class="impact-row"><div class="metric">20%</div><div class="caption">reduction in ramp time</div></div>
+              <div class="impact-row"><div class="metric">60%</div><div class="caption">faster onboarding in comparable use cases</div></div>
+              <div class="impact-row"><div class="metric">Faster</div><div class="caption">time to first supported deal</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card panel value-panel" id="frontdoor">
+          <div class="value-grid">
+            <div>
+              <h3>The same platform powers the external front door</h3>
+              <div class="bullet-list">
+                <div class="bullet"><strong>One layer, many audiences</strong> Customers, partners, guests, and staff get grounded answers plus next-best action.</div>
+                <div class="bullet"><strong>Deflection at scale</strong> Portal-spanning answers reduce dead ends and repetitive support load.</div>
+                <div class="bullet"><strong>Compounding value</strong> Investment in SE enablement extends directly to the customer-facing intelligent front door.</div>
+              </div>
+            </div>
+            <div class="impact-box">
+              <div class="impact-row"><div class="metric">One</div><div class="caption">governed platform across audiences</div></div>
+              <div class="impact-row"><div class="metric">Lower</div><div class="caption">support and deflection cost</div></div>
+              <div class="impact-row"><div class="metric">Consistent</div><div class="caption">brand voice for every user</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="why-glean">
+      <div class="section-head">
+        <div>
+          <h2>Why Glean</h2>
+          <p class="muted">Context, governance, and openness make this scalable across Sales Engineering and beyond.</p>
+        </div>
+      </div>
+
+      <div class="pillars">
+        <div class="pillar active" data-detail="horizontal"><small>1</small><h3>Horizontal</h3><p class="muted">One platform across every system.</p></div>
+        <div class="pillar" data-detail="open"><small>2</small><h3>Open</h3><p class="muted">Model &amp; cloud agnostic, no lock-in.</p></div>
+        <div class="pillar" data-detail="relevance"><small>3</small><h3>Context</h3><p class="muted">Cited, grounded answers.</p></div>
+        <div class="pillar" data-detail="safest"><small>4</small><h3>Governed</h3><p class="muted">Enterprise-grade by default.</p></div>
+        <div class="pillar" data-detail="easy"><small>5</small><h3>Easy</h3><p class="muted">If you can Google, you can Glean.</p></div>
+      </div>
+
+      <div class="card pillar-detail active" id="horizontal">
+        <h3>Only Glean connects horizontally across Motorola Solutions</h3>
+        <p>Glean sits above existing systems — no rip-and-replace. It indexes selected source content directly, which improves speed, relevance, and first-party treatment of results. That means the SE team gets one AI layer across docs, KBs, tickets, CRM, and web, and the same foundation extends to customers and partners.</p>
+        <div class="pill-cloud">
+          <span>Docs &amp; KBs</span><span>Tickets</span><span>CRM</span><span>Web &amp; media</span><span>Pricing &amp; catalogs</span><span>Security content</span><span>Competitive intel</span><span>100+ connectors</span>
+        </div>
+      </div>
+
+      <div class="card pillar-detail" id="open">
+        <h3>Open architecture keeps Motorola Solutions in control</h3>
+        <p>Glean is model and cloud agnostic with a broad connector library, open APIs, and extensibility. Take advantage of continued LLM innovation while managing cost and choosing the best model for each job — no lock-in.</p>
+      </div>
+
+      <div class="card pillar-detail" id="relevance">
+        <h3>Context drives trust, and trust drives adoption</h3>
+        <p>Enterprise and personal graphs deliver relevant, cited answers grounded in Motorola Solutions' environment — understanding person, process, and data. Answer quality is what makes SEs use AI every day.</p>
+        <div class="total-card">
+          <div class="tiny">Average adoption benchmark</div>
+          <div class="big">80%</div>
+          <div class="muted">Glean's average adoption rate when relevance and user experience are strong.</div>
+        </div>
+      </div>
+
+      <div class="card pillar-detail" id="safest">
+        <h3>Enterprise-grade governance by default</h3>
+        <p>Permissions-sensitive indexing mirrors source access, with full auditability and secure orchestration across every use case. The same governance that protects internal SE answers protects the external front door — critical for customer, partner, and guest audiences.</p>
+      </div>
+
+      <div class="card pillar-detail" id="easy">
+        <h3>Easy enough for every SE to adopt</h3>
+        <p>Glean makes AI approachable. Tasks on the home page help each user understand where to start, and the experience is intentionally simple enough that adoption comes quickly without heavy change management.</p>
+        <div class="pill-cloud">
+          <span>If you can Google you can Glean</span><span>Simple UX</span><span>Fast onboarding</span><span>Task recommendations</span><span>Use-case driven rollout</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="success">
+      <div class="section-head">
+        <div>
+          <h2>The path to value: start focused, expand horizontally</h2>
+          <p class="muted">Lock the first use case, prove it with the SE team, then scale to the intelligent front door.</p>
+        </div>
+      </div>
+
+      <div class="flow">
+        <div class="flow-step"><small>PHASE 1</small><h4>SE enablement</h4><p>Instant product, pricing, security &amp; competitive answers for the sales engineering team.</p></div>
+        <div class="flow-step"><small>PHASE 2</small><h4>RFP / proposal</h4><p>Accelerate response cycles with grounded, reusable, on-brand content.</p></div>
+        <div class="flow-step"><small>PHASE 3</small><h4>Field &amp; support</h4><p>Extend grounded answers and next-best action to field and support teams.</p></div>
+        <div class="flow-step"><small>PHASE 4</small><h4>Intelligent front door</h4><p>One external self-service journey across customer &amp; partner portals.</p></div>
+      </div>
+
+      <div class="success-grid" style="margin-top:18px;">
+        <div class="card success-card">
+          <h3>How Glean makes the SE team successful right away</h3>
+          <ul>
+            <li>Guided rollout with technical setup, use-case design, and enablement sessions from day one.</li>
+            <li>An AI Outcomes Manager leads use-case discovery, training, office hours, and prompt/agent/action optimization tied to real SE workflows.</li>
+            <li>A Solutions Architect leads technical design, integrations, security, and deployment above existing systems.</li>
+            <li>Ongoing success planning sessions and business reviews keep adoption moving after go-live.</li>
+          </ul>
+          <div class="proof-grid">
+            <div class="proof"><div class="big">Day 1</div><div class="muted">guided rollout and use-case design</div></div>
+            <div class="proof"><div class="big">Ongoing</div><div class="muted">business reviews and success planning</div></div>
+            <div class="proof"><div class="big">80%</div><div class="muted">average adoption when UX is strong</div></div>
+          </div>
+        </div>
+
+        <div class="card success-card">
+          <h3>Pilot success criteria</h3>
+          <ul>
+            <li><strong>Answer quality</strong> — cited, grounded, and on-brand across SE questions.</li>
+            <li><strong>Adoption</strong> — active SE users engaging in real workflows.</li>
+            <li><strong>Governance</strong> — permissions, audit, and policy adherence proven.</li>
+            <li><strong>Business impact</strong> — measurable lift on cycle time, win rates, and deflection.</li>
+          </ul>
+          <div class="proof-grid" style="grid-template-columns:1fr;">
+            <div class="proof">
+              <div style="height:36px;display:flex;align-items:center;margin-bottom:10px;"><div style="font-size:1.3rem;font-weight:900;color:#fff;">Deloitte</div></div>
+              <div class="big">Global rollout</div><div class="muted">enterprise-wide AI on one governed platform</div>
+            </div>
+            <div class="proof">
+              <div style="height:36px;display:flex;align-items:center;margin-bottom:10px;"><div style="font-size:1.3rem;font-weight:900;color:#fff;">LinkedIn</div></div>
+              <div class="big">20,000 users in 2 months</div><div class="muted">quickest enterprise-wide deployment</div>
+            </div>
+            <div class="proof">
+              <div style="height:36px;display:flex;align-items:center;margin-bottom:10px;"><div style="font-size:1.3rem;font-weight:900;color:#fff;">700+</div></div>
+              <div class="big">customers on Glean</div><div class="muted">proven and open by design</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="section-head">
+        <div>
+          <h2>Point solutions Glean can superpower or replace</h2>
+          <p class="muted">Rather than stacking separate search, chat, and agent tools, Glean is one governed platform that compounds value across sales, support, knowledge, and service teams.</p>
+        </div>
+      </div>
+      <div class="card success-card">
+        <div class="pill-cloud">
+          <span>Standalone portal search</span><span>Point chatbots</span><span>Copilot</span><span>Salesforce Agentforce</span><span>RFP tools</span><span>Separate KB search</span><span>Custom LLM apps</span><span>Federated search</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="open-items">
+      <div class="section-head">
+        <div>
+          <h2>Next steps and open items</h2>
+          <p class="muted">Editable placeholders to tailor the conversation before sharing.</p>
+        </div>
+      </div>
+      <div class="open-grid">
+        <div class="card notes-card">
+          <h3>What Motorola Solutions wants to achieve</h3>
+          <textarea>- Confirm the first SE use case and success criteria for the pilot.
+- Align on the systems and portals in scope for phase 1.
+- Define metrics for answer quality, adoption, cycle time, and win rates.
+- Confirm how SE enablement extends to the external intelligent front door.</textarea>
+        </div>
+        <div class="card notes-card">
+          <h3>Open items to close</h3>
+          <textarea>- Confirm first audience, systems in scope, stakeholders, and pilot roadmap.
+- Identify SE data sources and connectors to prioritize.
+- Align on governance model, permissions, and audit requirements.
+- Confirm enablement plan, SE champions, and launch timing.
+- Add any commercial or procurement decisions needing executive alignment.</textarea>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer reveal">
+      <div class="card success-card">
+        <h3>Prepared for Motorola Solutions</h3>
+        <p class="muted">Built from the Motorola Solutions x Glean discovery readout on Unified Conversational Search, focused on the Sales Engineering team. Refresh the open items section before external sharing to tailor the executive story further.</p>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab');
+    const panels = document.querySelectorAll('.panel');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.target).classList.add('active');
+      });
+    });
+
+    const pillars = document.querySelectorAll('.pillar');
+    const details = document.querySelectorAll('.pillar-detail');
+    pillars.forEach(pillar => {
+      pillar.addEventListener('click', () => {
+        pillars.forEach(p => p.classList.remove('active'));
+        details.forEach(d => d.classList.remove('active'));
+        pillar.classList.add('active');
+        document.getElementById(pillar.dataset.detail).classList.add('active');
+      });
+    });
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    function animateCount(el, target) {
+      const duration = 1200; const start = performance.now();
+      function tick(now) {
+        const p = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(target * eased);
+        if (p < 1) requestAnimationFrame(tick); else el.textContent = target;
+      }
+      requestAnimationFrame(tick);
+    }
+    const countObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target; animateCount(el, parseFloat(el.dataset.count)); countObserver.unobserve(el);
+      });
+    }, { threshold: 0.6 });
+    document.querySelectorAll('[data-count]').forEach(el => countObserver.observe(el));
+
+    window.GleanBridge && window.GleanBridge.postMessage({
+      actionId: 'export-pdf', type: 'glean-add-menu',
+      metadata: { label: 'Export as PDF', icon: 'export' }
+    });
+    window.GleanBridge && window.GleanBridge.onMessage('action', function(data) {
+      if (data.actionId === 'export-pdf') window.print();
+    });
+  </script>
+</body>
+</html>
