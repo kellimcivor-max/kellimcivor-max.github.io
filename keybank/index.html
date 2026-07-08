@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Why Glean Executive Briefing</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{
+  --artifact-background: var(--theme-background,#f7f8f6);
+  --artifact-surface: var(--theme-background-light,#ffffff);
+  --artifact-surface-2: var(--theme-background,#eef0ec);
+  --artifact-text: var(--theme-text-primary,#14171a);
+  --artifact-muted: var(--theme-text-secondary,#5c6470);
+  --artifact-accent: var(--theme-primary-highlight,#1f5fff);
+  --artifact-accent-soft: rgba(31,95,255,0.10);
+  --artifact-border: rgba(20,23,26,0.10);
+  --artifact-good:#1f9d6b; --artifact-warn:#d98a1f; --artifact-bad:#d1462f;
+  --artifact-good-soft:rgba(31,157,107,0.12); --artifact-warn-soft:rgba(217,138,31,0.12); --artifact-bad-soft:rgba(209,70,47,0.12);
+  --artifact-shadow:0 1px 2px rgba(20,23,26,0.06),0 8px 24px rgba(20,23,26,0.06);
+  --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+html[data-theme='dark']{
+  --artifact-accent-soft:rgba(90,140,255,0.18);--artifact-border:rgba(255,255,255,0.12);
+  --artifact-good-soft:rgba(31,157,107,0.20);--artifact-warn-soft:rgba(217,138,31,0.20);--artifact-bad-soft:rgba(209,70,47,0.22);
+  --artifact-shadow:0 1px 2px rgba(0,0,0,0.4),0 8px 24px rgba(0,0,0,0.4);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--artifact-background);color:var(--artifact-text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5;}
+.wrap{max-width:1100px;margin:0 auto;padding:32px 24px 72px;}
+.tag{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--artifact-muted);}
+h1{font-size:38px;line-height:1.05;margin:6px 0 4px;font-weight:650;letter-spacing:-.02em;}
+h2{font-size:13px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--artifact-muted);margin:0 0 14px;font-weight:600;}
+.sub{color:var(--artifact-muted);font-size:16px;max-width:70ch;}
+.section{margin-top:40px;animation:rise .6s ease both;}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.card{background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:16px;padding:22px;box-shadow:var(--artifact-shadow);}
+.grid{display:grid;gap:16px;}.g2{grid-template-columns:1fr 1fr;}.g3{grid-template-columns:repeat(3,1fr);}.g4{grid-template-columns:repeat(4,1fr);}
+@media(max-width:820px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.banner{background:linear-gradient(120deg,var(--artifact-accent-soft),transparent);border:1px solid var(--artifact-border);border-radius:20px;padding:26px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;}
+.avatar{width:74px;height:74px;border-radius:50%;background:var(--artifact-accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:650;flex-shrink:0;}
+.banner .who{flex:1;min-width:240px;}.banner .who .nm{font-size:24px;font-weight:650;letter-spacing:-.01em;}
+.banner .who .rl{color:var(--artifact-muted);font-size:15px;margin-top:2px;}
+.pill{display:inline-block;font-family:var(--mono);font-size:11px;padding:5px 11px;border-radius:999px;background:var(--artifact-accent);color:#fff;letter-spacing:.05em;text-transform:uppercase;}
+.meta{display:flex;gap:26px;flex-wrap:wrap;margin-top:4px}
+.meta div .k{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--artifact-muted)}
+.meta div .v{font-size:14px;font-weight:600}
+.kpi .n{font-size:30px;font-weight:680;letter-spacing:-.02em;}.kpi .l{color:var(--artifact-muted);font-size:13px;margin-top:2px;}
+.kpi .n.red{color:var(--artifact-bad)}.kpi .n.amber{color:var(--artifact-warn)}.kpi .n.green{color:var(--artifact-good)}
+.chart{width:100%;height:260px;}
+.list{margin:0;padding:0;list-style:none}
+.list li{padding:11px 0;border-bottom:1px solid var(--artifact-border);display:flex;gap:12px;align-items:flex-start;font-size:15px}
+.list li:last-child{border-bottom:none}
+.dot{width:8px;height:8px;border-radius:50%;margin-top:8px;flex-shrink:0;background:var(--artifact-accent)}
+.dot.g{background:var(--artifact-good)}.dot.a{background:var(--artifact-warn)}.dot.r{background:var(--artifact-bad)}
+.tl{position:relative;margin-left:8px;padding-left:24px}
+.tl::before{content:"";position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--artifact-border)}
+.tl .ev{position:relative;padding:0 0 20px}
+.tl .ev::before{content:"";position:absolute;left:-23px;top:4px;width:11px;height:11px;border-radius:50%;background:var(--artifact-accent);border:2px solid var(--artifact-surface)}
+.tl .ev .d{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--artifact-accent);text-transform:uppercase}
+.tl .ev .t{font-weight:600;font-size:15px;margin:1px 0}.tl .ev .x{color:var(--artifact-muted);font-size:14px}
+.chip{display:inline-block;font-size:12px;font-family:var(--mono);padding:6px 12px;border-radius:8px;background:var(--artifact-surface-2);border:1px solid var(--artifact-border);margin:0 8px 8px 0}
+.chip b{color:var(--artifact-accent)}
+.tabbtn{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--artifact-accent);background:var(--artifact-accent-soft);border:1px solid var(--artifact-border);padding:8px 14px;border-radius:10px;cursor:pointer}
+.info{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;border:1px solid var(--artifact-border);color:var(--artifact-muted);font-size:10px;font-family:var(--mono);cursor:help;position:relative;margin-left:6px;vertical-align:middle}
+.info .tip{visibility:hidden;opacity:0;position:absolute;bottom:150%;left:50%;transform:translateX(-50%);width:230px;background:var(--artifact-text);color:var(--artifact-background);font-family:system-ui;font-size:12px;line-height:1.4;letter-spacing:0;text-transform:none;padding:9px 11px;border-radius:8px;z-index:20;transition:opacity .15s;box-shadow:var(--artifact-shadow)}
+.info:hover .tip{visibility:visible;opacity:1}
+.src{display:none}.src.on{display:block}
+.badge{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:6px;letter-spacing:.06em;text-transform:uppercase}
+.badge.new{background:var(--artifact-good-soft);color:var(--artifact-good)}
+a{color:var(--artifact-accent)}
+@media print{
+ body{margin:0;padding:.4in .6in;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ .wrap{max-width:100%!important}
+ .section,.card{break-inside:avoid;margin-bottom:16px!important;box-shadow:none!important;border:1px solid rgba(0,0,0,.08)}
+ .chart{height:240px!important}
+ *,*::before,*::after{animation:none!important;transition:none!important}
+ button,.tabbtn{display:none!important}.src{display:block!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="tag">GLEAN · PREPARED FOR KEYBANK</div>
+  <h1>Why Glean</h1>
+  <p class="sub">Prepared for KeyBank — why enterprises choose Glean as their open, secure, model-agnostic Work AI platform, and how it compares to Microsoft Copilot, Google Gemini, and open-source models.</p>
+
+  <div class="section">
+    <div class="banner">
+      <div class="avatar">G</div>
+      <div class="who">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="pill">For KeyBank</span><span class="badge new">Work AI Platform</span></div>
+        <div class="nm" style="margin-top:8px">Glean</div>
+        <div class="rl">Assistant · Agents · Search on Glean Enterprise Context — model-agnostic and ecosystem-agnostic</div>
+        <div class="meta">
+          <div><div class="k">Category</div><div class="v">Work AI Platform</div></div>
+          <div><div class="k">Connectors</div><div class="v">275+ (permission-aware)</div></div>
+          <div><div class="k">Edge</div><div class="v">System of Context</div></div>
+          <div><div class="k">Proof</div><div class="v">93% adoption · ROI in 6 mo</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>What Glean is</h2>
+    <div class="grid g2">
+      <div class="card">
+        <div style="font-size:15px">Glean is the open, horizontal Work AI platform: a permission-aware Assistant, an agent platform for every department, and enterprise search — all sitting on Glean Enterprise Context, a knowledge graph that maps 60+ signals across your content, people and activity. Unlike ecosystem-bound tools, Glean connects everything your teams use, routes across 35+ models with no lock-in, and governs it all with Glean Protect. For a regulated enterprise like KeyBank, it's the secure context and control layer beneath whatever model or app comes next.</div>
+        <div style="margin-top:16px"><span class="chip"><b>Ecosystem-agnostic</b></span><span class="chip"><b>Model-agnostic</b> (35+ LLMs)</span><span class="chip"><b>Knowledge graph</b> · 60+ signals</span><span class="chip"><b>Permission-aware</b></span><span class="chip"><b>SaaS or VPC</b></span><span class="chip">Governed by <b>Glean Protect</b></span></div>
+        <div style="margin-top:16px;font-family:var(--mono);font-size:12px;color:var(--artifact-muted)">Built on Glean Enterprise Context · governed by Glean Protect · SaaS or your own VPC</div>
+      </div>
+      
+      <div class="card">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--artifact-muted)">Platform pillars <span class="info">i<span class="tip">The three product pillars that make Glean a platform, not a point tool.</span></span></div>
+        <div class="tl" style="margin-top:14px">
+          <div class="ev"><div class="d">Pillar 1</div><div class="t">Glean Enterprise Context</div><div class="x">Knowledge graph mapping 60+ signals across content, people &amp; activity — the system of context.</div></div><div class="ev"><div class="d">Pillar 2</div><div class="t">Horizontal Agent Platform</div><div class="x">Build and govern agents for every department in one place — not locked to a single suite.</div></div><div class="ev"><div class="d">Pillar 3</div><div class="t">Model Hub</div><div class="x">Route across 35+ LLMs (Claude, GPT, Gemini, open source), Day-0 support, no lock-in.</div></div><div class="ev"><div class="d">Everywhere</div><div class="t">Glean Protect</div><div class="x">Permission-aware access, PII/RAG guards, central audit logs; SaaS or your own VPC.</div></div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Glean at a glance</h2>
+    <div class="grid g4">
+      <div class="card kpi"><div class="n green">275+</div><div class="l">Permission-aware connectors to your systems</div></div><div class="card kpi"><div class="n green">35+</div><div class="l">LLMs available — model-agnostic, no lock-in</div></div><div class="card kpi"><div class="n green">-25%</div><div class="l">Tokens &amp; -50% latency via an efficient architecture</div></div><div class="card kpi"><div class="n green">93%</div><div class="l">Adoption within 2 years · ROI in ~6 months</div></div>
+    </div>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="card">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--artifact-muted);margin-bottom:8px">How the alternatives compare <span class="info">i<span class="tip">How each approach is positioned for enterprise-wide, cross-system AI.</span></span></div>
+        <ul class="list">
+          <li><span class="dot a"></span><div><b>Microsoft Copilot.</b> Strongest inside Microsoft 365, but ecosystem-bound — limited native reach into the many systems outside M365, and models limited to Azure OpenAI / Anthropic.</div></li><li><span class="dot a"></span><div><b>Google Gemini.</b> Strong models, but oriented to Google's stack — non-native sources often need to be replicated into BigQuery, and you're steered toward Gemini models.</div></li><li><span class="dot a"></span><div><b>Single-model tools (e.g. Claude).</b> One excellent model, but you're tied to a single provider as the frontier keeps shifting.</div></li><li><span class="dot a"></span><div><b>Open-source models alone.</b> Increasingly capable and cost-effective, but need a platform to add context, connectors, routing and governance.</div></li><li><span class="dot"></span><div><b>Glean.</b> One open, governed platform that unifies context across all of the above.</div></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--artifact-muted);margin-bottom:8px">What enterprises need from Work AI</div>
+        <ul class="list">
+          <li><span class="dot"></span><div><b>Context across all data</b>, not just one vendor's ecosystem</div></li><li><span class="dot"></span><div><b>Model flexibility</b> as the leading model changes roughly every 6 months</div></li><li><span class="dot"></span><div><b>Security &amp; governance</b> — permission-aware access, audit, and VPC options for regulated data</div></li><li><span class="dot"></span><div><b>Predictable token cost &amp; documented ROI</b> as AI moves to operating spend</div></li><li><span class="dot"></span><div><b>One governed platform</b> instead of fragmented AI sprawl</div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>How Glean compares</h2>
+    <div class="grid g2">
+      <div class="card">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--artifact-muted);margin-bottom:4px">Enterprise-fit by platform <span class="info">i<span class="tip">Directional enterprise-fit across breadth of context, openness, governance and total cost of ownership.</span></span></div>
+        <div id="c_ai" class="chart"></div>
+      </div>
+      <div class="card">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--artifact-muted);margin-bottom:4px">Connectors by platform <span class="info">i<span class="tip">Enterprise-grade, permission-aware connectors available out of the box, by platform.</span></span></div>
+        <div id="c_sys" class="chart"></div>
+      </div>
+    </div>
+    <div class="grid g4" style="margin-top:16px">
+      <div class="card"><div style="font-weight:600">Broadest context</div><div style="color:var(--artifact-muted);font-size:14px;margin-top:4px">275+ connectors + a knowledge graph mapping 60+ signals across people, content &amp; activity.</div></div><div class="card"><div style="font-weight:600">Model freedom</div><div style="color:var(--artifact-muted);font-size:14px;margin-top:4px">Route across 35+ LLMs with Day-0 support — never forced to migrate when a better model ships.</div></div><div class="card"><div style="font-weight:600">Token efficiency</div><div style="color:var(--artifact-muted);font-size:14px;margin-top:4px">A specialized small model cuts token use ~25% and latency ~50% for enterprise work.</div></div><div class="card"><div style="font-weight:600">Governed &amp; secure</div><div style="color:var(--artifact-muted);font-size:14px;margin-top:4px">Glean Protect: native permissions, PII/RAG guards, central audit logs, SaaS or VPC.</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>The decisive differences</h2>
+    <div class="grid g2">
+      <div class="card">
+        <div class="tl">
+          <div class="ev"><div class="d">Connectivity</div><div class="t">275+ connectors</div><div class="x">Broadest connectivity to all enterprise data, not just one suite.</div></div><div class="ev"><div class="d">Relevance</div><div class="t">Knowledge graph</div><div class="x">60+ signals across content, people &amp; activity for personalized, trustworthy answers.</div></div><div class="ev"><div class="d">Openness</div><div class="t">35+ models</div><div class="x">Model-agnostic routing; SaaS or VPC; no vendor lock-in.</div></div><div class="ev"><div class="d">TCO</div><div class="t">Efficiency + ROI in ~6 mo</div><div class="x">Lower token cost and out-of-the-box deployment with documented ROI.</div></div><div class="ev"><div class="d">Governance</div><div class="t">Protect · permissions · audit</div><div class="x">Enterprise-grade security and control for regulated data.</div></div><div class="ev"><div class="d">Adoption</div><div class="t">93% in 2 yrs · 110 hrs/yr</div><div class="x">Proven adoption and time savings in production.</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-weight:600;margin-bottom:8px">The pattern we see across enterprises</div>
+        <div style="font-size:15px;color:var(--artifact-muted)">The AI market will not converge on a single model, vendor, or app. It fragments — different models for different tasks (Claude for coding, Gemini for multimodal, GPT for reasoning, open source where cost or compliance requires), different apps for different workflows, and different agents for different jobs. Betting the enterprise on one provider is betting against how the market actually evolves.</div>
+        <div style="height:1px;background:var(--artifact-border);margin:16px 0"></div>
+        <div style="font-weight:600;margin-bottom:8px">Why Glean</div>
+        <div style="font-size:15px;color:var(--artifact-muted)">A horizontal platform sees interactions across every tool, so it collects the most context, routes to any model, and governs it centrally. Glean is the durable context and control layer beneath whatever model or app comes next — and it even makes Copilot and Gemini better by feeding them cross-system context. In a market that reinvents itself every six months, flexibility and governance beat lock-in.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Why enterprises choose Glean</h2>
+    <div class="grid g3">
+      <div class="card"><div style="font-weight:600">Complete enterprise context</div><div style="color:var(--artifact-muted);font-size:14px;margin-top:6px">Search and reason across all your systems and knowledge — not just one ecosystem — grounded in a knowledge graph for relevant, trustworthy answers.</div></div><div class="card"><div style="font-weight:600">Freedom of model choice</div><div style="color:var(--artifact-muted);font-size:14px;margin-top:6px">Use the best model for each task across 35+ LLMs with Day-0 support, and upgrade without rebuilding your context layer.</div></div><div class="card"><div style="font-weight:600">Security &amp; governance by design</div><div style="color:var(--artifact-muted);font-size:14px;margin-top:6px">Permission-aware access, PII/RAG guards, and central audit logs, deployable in SaaS or your own VPC — built for regulated data.</div></div><div class="card"><div style="font-weight:600">Lower, predictable cost</div><div style="color:var(--artifact-muted);font-size:14px;margin-top:6px">A token-efficient architecture reduces cost and latency, with out-of-the-box deployment and documented ROI.</div></div><div class="card"><div style="font-weight:600">Works with what you have</div><div style="color:var(--artifact-muted);font-size:14px;margin-top:6px">Complements Microsoft Copilot and Google Gemini by giving them secure, cross-system context from across your enterprise.</div></div><div class="card"><div style="font-weight:600">Proven at enterprise scale</div><div style="color:var(--artifact-muted);font-size:14px;margin-top:6px">93% adoption within two years and up to 110 hours saved per employee each year, with payback in roughly six months.</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2 style="margin:0">Learn more</h2>
+      <button class="tabbtn" onclick="var s=document.getElementById('src');s.classList.toggle('on');this.textContent=s.classList.contains('on')?'Hide':'View'">View</button>
+    </div>
+    <div id="src" class="src" style="margin-top:14px">
+      <div class="card">
+        <div style="font-size:14px;color:var(--artifact-muted);margin-bottom:12px">Explore these resources to learn more about the Glean Work AI platform.</div>
+        <ul class="list">
+          <li><span class="dot"></span><a href="https://www.glean.com/compare/glean-vs-copilot">Glean vs. Microsoft 365 Copilot</a></li><li><span class="dot"></span><a href="https://www.glean.com/compare/glean-vs-claude-enterprise">Glean vs. Claude Enterprise</a></li><li><span class="dot"></span><a href="https://www.glean.com/product/model-hub">Glean Model Hub</a></li><li><span class="dot"></span><a href="https://www.glean.com/connectors">Glean connectors</a></li><li><span class="dot"></span><a href="https://www.glean.com/resources/guides/token-economy-enterprise-ai">The token economy of enterprise AI</a></li><li><span class="dot"></span><a href="https://www.glean.com/product/ai-agents">Glean AI agents</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var css=getComputedStyle(document.documentElement);
+var ACC=css.getPropertyValue('--artifact-accent').trim()||'#1f5fff';
+var MUT=css.getPropertyValue('--artifact-muted').trim()||'#5c6470';
+var TXT=css.getPropertyValue('--artifact-text').trim()||'#14171a';
+var BRD=css.getPropertyValue('--artifact-border').trim()||'rgba(0,0,0,.1)';
+
+var ai=echarts.init(document.getElementById('c_ai'),null,{renderer:'svg'});
+ai.setOption({
+  grid:{left:8,right:18,top:20,bottom:24,containLabel:true},
+  tooltip:{trigger:'axis'},
+  xAxis:{type:'category',data:["Glean", "Copilot", "Gemini", "Open source"],axisLine:{lineStyle:{color:BRD}},axisLabel:{color:MUT,fontSize:11}},
+  yAxis:{type:'value',max:100,splitLine:{lineStyle:{color:BRD}},axisLabel:{color:MUT,formatter:'{value}%'}},
+  series:[{type:'bar',data:[95, 62, 58, 40],
+    barWidth:'52%',itemStyle:{borderRadius:[6,6,0,0]},
+    markPoint:{data:[{coord:[0,95],value:'Best fit',itemStyle:{color:ACC}}],symbol:'pin',symbolSize:54,label:{color:'#fff',fontSize:9}}}]
+});
+
+var sys=echarts.init(document.getElementById('c_sys'),null,{renderer:'svg'});
+sys.setOption({
+  grid:{left:8,right:24,top:10,bottom:10,containLabel:true},
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+  xAxis:{type:'value',max:300,splitLine:{lineStyle:{color:BRD}},axisLabel:{show:false}},
+  yAxis:{type:'category',data:["Glean", "Amazon Q", "Copilot", "Agentspace", "ChatGPT Ent."],axisLine:{lineStyle:{color:BRD}},axisLabel:{color:TXT,fontSize:12}},
+  series:[{type:'bar',data:[275, 35, 50, 26, 15],barWidth:'55%',
+    itemStyle:{color:ACC,borderRadius:[0,6,6,0]},
+    label:{show:true,position:'right',color:MUT,fontSize:11,formatter:function(p){return ["275+ permission-aware", "~35", "~50 M365-built", "~26", "<15"][p.dataIndex]}}}]
+});
+window.addEventListener('resize',function(){ai.resize();sys.resize();});
+
+window.GleanBridge&&window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
+window.GleanBridge&&window.GleanBridge.onMessage('action',function(d){if(d.actionId==='export-pdf')window.print();});
+function prepareChartsForPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var c=echarts.getInstanceByDom(el);if(!c)return;var img=new Image();img.src=c.getDataURL({type:'png',pixelRatio:2});img.className='print-chart-img';img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';el.dataset.prevPosition=el.style.position;el.style.position='relative';el.appendChild(img);});}
+function cleanUpAfterPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var img=el.querySelector('.print-chart-img');if(!img)return;img.remove();el.style.position=el.dataset.prevPosition||'';delete el.dataset.prevPosition;});}
+window.addEventListener('beforeprint',prepareChartsForPrint);
+window.addEventListener('afterprint',cleanUpAfterPrint);
+</script>
+</body>
+</html>
