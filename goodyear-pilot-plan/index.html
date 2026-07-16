@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goodyear &times; Glean — Pilot &amp; Validation Plan</title>
+<style>
+:root{
+  --artifact-background: var(--theme-background, #fbfaf7);
+  --artifact-surface: var(--theme-background-light, #ffffff);
+  --artifact-surface-alt: #f4f2ec;
+  --artifact-text-primary: var(--theme-text-primary, #1a1c22);
+  --artifact-text-secondary: #565a66;
+  --artifact-text-muted: #8a8f9c;
+  --artifact-border: #e5e1d6;
+  --artifact-navy: #16408c;
+  --artifact-navy-soft: #edf1f9;
+  --artifact-gold: #b48307;
+  --artifact-gold-soft: #f8f1dd;
+  --artifact-good: #2f7d55;
+  --artifact-good-soft: #e7f2ec;
+  --artifact-card-shadow: 0 1px 2px rgba(20,30,60,.05), 0 8px 24px rgba(20,30,60,.05);
+}
+html[data-theme='dark']{
+  --artifact-background:#12131a;--artifact-surface:#191b24;--artifact-surface-alt:#20222e;
+  --artifact-text-primary:#eef0f5;--artifact-text-secondary:#b3b8c5;--artifact-text-muted:#7f8598;
+  --artifact-border:#2b2e3b;--artifact-navy:#7ea2e6;--artifact-navy-soft:#1c2436;
+  --artifact-gold:#e0b757;--artifact-gold-soft:#2a2417;--artifact-good:#67c093;--artifact-good-soft:#17251d;
+  --artifact-card-shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+  background:var(--artifact-background);color:var(--artifact-text-primary);line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:-.01em;line-height:1.2}
+.mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace}
+.hero{padding:78px 0 44px;border-bottom:1px solid var(--artifact-border)}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--artifact-navy);font-weight:700;
+  font-family:"SFMono-Regular",Consolas,monospace;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.eyebrow::before{content:"";width:34px;height:2px;background:var(--artifact-gold);display:inline-block}
+.hero h1{font-size:clamp(34px,5vw,52px);margin:0 0 22px}
+.hero .lead{font-size:20px;color:var(--artifact-text-secondary);max-width:770px;margin:0 0 34px}
+.hero .lead strong{color:var(--artifact-text-primary)}
+.meta-row{display:flex;flex-wrap:wrap;gap:10px}
+.tag{font-size:13px;padding:6px 14px;border:1px solid var(--artifact-border);border-radius:999px;background:var(--artifact-surface);color:var(--artifact-text-secondary)}
+.tag b{color:var(--artifact-navy)}
+.tag.done b{color:var(--artifact-good)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:40px 0}
+.kpi{background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:14px;padding:22px 20px;box-shadow:var(--artifact-card-shadow)}
+.kpi .num{font-family:Georgia,serif;font-size:36px;font-weight:600;color:var(--artifact-navy);line-height:1}
+.kpi .num span{font-size:19px;color:var(--artifact-gold)}
+.kpi .lbl{font-size:13px;color:var(--artifact-text-secondary);margin-top:8px}
+/* blueprint band */
+.band{background:var(--artifact-navy);color:#fff;border-radius:16px;padding:30px 32px;margin:14px 0 6px;box-shadow:var(--artifact-card-shadow)}
+.band .bh{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.band .bh .pip{font-family:"SFMono-Regular",monospace;font-size:11px;font-weight:700;letter-spacing:.1em;background:var(--artifact-gold);color:#241a00;padding:4px 10px;border-radius:6px}
+.band h2{color:#fff;font-size:23px;margin:0}
+.band .bgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px 30px}
+.band .bitem{display:flex;gap:12px;align-items:flex-start;font-size:15px;color:rgba(255,255,255,.9)}
+.band .bitem b{color:#fff}
+.band .bitem::before{content:"";flex:0 0 auto;margin-top:8px;width:12px;height:7px;border-left:2px solid var(--artifact-gold);border-bottom:2px solid var(--artifact-gold);transform:rotate(-45deg)}
+section{padding:52px 0;border-bottom:1px solid var(--artifact-border)}
+.sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:8px}
+.sec-num{font-family:"SFMono-Regular",Consolas,monospace;font-size:13px;color:var(--artifact-gold);font-weight:700}
+h2{font-size:29px;margin:0}
+.sec-sub{color:var(--artifact-text-secondary);font-size:16px;margin:6px 0 30px;max-width:770px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:14px;padding:24px;box-shadow:var(--artifact-card-shadow)}
+.card h3{font-size:18px;margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.card p{margin:0;color:var(--artifact-text-secondary);font-size:15px}
+.ico{width:34px;height:34px;border-radius:9px;background:var(--artifact-navy-soft);color:var(--artifact-navy);display:inline-flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 auto;font-family:serif}
+.chk{list-style:none;padding:0;margin:0}
+.chk li{position:relative;padding:8px 0 8px 30px;color:var(--artifact-text-secondary);font-size:15px;border-bottom:1px solid var(--artifact-border)}
+.chk li:last-child{border-bottom:none}
+.chk li::before{content:"";position:absolute;left:2px;top:15px;width:14px;height:8px;border-left:2px solid var(--artifact-good);border-bottom:2px solid var(--artifact-good);transform:rotate(-45deg)}
+.arch{background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:16px;padding:30px;box-shadow:var(--artifact-card-shadow)}
+.arch-layer{border-radius:12px;padding:16px 20px;margin-bottom:12px;text-align:center}
+.arch-layer .t{font-weight:700;font-size:15px}
+.arch-layer .d{font-size:13px;opacity:.85;margin-top:2px}
+.al-front{background:var(--artifact-surface-alt);border:1px dashed var(--artifact-border);color:var(--artifact-text-secondary)}
+.al-exp{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.al-exp>div{background:var(--artifact-navy-soft);color:var(--artifact-navy);border-radius:10px;padding:14px 6px;font-weight:600;font-size:14px;text-align:center}
+.al-core{background:var(--artifact-navy);color:#fff;box-shadow:0 6px 20px rgba(22,64,140,.28)}
+.al-gov{background:var(--artifact-gold-soft);color:var(--artifact-gold);border:1px solid var(--artifact-gold)}
+.al-src{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+.al-src>div{background:var(--artifact-surface-alt);border:1px solid var(--artifact-border);border-radius:8px;padding:10px 4px;font-size:12px;text-align:center;color:var(--artifact-text-secondary)}
+.arch-arrow{text-align:center;color:var(--artifact-text-muted);font-size:18px;margin:2px 0}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:8px}
+.step{position:relative;padding:22px 20px;background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:14px;margin-right:26px}
+.step:last-child{margin-right:0}
+.step:not(:last-child)::after{content:"\2192";position:absolute;right:-20px;top:50%;transform:translateY(-50%);color:var(--artifact-gold);font-size:22px;font-weight:700}
+.step .k{font-family:"SFMono-Regular",monospace;font-size:12px;color:var(--artifact-gold);font-weight:700}
+.step h3{font-size:17px;margin:6px 0 6px}
+.step p{margin:0;font-size:14px;color:var(--artifact-text-secondary)}
+table{width:100%;border-collapse:collapse;font-size:14.5px;background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:12px;overflow:hidden}
+thead th{background:var(--artifact-navy);color:#fff;text-align:left;padding:13px 16px;font-weight:600;font-size:13px;letter-spacing:.02em}
+tbody td{padding:13px 16px;border-top:1px solid var(--artifact-border);color:var(--artifact-text-secondary);vertical-align:top}
+tbody tr:nth-child(even){background:var(--artifact-surface-alt)}
+tbody td b,tbody td strong{color:var(--artifact-text-primary)}
+.twrap{overflow-x:auto;border-radius:12px}
+.pri{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;letter-spacing:.03em;white-space:nowrap}
+.pri-h{background:var(--artifact-gold-soft);color:var(--artifact-gold)}
+.pri-s{background:var(--artifact-navy-soft);color:var(--artifact-navy)}
+.pri-d{background:var(--artifact-good-soft);color:var(--artifact-good)}
+.ba{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch}
+.ba .col{background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:12px;padding:18px}
+.ba .col .h{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.ba .before .h{color:var(--artifact-text-muted)}
+.ba .after .h{color:var(--artifact-good)}
+.ba .arrow{display:flex;align-items:center;color:var(--artifact-gold);font-size:24px}
+.proof{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.proof .card .big{font-family:Georgia,serif;font-size:32px;color:var(--artifact-navy);font-weight:600;line-height:1;margin-bottom:4px}
+.proof .card .big span{font-size:17px;color:var(--artifact-gold)}
+.proof .card .co{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--artifact-gold);margin-bottom:12px}
+.timeline{position:relative;margin-top:12px}
+.tl-item{display:grid;grid-template-columns:150px 1fr;gap:22px;padding:0 0 26px 0;position:relative}
+.tl-item::before{content:"";position:absolute;left:150px;top:6px;bottom:-6px;width:2px;background:var(--artifact-border);margin-left:-1px}
+.tl-item:last-child::before{display:none}
+.tl-item .dot{position:absolute;left:150px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--artifact-navy);margin-left:-6px;box-shadow:0 0 0 4px var(--artifact-navy-soft)}
+.tl-when{text-align:right;font-family:"SFMono-Regular",monospace;font-size:12.5px;color:var(--artifact-navy);font-weight:700;padding-top:2px}
+.tl-when small{display:block;color:var(--artifact-text-muted);font-weight:400;font-size:11px;margin-top:2px}
+.tl-body{padding-left:24px}
+.tl-body h3{font-size:16px;margin:0 0 4px}
+.tl-body p{margin:0;font-size:14px;color:var(--artifact-text-secondary)}
+.commercial{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.team-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.team-col h3{font-size:15px;text-transform:uppercase;letter-spacing:.06em;font-family:"SFMono-Regular",monospace;font-weight:700;color:var(--artifact-gold);margin:0 0 12px}
+.person{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--artifact-border);font-size:14.5px}
+.person:last-child{border-bottom:none}
+.person .role{color:var(--artifact-text-muted)}
+.person .name{color:var(--artifact-text-primary);font-weight:600;text-align:right}
+.person .tbc{color:var(--artifact-text-muted);font-style:italic;font-weight:400;text-align:right}
+.callout{background:var(--artifact-navy);color:#fff;border-radius:16px;padding:36px 34px;text-align:center}
+.callout h2{color:#fff;font-size:26px;margin:0 0 12px}
+.callout p{color:rgba(255,255,255,.85);font-size:16px;max-width:660px;margin:0 auto 24px}
+.callout .inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:left;max-width:800px;margin:0 auto}
+.callout .inputs div{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:10px 12px;font-size:13px;color:rgba(255,255,255,.92)}
+.toc{position:fixed;top:50%;right:22px;transform:translateY(-50%);z-index:40;background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:12px;padding:12px 10px;box-shadow:var(--artifact-card-shadow);max-width:184px}
+.toc a{display:block;font-size:12px;color:var(--artifact-text-muted);text-decoration:none;padding:5px 8px;border-radius:6px;line-height:1.3}
+.toc a:hover,.toc a.active{color:var(--artifact-navy);background:var(--artifact-navy-soft);font-weight:600}
+.footer{padding:36px 0;text-align:center;color:var(--artifact-text-muted);font-size:13px}
+@media (max-width:900px){
+  .toc{display:none}
+  .kpis,.grid3,.al-exp,.callout .inputs,.proof,.commercial,.band .bgrid{grid-template-columns:1fr 1fr}
+  .grid2,.team-grid,.steps{grid-template-columns:1fr}
+  .step{margin-right:0;margin-bottom:26px}
+  .step:not(:last-child)::after{content:"\2193";right:50%;top:auto;bottom:-24px;transform:translateX(50%)}
+  .ba{grid-template-columns:1fr}.ba .arrow{transform:rotate(90deg);justify-content:center}
+  .al-src{grid-template-columns:repeat(3,1fr)}
+  .tl-item{grid-template-columns:104px 1fr}.tl-item::before,.tl-item .dot{left:104px}
+}
+@media print{
+  body{margin:0;padding:.3in .5in;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .wrap{max-width:100%!important}.toc{display:none!important}
+  section,.card,.arch,.step,table,.tl-item,.callout,.band{break-inside:avoid}
+  .kpis,.grid2,.grid3,.proof,.commercial{gap:10px!important}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  button,[role="button"]{display:none!important}
+}
+.reveal{opacity:0;transform:translateY(14px);animation:rise .6s ease forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<nav class="toc" id="toc">
+  <a href="#blueprint">Blueprint (Jul 16)</a>
+  <a href="#overview">Overview</a>
+  <a href="#problem">The Challenge</a>
+  <a href="#solution">The Solution</a>
+  <a href="#validate">What We Validate</a>
+  <a href="#usecases">Use Cases</a>
+  <a href="#workflows">Workflows</a>
+  <a href="#proof">Proof Points</a>
+  <a href="#security">Security</a>
+  <a href="#sources">Data Sources</a>
+  <a href="#success">Success Criteria</a>
+  <a href="#timeline">Pilot Calendar</a>
+  <a href="#commercial">Commercial</a>
+  <a href="#actionplan">Action Plan</a>
+  <a href="#team">Project Team</a>
+  <a href="#next">Next Steps</a>
+</nav>
+
+<header class="hero">
+  <div class="wrap reveal">
+    <div class="eyebrow">Goodyear &times; Glean &nbsp;|&nbsp; Updated July 16, 2026</div>
+    <h1>Enterprise AI Pilot &amp; Validation Plan</h1>
+    <p class="lead">A focused 6&ndash;8 week pilot to prove that Glean can serve as Goodyear's <strong>governed, permission-aware intelligence layer</strong> &mdash; unifying legacy and modern systems, delivering unique value beyond your existing Copilot investment, and validating priority manufacturing, engineering, and executive workflows before you scale.</p>
+    <div class="meta-row">
+      <span class="tag done">Blueprint session: <b>Completed Jul 16</b></span>
+      <span class="tag">Next: <b>Cross-functional alignment (week of Jul 20)</b></span>
+      <span class="tag">Target pilot start: <b>Aug 3, 2026</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="kpis reveal">
+    <div class="kpi"><div class="num">6&ndash;8 <span>wks</span></div><div class="lbl">Pilot: ~2&ndash;3 wks setup, then hands-on launch</div></div>
+    <div class="kpi"><div class="num">~500</div><div class="lbl">Pilot users, phased from a few hundred by function</div></div>
+    <div class="kpi"><div class="num">3</div><div class="lbl">Priority use cases confirmed with leadership</div></div>
+    <div class="kpi"><div class="num">$40&ndash;60<span>K</span></div><div class="lbl">Nominal POC fee (infrastructure &amp; token costs)</div></div>
+  </div>
+
+  <div class="band reveal" id="blueprint">
+    <div class="bh"><span class="pip">BLUEPRINT ALIGNMENT &middot; JUL 16</span><h2>Where we aligned today</h2></div>
+    <div class="bgrid">
+      <div class="bitem"><span><b>Phased rollout adopted.</b> Start with a few hundred users and expand function by function as value is proven &mdash; scaling to ~500 pilot users.</span></div>
+      <div class="bitem"><span><b>Glean complements, then can replace Copilot.</b> Of 10,000 Copilot Premium licenses, ~7,500 are assigned but only ~20&ndash;30% of potential is used today.</span></div>
+      <div class="bitem"><span><b>Unique value is the bar.</b> Pilot must prove GRC support, role-based access, and pre-packaged connectors &mdash; not just another AI tool.</span></div>
+      <div class="bitem"><span><b>Executive support is the gate.</b> Investment approval hinges on clear success criteria and leadership sponsorship, not spend alone.</span></div>
+      <div class="bitem"><span><b>Buy the intellectual capital.</b> Goodyear stays focused on tires &mdash; leveraging Glean's platform IP rather than reconfiguring open-source LLMs in-house.</span></div>
+      <div class="bitem"><span><b>Cross-functional team next.</b> Prasanna to convene IT security, platform, and EA leads next week to lock connectors, security, and use cases.</span></div>
+    </div>
+  </div>
+</div>
+
+<section id="overview">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">01</span><h2>Overview</h2></div>
+    <p class="sec-sub">The purpose of this pilot is to validate Glean's impact in a live Goodyear environment, with real users and real Goodyear data &mdash; and to show it delivers value your current Copilot deployment is not yet reaching.</p>
+    <div class="grid3">
+      <div class="card"><h3><span class="ico">&#9679;</span>Connect trusted knowledge</h3><p>Link people to permission-aware information across existing systems &mdash; including legacy and fragmented environments &mdash; without moving data out of source systems.</p></div>
+      <div class="card"><h3><span class="ico">&#9650;</span>Prove unique value</h3><p>Demonstrate GRC, role-based access, and pre-packaged intelligence across a CEO/KPI dashboard, engineering productivity, and manufacturing cost analysis.</p></div>
+      <div class="card"><h3><span class="ico">&#10003;</span>Define the path to scale</h3><p>Collect feedback, evaluate adoption function by function, document before-and-after workflows, and set the criteria for a broader enterprise rollout.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="problem">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">02</span><h2>The Challenge We're Solving</h2></div>
+    <p class="sec-sub">Goodyear wants one impactful, pervasive AI experience &mdash; a single-screen, agentic platform that serves every role from the C-suite to the shop floor &mdash; while minimizing manual plumbing and duplicative spend.</p>
+    <div class="grid2">
+      <div class="card"><h3><span class="ico">&#8258;</span>Siloed, antiquated systems</h3><p>Inconsistent systems across business units slow decisions. Engineering knowledge and legacy environments (Team Center-style) make prior knowledge hard to reach.</p></div>
+      <div class="card"><h3><span class="ico">$</span>Copilot value gap</h3><p>7,500 of 10,000 Copilot Premium licenses are assigned, but only ~20&ndash;30% of potential is realized &mdash; and the goal is fewer, more effective AI tools, not more.</p></div>
+      <div class="card"><h3><span class="ico">&#9737;</span>Governance across distributed data</h3><p>Stronger GRC, role-based access, permissions, and auditability are required across fragmented data, including SharePoint sprawl.</p></div>
+      <div class="card"><h3><span class="ico">&#8862;</span>One governed front door</h3><p>A platform that can sit beneath existing front ends, including Copilot, rather than becoming another isolated point tool.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="solution">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">03</span><h2>The Solution &mdash; Glean as the Context Layer</h2></div>
+    <p class="sec-sub">Glean serves as the horizontal context and control layer across Goodyear's enterprise systems: a permission-aware assistant, enterprise search platform, and agent-building layer that unifies structured and unstructured data without moving it out of source systems.</p>
+    <div class="arch reveal">
+      <div class="arch-layer al-front"><div class="t">Existing front ends &mdash; Microsoft Copilot &amp; other AI entry points</div><div class="d">Glean can stand alone, and can also power retrieval beneath Copilot-style experiences via MCP</div></div>
+      <div class="arch-arrow">&#8595;</div>
+      <div class="al-exp"><div>Search</div><div>Assistant</div><div>Skills</div><div>Agents</div></div>
+      <div class="arch-layer al-core"><div class="t">Glean &mdash; Permission-Aware Context &amp; Orchestration Layer</div><div class="d">Model-agnostic index &amp; retrieval that narrows context before model execution</div></div>
+      <div class="arch-layer al-gov"><div class="t">Governance &amp; Control &mdash; Glean Protect</div><div class="d">BYOK / CMEK &middot; GRC &middot; role-based access &middot; policy enforcement &middot; auditability &middot; SIEM routing</div></div>
+      <div class="arch-arrow">&#8593;</div>
+      <div class="al-src"><div>Microsoft 365</div><div>Snowflake</div><div>ITSM</div><div>Engineering</div><div>Operations</div></div>
+    </div>
+    <div class="grid3" style="margin-top:22px">
+      <div class="card"><h3><span class="ico">&#128274;</span>Governed</h3><p>BYOK/CMEK, GRC, role-based access, policy enforcement, and native permission mirroring from source systems.</p></div>
+      <div class="card"><h3><span class="ico">&#8646;</span>Model-agnostic</h3><p>Route across 35+ LLMs with no lock-in &mdash; and coexist with specialized tools like SAP or Cursor where they fit.</p></div>
+      <div class="card"><h3><span class="ico">&#9889;</span>Actionable &amp; efficient</h3><p>Update systems like Salesforce and ServiceNow directly, and push HTML dashboards to SharePoint on a schedule &mdash; often without heavy LLM token cost.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="validate">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">04</span><h2>What This Pilot Validates</h2></div>
+    <p class="sec-sub">The pilot answers three questions &mdash; and proves out a clear maturity path from assistant to agents.</p>
+    <div class="grid3">
+      <div class="card"><h3><span class="ico">1</span>Secure connectivity</h3><p>Can Glean securely connect Goodyear's priority sources, preserve native permissions, and enforce role-based access?</p></div>
+      <div class="card"><h3><span class="ico">2</span>Grounded answers</h3><p>Can Glean deliver useful, cited answers across those systems with trusted context?</p></div>
+      <div class="card"><h3><span class="ico">3</span>Unique workflow value</h3><p>Can Glean improve 2&ndash;3 priority workflows enough &mdash; beyond Copilot today &mdash; to justify broader rollout?</p></div>
+    </div>
+    <h3 style="font-size:16px;text-transform:uppercase;letter-spacing:.06em;color:var(--artifact-gold);font-family:'SFMono-Regular',monospace;margin:34px 0 14px">Intended Maturity Path</h3>
+    <div class="steps">
+      <div class="step"><div class="k">STAGE 1</div><h3>Assistant</h3><p>Answer cross-system questions with citations for all pilot users.</p></div>
+      <div class="step"><div class="k">STAGE 2</div><h3>Skills</h3><p>Package repeatable, high-value prompts once proven useful.</p></div>
+      <div class="step"><div class="k">STAGE 3</div><h3>Agents</h3><p>Run scheduled or triggered workflows once the prompts are validated.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="usecases">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">05</span><h2>Priority Use Cases</h2></div>
+    <p class="sec-sub">Three high-impact agents confirmed with Goodyear leadership, plus supporting horizontal and IT tracks that every pilot user can feel from day one.</p>
+    <div class="twrap">
+      <table>
+        <thead><tr><th>Priority</th><th>Team / Function</th><th>Pilot Use Case</th><th>Why It Matters</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pri pri-h">HIGH</span></td><td><b>Executive leadership</b></td><td>CEO dashboard / KPI intelligence</td><td>A unified executive view surfaces the right operational and business signals with enterprise context.</td></tr>
+          <tr><td><span class="pri pri-h">HIGH</span></td><td><b>Engineering</b></td><td>Engineering productivity &amp; legacy knowledge retrieval</td><td>Addresses Team Center-style legacy complexity and faster access to prior design and materials knowledge.</td></tr>
+          <tr><td><span class="pri pri-h">HIGH</span></td><td><b>Manufacturing / operations</b></td><td>Manufacturing cost analysis engine</td><td>Analyze cost drivers and act on the right signals faster across fragmented plant and operations data.</td></tr>
+          <tr><td><span class="pri pri-s">SUPPORTING</span></td><td><b>Office of the CIO</b></td><td>Governed enterprise knowledge access &amp; cross-system assistant</td><td>One front door for knowledge, proving security, governance, and answer quality across approved systems.</td></tr>
+          <tr><td><span class="pri pri-s">SUPPORTING</span></td><td><b>IT support / shared services</b></td><td>Ticket-status &amp; known-fix retrieval; Copilot backend comparison</td><td>Answers &ldquo;status, owner, last comment&rdquo; in one place and benchmarks retrieval quality vs Copilot.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3 style="font-size:16px;text-transform:uppercase;letter-spacing:.06em;color:var(--artifact-gold);font-family:'SFMono-Regular',monospace;margin:36px 0 16px">Confirmed Agents &mdash; Before &amp; After</h3>
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div>
+        <h3 style="font-size:17px;margin:0 0 10px">CEO Dashboard / KPI Intelligence <span style="font-size:13px;color:var(--artifact-text-muted);font-weight:400">&mdash; Executive Leadership</span></h3>
+        <div class="ba"><div class="col before"><div class="h">Before</div><p>Leaders rely on fragmented systems and disconnected signals to understand performance.</p></div><div class="arrow">&#8594;</div><div class="col after"><div class="h">After</div><p>A unified executive view surfaces the right operational and business signals with enterprise context.</p></div></div>
+      </div>
+      <div>
+        <h3 style="font-size:17px;margin:0 0 10px">Engineering Productivity / Knowledge Access <span style="font-size:13px;color:var(--artifact-text-muted);font-weight:400">&mdash; Engineering</span></h3>
+        <div class="ba"><div class="col before"><div class="h">Before</div><p>Engineering knowledge is spread across legacy tools and disconnected systems, slowing decisions.</p></div><div class="arrow">&#8594;</div><div class="col after"><div class="h">After</div><p>Engineers retrieve the right context faster across the systems that matter to their work.</p></div></div>
+      </div>
+      <div>
+        <h3 style="font-size:17px;margin:0 0 10px">Manufacturing Cost Analysis Engine <span style="font-size:13px;color:var(--artifact-text-muted);font-weight:400">&mdash; Manufacturing / Operations</span></h3>
+        <div class="ba"><div class="col before"><div class="h">Before</div><p>Cost and operational analysis depend on fragmented data and manual synthesis across teams and systems.</p></div><div class="arrow">&#8594;</div><div class="col after"><div class="h">After</div><p>A connected experience helps teams analyze cost drivers and act on the right signals faster.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="workflows">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">06</span><h2>Proposed Starter Workflows</h2></div>
+    <p class="sec-sub">One horizontal assistant motion for all pilot users, plus focused operational, engineering, and manufacturing tracks.</p>
+    <div class="grid2">
+      <div class="card"><h3><span class="ico">&#9776;</span>Track 1 &mdash; Horizontal Assistant</h3>
+        <ul class="chk"><li>Plan my day &mdash; prioritized brief from calendar, mail, and tasks</li><li>Weekly catch-up on what changed across my workspaces</li><li>Show my open action items across Teams, email, tickets, and docs</li><li>Prep me for my next meeting with related docs, threads, and owners</li><li>Find the latest version of a document and who last changed it</li></ul></div>
+      <div class="card"><h3><span class="ico">&#9881;</span>Track 2 &mdash; IT Support / Operational Retrieval</h3>
+        <ul class="chk"><li>Ticket Status Tracer &mdash; status, owner, and last comment in one answer</li><li>Known-Fix Finder &mdash; cited known fix from runbooks and Stack Overflow</li><li>Teams IT-support agent spanning SharePoint, support content, and collaboration systems</li></ul></div>
+      <div class="card"><h3><span class="ico">&#9998;</span>Track 3 &mdash; Engineering Productivity</h3>
+        <ul class="chk"><li>Locate prior design and materials knowledge faster</li><li>Retrieve technical documentation and prior decisions across repositories</li><li>Glean as the retrieval layer behind PGR Copilot &mdash; better answers, no rebuild</li></ul></div>
+      <div class="card"><h3><span class="ico">&#127981;</span>Track 4 &mdash; Manufacturing / Operations</h3>
+        <ul class="chk"><li>Surface SOPs, troubleshooting steps, and cost knowledge faster</li><li>Role-based answers (e.g. finance user pulling SAP data for payables triage)</li><li>Structured + unstructured cost analysis via Snowflake + SharePoint</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="proof">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">07</span><h2>Proof Goodyear Can Underwrite</h2></div>
+    <p class="sec-sub">Real, named enterprise deployments &mdash; not hypotheticals &mdash; in complex manufacturing and operations environments.</p>
+    <div class="proof">
+      <div class="card"><div class="co">General Motors</div><div class="big">140K <span>users</span></div><p style="margin-bottom:10px">Enterprise-wide AI, pilot to enterprise in 90 days, with 80&ndash;90% weekly active use and a modeled 15.8x 3-year ROI across engineering, plant, quality, and executive use cases.</p></div>
+      <div class="card"><div class="co">US Foods</div><div class="big">&lt;1 <span>day to build</span></div><p style="margin-bottom:10px">A driver-productivity agent querying Snowflake route data and cross-referencing coaching guidance in SharePoint &mdash; the exact structured + unstructured pattern for Goodyear's cost engine.</p></div>
+      <div class="card"><div class="co">Token Efficiency</div><div class="big">-30% <span>tokens</span></div><p style="margin-bottom:10px">Measured in production: Glean's context layer uses ~30% fewer tokens than off-the-shelf MCP tools and ~39% lower cost per query, while improving answer quality.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="security">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">08</span><h2>Deployment, Security &amp; Governance</h2></div>
+    <p class="sec-sub">Enterprise-grade posture aligned to existing source-system identities and permissions &mdash; with GRC handled directly by Glean.</p>
+    <div class="grid2">
+      <div class="twrap">
+        <table>
+          <thead><tr><th>Topic</th><th>Working Assumption</th></tr></thead>
+          <tbody>
+            <tr><td><b>Hosting</b></td><td>Glean-hosted on GCP, with Goodyear-controlled encryption keys (CMEK/BYOK); deployment region + KMS key confirmed in setup</td></tr>
+            <tr><td><b>Permissions</b></td><td>Native permission mirroring and role-based access from source systems</td></tr>
+            <tr><td><b>Governance</b></td><td>Glean Protect &mdash; GRC, DLP, policy enforcement, auditability, and SIEM log routing</td></tr>
+            <tr><td><b>Connectivity</b></td><td>Cloud-to-cloud for cloud systems; VPN or allowlisting only where on-prem sources require it</td></tr>
+            <tr><td><b>Access points</b></td><td>Web app, browser extension, Teams (delivery channel), mobile, and voice</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card"><h3><span class="ico">&#128737;</span>Governance &amp; Risk Validation</h3>
+        <ul class="chk"><li>Validate guardrails that prevent inadvertent data loss or exposure</li><li>Confirm role-based access and permissions across fragmented systems</li><li>Review protections against prompt injection, integration misuse, and exfiltration</li><li>Establish observability and reporting for enterprise AI usage</li><li>Define a reusable governance approach for beyond-pilot scale</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="sources">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">09</span><h2>Data Connectors by Phase</h2></div>
+    <p class="sec-sub">Phase 1 core confirmed in the blueprint session; executive dashboard context and broader systems deferred to keep Phase 1 focused. Final admins locked in next week's alignment.</p>
+    <div class="twrap">
+      <table>
+        <thead><tr><th>Source</th><th>Connector</th><th>Phase</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><b>SharePoint / OneDrive</b></td><td>Native</td><td><span class="pri pri-h">PHASE 1</span></td><td>Pilot-group users, allowlisted sites. Also covers the Highway intranet (SharePoint-built &mdash; no separate crawl).</td></tr>
+          <tr><td><b>Microsoft Teams</b></td><td>Native</td><td><span class="pri pri-h">PHASE 1</span></td><td>Also the pilot delivery channel.</td></tr>
+          <tr><td><b>Microsoft Outlook</b></td><td>Native</td><td><span class="pri pri-h">PHASE 1</span></td><td>Horizontal assistant value.</td></tr>
+          <tr><td><b>GitHub</b></td><td>Native</td><td><span class="pri pri-h">PHASE 1</span></td><td>Cloud, confirmed. Supports Copilot backend comparison.</td></tr>
+          <tr><td><b>Goodyear.com</b></td><td>Web crawl</td><td><span class="pri pri-h">PHASE 1</span></td><td>IT support + Copilot backend public site (distinct from Highway intranet).</td></tr>
+          <tr><td><b>Snowflake / structured data</b></td><td>Native (agent)</td><td><span class="pri pri-h">PHASE 1</span></td><td>Strategic priority &mdash; unlocks the manufacturing cost engine. Scope TBD in blueprint.</td></tr>
+          <tr><td><b>Stack Overflow (internal)</b></td><td>Native</td><td><span class="pri pri-s">NICE-TO-HAVE</span></td><td>VPN path applies if pursued.</td></tr>
+          <tr><td><b>Workday &middot; SAP/ERP &middot; CLM &middot; Salesforce</b></td><td>Native / Indexing API</td><td><span class="pri pri-d">POST-POC</span></td><td>Unlocks Track-4 and CEO-office agents once platforms are confirmed.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="success">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">10</span><h2>Success Criteria</h2></div>
+    <p class="sec-sub">Success is measured across technical performance and business outcomes, with track-level metrics agreed up front &mdash; and a clear hypothesis to avoid unfocused testing.</p>
+    <div class="grid2">
+      <div class="card"><h3><span class="ico">&#9881;</span>Technical Success</h3>
+        <ul class="chk"><li>Agreed Phase 1 sources connect successfully</li><li>Permissions and role-based access mirror source systems correctly</li><li>Glean answers include valid citations</li><li>Multi-source questions return grounded answers</li><li>No critical permission or hallucination failures in test scenarios</li></ul></div>
+      <div class="card"><h3><span class="ico">&#9733;</span>Business Success</h3>
+        <ul class="chk"><li>Pilot users report faster access to answers and information</li><li>At least one engineering or manufacturing workflow shows measurable improvement</li><li>Demonstrable unique value beyond current Copilot usage</li><li>Executive team completes a go / no-go decision on jointly agreed evidence</li></ul></div>
+    </div>
+    <div class="twrap" style="margin-top:18px">
+      <table>
+        <thead><tr><th>Track</th><th>Example Measure</th></tr></thead>
+        <tbody>
+          <tr><td><b>Horizontal assistant</b></td><td>Users report at least 30 minutes saved per day on prep, catch-up, or retrieval</td></tr>
+          <tr><td><b>IT support</b></td><td>Glean returns ticket status, owner, last comment, and context correctly on a majority of agreed test cases</td></tr>
+          <tr><td><b>Engineering</b></td><td>Engineers confirm faster retrieval of prior knowledge and less duplicated work</td></tr>
+          <tr><td><b>Manufacturing / operations</b></td><td>Operations users confirm faster time-to-answer on recurring cost and troubleshooting questions</td></tr>
+          <tr><td><b>Executive dashboarding</b></td><td>Leadership confirms cross-system KPI questions can be answered in one place with trusted sources</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="timeline">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">11</span><h2>Pilot Calendar</h2></div>
+    <p class="sec-sub">Target ~10-week calendar from environment build through the executive readout and go-forward decision. Champion validation precedes the full ~500-user rollout.</p>
+    <div class="timeline">
+      <div class="tl-item"><div class="dot"></div><div class="tl-when">Week 1<small>Aug 3&ndash;7</small></div><div class="tl-body"><h3>Build</h3><p>Environment build begins with Goodyear CMEK keys; SSO configured; deployment region + KMS key confirmed; connector config; VPN/allowlist requests; crawls kick off.</p></div></div>
+      <div class="tl-item"><div class="dot"></div><div class="tl-when">Week 2<small>Aug 10&ndash;14</small></div><div class="tl-body"><h3>Setup</h3><p>People data loaded (Azure); M365 action packs enabled; source admins confirmed; crawl progress tracking; build review.</p></div></div>
+      <div class="tl-item"><div class="dot"></div><div class="tl-when">Week 3<small>Aug 17&ndash;21</small></div><div class="tl-body"><h3>Learn</h3><p>Branding applied; prompt packs loaded; permission verification; Protect+ setup; learn exit review.</p></div></div>
+      <div class="tl-item"><div class="dot"></div><div class="tl-when">Weeks 4&ndash;6<small>Aug 24&ndash;Sep 11</small></div><div class="tl-body"><h3>Champions / UAT</h3><p>Champions kickoff + Glean 101 per track; weekly scoring vs the core question set; skill building; executive mid-point check-in. (Labor Day in Week 6.)</p></div></div>
+      <div class="tl-item"><div class="dot"></div><div class="tl-when">Weeks 7&ndash;9<small>Sep 14&ndash;Oct 2</small></div><div class="tl-body"><h3>User Evaluation &mdash; full rollout</h3><p>Rollout day to all ~500 users; department kickoffs and Glean 101 enablement; office hours; adoption review; post-pilot survey opens.</p></div></div>
+      <div class="tl-item"><div class="dot"></div><div class="tl-when">Week 10<small>Oct 5&ndash;9</small></div><div class="tl-body"><h3>Readout &amp; Launch</h3><p>Results analysis vs success criteria; track-level metrics rollup; readout deck; executive wrap-up and go-forward decision.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="commercial">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">12</span><h2>Commercial &amp; Investment</h2></div>
+    <p class="sec-sub">A low-risk POC investment, with pricing designed to improve as Goodyear scales function by function.</p>
+    <div class="commercial">
+      <div class="card"><h3><span class="ico">$</span>POC fee</h3><p><b>$40K&ndash;$60K</b> nominal fee to cover infrastructure and token costs for the pilot.</p></div>
+      <div class="card"><h3><span class="ico">&#128200;</span>Licensing</h3><p>Base estimate around <b>$50 / user</b>, decreasing as total users scale into the thousands, depending on the build.</p></div>
+      <div class="card"><h3><span class="ico">&#9878;</span>Approval basis</h3><p>Investment is approved on <b>executive support and clear success criteria</b> &mdash; prioritized initiatives, not experiments.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="actionplan">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">13</span><h2>Mutual Activity Plan</h2></div>
+    <p class="sec-sub">Coming out of the July 16 blueprint, here are the immediate next actions and owners.</p>
+    <div class="twrap">
+      <table>
+        <thead><tr><th>Owner</th><th>Action</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><b>Prasanna Burri</b></td><td>Invite 4&ndash;5 key stakeholders (IT security, platform, EA leads) to next week's alignment.</td><td><span class="pri pri-h">NEXT WEEK</span></td></tr>
+          <tr><td><b>Prasanna Burri + Raman Mehta</b></td><td>Identify and assign the Goodyear project manager and technical leads.</td><td><span class="pri pri-h">NEXT WEEK</span></td></tr>
+          <tr><td><b>Prasanna Burri</b></td><td>Define strong pilot use cases and assemble the core project team.</td><td><span class="pri pri-h">NEXT WEEK</span></td></tr>
+          <tr><td><b>Kelli McIvor</b></td><td>Resend the manufacturing-specific use-case library link.</td><td><span class="pri pri-s">IN PROGRESS</span></td></tr>
+          <tr><td><b>Both teams</b></td><td>Schedule and run the alignment meeting to review blueprint: connectors, security, and use cases.</td><td><span class="pri pri-s">SCHEDULING</span></td></tr>
+          <tr><td><b>Both teams</b></td><td>Confirm security approvals, connector admins, and people-data/identity setup.</td><td><span class="pri pri-s">PLANNED</span></td></tr>
+          <tr><td><b>Both teams</b></td><td>Confirm pilot timeline (target Aug 3 start) and lock success criteria.</td><td><span class="pri pri-s">PLANNED</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="team">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">14</span><h2>Project Team</h2></div>
+    <p class="sec-sub">A joint Goodyear and Glean team. Goodyear technical, security, and procurement owners to be assigned in next week's alignment.</p>
+    <div class="team-grid">
+      <div class="team-col card"><h3>Glean</h3>
+        <div class="person"><span class="role">Executive Sponsor / Founder</span><span class="name">Tony Gentilcore</span></div>
+        <div class="person"><span class="role">Strategic Regional Director</span><span class="name">Tony Welter</span></div>
+        <div class="person"><span class="role">Strategic SE Manager</span><span class="name">Anwesh Rijal</span></div>
+        <div class="person"><span class="role">Project Manager / AE</span><span class="name">Kelli McIvor</span></div>
+        <div class="person"><span class="role">Technical Lead / Lead SE</span><span class="name">Chris Janning</span></div>
+        <div class="person"><span class="role">Supporting Field CTO</span><span class="name">Algis Kasniunas</span></div>
+      </div>
+      <div class="team-col card"><h3>Goodyear</h3>
+        <div class="person"><span class="role">Executive Sponsor / CIO</span><span class="name">Raman Mehta</span></div>
+        <div class="person"><span class="role">Project Manager / Enterprise Architecture</span><span class="name">Prasanna Burri</span></div>
+        <div class="person"><span class="role">Technical Lead</span><span class="tbc">To assign</span></div>
+        <div class="person"><span class="role">IT &amp; Security Lead</span><span class="tbc">To assign</span></div>
+        <div class="person"><span class="role">Procurement</span><span class="tbc">To assign</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="next" style="border-bottom:none">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">15</span><h2>Next Steps &amp; Inputs for Alignment</h2></div>
+    <p class="sec-sub">To lock pilot scope at next week's cross-functional session, please confirm the following.</p>
+    <div class="callout reveal">
+      <h2>Ready to lock pilot scope</h2>
+      <p>Confirming these inputs lets us finalize the connector map, security model, and pilot cohort &mdash; and hold the target Aug 3 start toward a go / no-go decision by early October.</p>
+      <div class="inputs">
+        <div>&#9633; Project manager &amp; technical lead</div>
+        <div>&#9633; IT / security lead</div>
+        <div>&#9633; Procurement owner</div>
+        <div>&#9633; Cross-functional stakeholders (4&ndash;5)</div>
+        <div>&#9633; SSO provider</div>
+        <div>&#9633; People data source (Azure)</div>
+        <div>&#9633; Initial function &amp; user count</div>
+        <div>&#9633; Top 3 use cases confirmed</div>
+        <div>&#9633; Phase 1 connectors &amp; admins</div>
+        <div>&#9633; Snowflake scope</div>
+        <div>&#9633; CMEK / BYOK &amp; region</div>
+        <div>&#9633; Baseline metrics &amp; success criteria</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="footer wrap">Goodyear &times; Glean &nbsp;&middot;&nbsp; Pilot &amp; Validation Plan &nbsp;&middot;&nbsp; Updated July 16, 2026 (post-blueprint) &nbsp;&middot;&nbsp; Co-authored with Glean</div>
+
+<script>
+  (function(){
+    var links=[].slice.call(document.querySelectorAll('.toc a'));
+    var secs=links.map(function(a){return document.querySelector(a.getAttribute('href'));});
+    function onScroll(){var y=window.scrollY+140,idx=0;secs.forEach(function(s,i){if(s&&s.offsetTop<=y)idx=i;});links.forEach(function(a,i){a.classList.toggle('active',i===idx);});}
+    window.addEventListener('scroll',onScroll);onScroll();
+    links.forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var t=document.querySelector(a.getAttribute('href'));if(t)window.scrollTo({top:t.offsetTop-24,behavior:'smooth'});});});
+  })();
+  window.GleanBridge && window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
+  window.GleanBridge && window.GleanBridge.onMessage('action',function(data){if(data.actionId==='export-pdf')window.print();});
+</script>
+
+</body>
+</html>
