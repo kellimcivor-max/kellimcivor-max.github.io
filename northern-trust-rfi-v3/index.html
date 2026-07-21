@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Northern Trust × Glean | Byron 3.0 Context Blueprint</title>
+  <style>
+    :root {
+      --artifact-background: #ffffff;
+      --artifact-background-light: #f6f4f1;
+      --artifact-panel: #f2efea;
+      --artifact-panel-strong: #ebe6df;
+      --artifact-border-light: #e5ddd2;
+      --artifact-border-dark: #cdc3b5;
+      --artifact-primary-brand: #115740;
+      --artifact-primary-brand-soft: #e6f0ec;
+      --artifact-primary-highlight: #115740;
+      --artifact-primary-hover: #184f3e;
+      --artifact-selected: #f4f8f6;
+      --artifact-text-primary: #1c1a17;
+      --artifact-text-secondary: #655f56;
+      --artifact-text-muted: #837b70;
+      --artifact-text-highlight: #ffffff;
+      --artifact-positive-background: #eef5f1;
+      --artifact-positive-text: #1c1a17;
+      --artifact-positive: #2f7a53;
+      --artifact-warning-background: #f5efe3;
+      --artifact-warning: #8a6940;
+      --artifact-negative-background: #f7ece9;
+      --artifact-negative: #9b3f33;
+      --artifact-shadow: 0 10px 30px rgba(17, 87, 64, 0.06);
+      --artifact-shadow-soft: 0 1px 0 rgba(17, 87, 64, 0.05);
+    }
+    html[data-theme='dark'] {
+      --artifact-background: #171512;
+      --artifact-background-light: #201d18;
+      --artifact-panel: #24201a;
+      --artifact-panel-strong: #2a251e;
+      --artifact-border-light: #3b342b;
+      --artifact-border-dark: #52493d;
+      --artifact-primary-brand: #8fcbaf;
+      --artifact-primary-brand-soft: #1f3129;
+      --artifact-primary-highlight: #bfe4d2;
+      --artifact-primary-hover: #a8d9c1;
+      --artifact-selected: #1e2723;
+      --artifact-text-primary: #f2eee7;
+      --artifact-text-secondary: #b3a998;
+      --artifact-text-muted: #8d8477;
+      --artifact-text-highlight: #171512;
+      --artifact-positive-background: #1d2b22;
+      --artifact-positive-text: #d7ecd9;
+      --artifact-positive: #84bf9a;
+      --artifact-warning-background: #332b1d;
+      --artifact-warning: #e5c78f;
+      --artifact-negative-background: #35211d;
+      --artifact-negative: #df9a90;
+      --artifact-shadow: 0 12px 36px rgba(0, 0, 0, 0.24);
+      --artifact-shadow-soft: 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--artifact-background);
+      color: var(--artifact-text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    h1, h2, h3, h4, .display, .section-title {
+      font-family: Georgia, "Times New Roman", Times, serif;
+      color: var(--artifact-text-primary);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin: 0;
+      font-weight: 400;
+    }
+    h1 { font-size: clamp(2.8rem, 5vw, 4.7rem); }
+    h2 { font-size: clamp(1.8rem, 3.2vw, 2.8rem); margin-bottom: 14px; }
+    h3 { font-size: 1.45rem; line-height: 1.18; }
+    h4 { font-size: 1rem; line-height: 1.25; }
+    p { margin: 0 0 14px; color: var(--artifact-text-secondary); }
+    .eyebrow, .kicker, .label, th, .stat-label, .mini-label {
+      font-family: "SF Mono", "IBM Plex Mono", "Cascadia Code", Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--artifact-text-muted);
+    }
+    .container {
+      width: 100%;
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+      position: relative;
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+      background: color-mix(in srgb, var(--artifact-background) 82%, transparent);
+      border-bottom: 1px solid var(--artifact-border-light);
+    }
+    .topbar-inner {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .brandline { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-dot {
+      width: 11px; height: 11px; border-radius: 999px;
+      background: var(--artifact-primary-brand);
+      box-shadow: 0 0 0 6px var(--artifact-primary-brand-soft);
+      flex: 0 0 auto;
+    }
+    .brand-title {
+      color: var(--artifact-text-primary);
+      font-weight: 600;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .top-meta {
+      color: var(--artifact-text-secondary);
+      font-size: 13px;
+      text-align: right;
+    }
+    .hero {
+      padding: 72px 0 30px;
+      display: block;
+      border-bottom: 1px solid var(--artifact-border-light);
+    }
+    .hero-copy {
+      width: 100%;
+      max-width: 100%;
+      margin-bottom: 0;
+      text-align: center;
+    }
+    .hero-copy h1 {
+      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero-copy p.lead {
+      font-size: 1.15rem;
+      color: var(--artifact-text-primary);
+      max-width: 980px;
+      line-height: 1.5;
+      margin: 16px auto 0;
+    }
+    .hero-card {
+      width: 100%;
+      border: 1px solid var(--artifact-border-light);
+      background: linear-gradient(180deg, var(--artifact-background) 0%, var(--artifact-background-light) 100%);
+      padding: 22px;
+      box-shadow: var(--artifact-shadow-soft);
+    }
+    .hero-points {
+      margin: 16px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0;
+    }
+    .hero-points li {
+      padding: 0 16px;
+      color: var(--artifact-text-secondary);
+      border-left: 1px solid var(--artifact-border-light);
+    }
+    .hero-points li:first-child {
+      border-left: 0;
+      padding-left: 0;
+    }
+    .hero-points li:last-child {
+      padding-right: 0;
+    }
+    .hero-points strong { color: var(--artifact-text-primary); font-weight: 600; }
+    .page-tabs {
+      position: sticky;
+      top: 62px;
+      z-index: 18;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 18px 0 16px;
+      background: color-mix(in srgb, var(--artifact-background) 92%, transparent);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--artifact-border-light);
+      margin-bottom: 8px;
+    }
+    .tab-btn {
+      appearance: none;
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background);
+      color: var(--artifact-text-secondary);
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 160ms ease;
+      box-shadow: var(--artifact-shadow-soft);
+    }
+    .tab-btn:hover,
+    .tab-btn:focus {
+      color: var(--artifact-primary-brand);
+      border-color: var(--artifact-border-dark);
+      outline: none;
+    }
+    .tab-btn.active {
+      background: var(--artifact-primary-brand);
+      color: var(--artifact-text-highlight);
+      border-color: var(--artifact-primary-brand);
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .tab-hero {
+      padding: 36px 0 22px;
+      border-bottom: 1px solid var(--artifact-border-light);
+      text-align: center;
+    }
+    .tab-hero p {
+      max-width: 960px;
+      margin: 16px auto 0;
+      color: var(--artifact-text-primary);
+      font-size: 1.08rem;
+    }
+    .journey-rail {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 26px;
+      position: relative;
+      z-index: 1;
+    }
+    .journey-node {
+      position: relative;
+      border: 1px solid var(--artifact-border-light);
+      background: linear-gradient(180deg, var(--artifact-background) 0%, var(--artifact-background-light) 100%);
+      padding: 18px;
+      min-height: 238px;
+      box-shadow: var(--artifact-shadow-soft);
+      overflow: visible;
+    }
+    .journey-node::after {
+      content: '→';
+      position: absolute;
+      top: 26px;
+      right: -17px;
+      width: 34px;
+      height: 34px;
+      border: 1px solid color-mix(in srgb, var(--artifact-primary-brand) 35%, var(--artifact-border-light));
+      background: var(--artifact-background);
+      color: var(--artifact-primary-brand);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      border-radius: 999px;
+      box-shadow: var(--artifact-shadow-soft);
+      z-index: 2;
+    }
+    .journey-node:last-child::after { display: none; }
+    .journey-kicker {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      border: 1px solid color-mix(in srgb, var(--artifact-primary-brand) 34%, var(--artifact-border-light));
+      background: var(--artifact-primary-brand-soft);
+      color: var(--artifact-primary-brand);
+      font-family: "SF Mono", "IBM Plex Mono", Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .journey-node h3 { margin: 0 0 10px; }
+    .journey-node p {
+      margin: 0 0 14px;
+      color: var(--artifact-text-secondary);
+      font-size: 0.98rem;
+    }
+    .micro-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: auto;
+    }
+    .micro-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 9px;
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background);
+      color: var(--artifact-text-secondary);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+    .systems-roadmap-shell {
+      margin-top: 26px;
+      border: 1px solid var(--artifact-border-dark);
+      background: linear-gradient(180deg, var(--artifact-background) 0%, var(--artifact-background-light) 100%);
+      box-shadow: var(--artifact-shadow);
+      overflow: hidden;
+    }
+    .roadmap-lane {
+      padding: 22px 24px;
+      border-bottom: 1px solid var(--artifact-border-light);
+    }
+    .roadmap-lane:last-child {
+      border-bottom: 0;
+    }
+    .lane-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .lane-head h3 {
+      margin: 8px 0 0;
+      font-size: 1.18rem;
+    }
+    .lane-head p {
+      margin: 0;
+      max-width: 420px;
+      color: var(--artifact-text-secondary);
+      font-size: 0.96rem;
+    }
+    .source-lane-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .source-lane-card,
+    .outcome-card {
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background);
+      padding: 18px;
+      min-height: 150px;
+      box-shadow: var(--artifact-shadow-soft);
+    }
+    .source-lane-card h4,
+    .outcome-card h4 {
+      margin: 10px 0 8px;
+      font-size: 1rem;
+    }
+    .source-lane-card p,
+    .outcome-card p {
+      margin: 0;
+      color: var(--artifact-text-secondary);
+      font-size: 0.94rem;
+      line-height: 1.45;
+    }
+    .roadmap-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 12px 24px;
+      background: color-mix(in srgb, var(--artifact-primary-brand-soft) 72%, var(--artifact-background) 28%);
+      border-bottom: 1px solid color-mix(in srgb, var(--artifact-primary-brand) 28%, var(--artifact-border-light));
+      color: var(--artifact-primary-brand);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .roadmap-divider::before,
+    .roadmap-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: color-mix(in srgb, var(--artifact-primary-brand) 38%, transparent);
+    }
+    .governed-core {
+      border: 1px solid var(--artifact-primary-brand);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--artifact-primary-brand-soft) 84%, var(--artifact-background) 16%) 0%, var(--artifact-background) 100%);
+      padding: 18px;
+      box-shadow: var(--artifact-shadow-soft);
+    }
+    .core-topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .core-topline h3 {
+      margin: 8px 0 0;
+      font-size: 1.32rem;
+    }
+    .core-topline p {
+      margin: 0;
+      max-width: 440px;
+      color: var(--artifact-text-secondary);
+      font-size: 0.96rem;
+    }
+    .core-spine {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      position: relative;
+    }
+    .core-spine::before {
+      content: "";
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      top: 30px;
+      height: 2px;
+      background: color-mix(in srgb, var(--artifact-primary-brand) 30%, var(--artifact-border-light));
+      z-index: 0;
+    }
+    .spine-step {
+      position: relative;
+      z-index: 1;
+      border: 1px solid color-mix(in srgb, var(--artifact-primary-brand) 34%, var(--artifact-border-light));
+      background: var(--artifact-background);
+      padding: 14px;
+      min-height: 148px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .spine-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      background: var(--artifact-primary-brand);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--artifact-primary-brand-soft) 70%, var(--artifact-background) 30%);
+      margin-bottom: 4px;
+    }
+    .spine-step h4 {
+      margin: 0;
+      font-size: 0.98rem;
+    }
+    .spine-step p {
+      margin: 0;
+      color: var(--artifact-text-secondary);
+      font-size: 0.92rem;
+      line-height: 1.42;
+    }
+    .outcome-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .governance-ribbon {
+      margin-top: 16px;
+      border: 1px solid var(--artifact-border-dark);
+      background: linear-gradient(180deg, var(--artifact-primary-brand-soft) 0%, var(--artifact-background) 100%);
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .ribbon-item {
+      border: 1px solid color-mix(in srgb, var(--artifact-primary-brand) 35%, var(--artifact-border-light));
+      background: var(--artifact-background);
+      padding: 12px 10px;
+      text-align: center;
+      color: var(--artifact-text-primary);
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .update-flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 20px;
+    }
+    .update-step {
+      position: relative;
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background);
+      padding: 18px;
+      min-height: 188px;
+      box-shadow: var(--artifact-shadow-soft);
+    }
+    .update-step::after {
+      content: '→';
+      position: absolute;
+      top: 18px;
+      right: -15px;
+      color: var(--artifact-primary-brand);
+      font-size: 28px;
+      z-index: 2;
+    }
+    .update-step:last-child::after { display: none; }
+    .update-step p {
+      margin: 10px 0 0;
+      color: var(--artifact-text-secondary);
+    }
+    .nt-roadmap-band {
+      margin-top: 18px;
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background-light);
+      padding: 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .nt-roadmap-band .pill {
+      background: var(--artifact-background);
+    }
+    .update-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .mini-phase-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .mini-phase {
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background);
+      padding: 18px;
+      min-height: 220px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+      margin: 28px 0 0;
+    }
+    .stat {
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background);
+      padding: 16px;
+      min-height: 118px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--artifact-shadow-soft);
+    }
+    .stat-value {
+      font-family: "SF Mono", "IBM Plex Mono", Consolas, monospace;
+      font-size: clamp(1.55rem, 2vw, 2.1rem);
+      line-height: 1;
+      color: var(--artifact-primary-brand);
+    }
+    .main-grid {
+      display: block;
+      width: 100%;
+      margin-top: 26px;
+    }
+    section {
+      padding: 42px 0;
+      border-bottom: 1px solid var(--artifact-border-light);
+    }
+    .section-intro {
+      max-width: 980px;
+      font-size: 1.03rem;
+      color: var(--artifact-text-secondary);
+    }
+    .card-grid.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .card-grid.three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    .card-grid.four { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+    .card {
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background);
+      padding: 20px;
+      box-shadow: var(--artifact-shadow-soft);
+    }
+    .card.soft { background: var(--artifact-background-light); }
+    .card.brand { background: var(--artifact-primary-brand-soft); }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background);
+      color: var(--artifact-text-secondary);
+      font-size: 12px;
+      border-radius: 999px;
+    }
+    .diagram {
+      border: 1px solid var(--artifact-border-dark);
+      background: linear-gradient(180deg, var(--artifact-background) 0%, var(--artifact-background-light) 100%);
+      padding: 22px;
+      box-shadow: var(--artifact-shadow);
+      overflow: hidden;
+    }
+    .blueprint {
+      display: grid;
+      grid-template-columns: 1fr 64px 1.05fr 64px 0.9fr;
+      gap: 0;
+      align-items: stretch;
+      margin-top: 24px;
+    }
+    .bp-col {
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background);
+      padding: 20px;
+      min-height: 460px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .bp-col.core {
+      background: linear-gradient(180deg, var(--artifact-primary-brand-soft) 0%, var(--artifact-background) 100%);
+      border-color: var(--artifact-primary-brand);
+    }
+    .bp-box {
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background-light);
+      padding: 14px;
+    }
+    .bp-box.brand {
+      border-color: color-mix(in srgb, var(--artifact-primary-brand) 55%, var(--artifact-border-light));
+      background: color-mix(in srgb, var(--artifact-primary-brand-soft) 72%, var(--artifact-background) 28%);
+    }
+    .arrow-col {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--artifact-primary-brand);
+      font-size: 2rem;
+      font-family: Georgia, serif;
+    }
+    ul.clean {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--artifact-text-secondary);
+    }
+    ul.clean li { margin-bottom: 8px; }
+    .step-row {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .step {
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background);
+      padding: 16px 14px;
+      position: relative;
+      min-height: 138px;
+    }
+    .step .num {
+      font-family: "SF Mono", monospace;
+      color: var(--artifact-primary-brand);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      display: block;
+    }
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+      font-size: 15px;
+    }
+    .compare-table th,
+    .compare-table td {
+      text-align: left;
+      vertical-align: top;
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--artifact-border-light);
+    }
+    .compare-table thead th {
+      color: var(--artifact-text-secondary);
+      background: var(--artifact-background-light);
+    }
+    .good { color: var(--artifact-positive); font-weight: 600; }
+    .warn { color: var(--artifact-warning); font-weight: 600; }
+    .risk-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .risk {
+      display: grid;
+      grid-template-columns: 148px 1fr;
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background);
+    }
+    .risk-left {
+      padding: 18px;
+      border-right: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background-light);
+    }
+    .risk-right { padding: 18px; }
+    .pattern-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .pattern {
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background);
+      padding: 18px;
+      min-height: 220px;
+    }
+    .phase-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 22px;
+    }
+    .phase {
+      border: 1px solid var(--artifact-border-light);
+      background: linear-gradient(180deg, var(--artifact-background) 0%, var(--artifact-background-light) 100%);
+      padding: 18px;
+      min-height: 270px;
+      position: relative;
+    }
+    .phase::before {
+      content: "";
+      position: absolute;
+      left: 18px;
+      top: 18px;
+      width: 34px;
+      height: 2px;
+      background: var(--artifact-primary-brand);
+    }
+    .phase h3 { margin-top: 18px; margin-bottom: 10px; }
+    .phase-foot {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--artifact-border-light);
+      color: var(--artifact-text-primary);
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .closing {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+    .quote {
+      font-size: 1.1rem;
+      line-height: 1.55;
+      color: var(--artifact-text-primary);
+      max-width: 700px;
+    }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+    .footer-note {
+      padding: 26px 0 0;
+      color: var(--artifact-text-muted);
+      font-size: 13px;
+    }
+    a.inline-link {
+      color: var(--artifact-primary-brand);
+      text-decoration: none;
+      border-bottom: 1px solid color-mix(in srgb, var(--artifact-primary-brand) 40%, transparent);
+    }
+    @media (max-width: 1024px) {
+      .closing {
+        grid-template-columns: 1fr;
+      }
+      .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .journey-grid,
+      .lane-grid,
+      .control-spine,
+      .update-grid,
+      .mini-phase-grid {
+        grid-template-columns: 1fr;
+      }
+      .page-tabs {
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 14px;
+      }
+      .hero-points {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px 0;
+      }
+      .hero-points li:nth-child(odd) {
+        border-left: 0;
+        padding-left: 0;
+      }
+      .card-grid.two,
+      .card-grid.three,
+      .card-grid.four,
+      .phase-strip,
+      .pattern-grid,
+      .risk-grid { grid-template-columns: 1fr; }
+      .risk { grid-template-columns: 1fr; }
+      .risk-left { border-right: 0; border-bottom: 1px solid var(--artifact-border-light); }
+      .step-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .blueprint {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .arrow-col { transform: rotate(90deg); min-height: 44px; }
+    }
+    @media (max-width: 720px) {
+      .container, .topbar-inner { padding-left: 18px; padding-right: 18px; }
+      .stats-grid, .step-row, .hero-points, .journey-grid, .lane-grid, .control-spine, .update-grid, .mini-phase-grid { grid-template-columns: 1fr; }
+      .hero-points li {
+        border-left: 0;
+        padding-left: 0;
+        padding-right: 0;
+      }
+    }
+    @media screen and (max-width: 1180px) {
+      .journey-rail,
+      .update-flow,
+      .mini-phase-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .systems-visual {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .flow-arrow {
+        transform: rotate(90deg);
+        font-size: 28px;
+        min-height: 30px;
+      }
+      .source-lane-grid,
+      .core-spine,
+      .outcome-grid,
+      .governance-ribbon {
+        grid-template-columns: 1fr;
+      }
+      .lane-head,
+      .core-topline {
+        flex-direction: column;
+        align-items: start;
+      }
+      .journey-node::after,
+      .update-step::after {
+        display: none;
+      }
+    }
+    @media screen and (max-width: 760px) {
+      .journey-rail,
+      .update-flow,
+      .mini-phase-grid,
+      .governance-ribbon {
+        grid-template-columns: 1fr;
+      }
+      .core-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+
+      body {
+        margin: 0;
+        padding: 0.4in 0.6in;
+        background: #fff;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+      .container, .dashboard, .shell, main {
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+      [style*="position:sticky"], [style*="position: sticky"],
+      [class*="topbar"], [class*="navbar"], [class*="header"][class*="sticky"] {
+        position: static !important;
+      }
+      section, [class*="section"], .header {
+        break-inside: avoid;
+        margin-bottom: 20px !important;
+      }
+      [class*="card"], [class*="Card"] {
+        break-inside: avoid;
+        padding: 18px !important;
+        box-shadow: none !important;
+        border: 1px solid rgba(0,0,0,0.08);
+      }
+      [class*="grid"], [class*="row"] {
+        gap: 10px !important;
+        margin-bottom: 20px !important;
+      }
+      [class*="chart"], [class*="Chart"] {
+        break-inside: avoid;
+        height: 240px !important;
+      }
+      [class*="chart"][class*="tall"], [class*="Chart"][class*="tall"],
+      [class*="chart"][class*="full"], [class*="Chart"][class*="full"] {
+        height: 280px !important;
+      }
+      table, thead, .funnel, .heatmap, .list, .goals {
+        break-inside: avoid;
+      }
+      [class*="quote-list"], [class*="scroll"],
+      [style*="max-height"], [style*="overflow"] {
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      [class*="tab-panel"], [class*="tabpanel"] {
+        display: block !important;
+      }
+      [class*="tab-bar"], [class*="tabs"]:not([class*="panel"]) {
+        display: none !important;
+      }
+      [class*="fade"], [class*="animate"], [class*="slide"] {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+      button, [role="button"], .interactive-only {
+        display: none !important;
+      }
+    }
+  
+    /* PILOT_TAB_START */
+    .pilot-shell {
+      padding: 34px 0 8px;
+    }
+    .pilot-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, .7fr);
+      gap: 22px;
+      align-items: stretch;
+      margin-bottom: 24px;
+    }
+    .pilot-hero-copy {
+      border: 1px solid var(--artifact-border-light);
+      background: linear-gradient(180deg, rgba(0,92,69,.08), rgba(0,92,69,.02));
+      border-radius: 28px;
+      padding: 30px 32px;
+    }
+    .pilot-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(0,92,69,.12);
+      color: var(--artifact-primary-brand);
+      font-size: .78rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    .pilot-hero h2 {
+      margin: 0;
+      font-size: clamp(2rem, 3vw, 3.1rem);
+      line-height: 1.05;
+      letter-spacing: -.03em;
+      color: var(--artifact-text-strong);
+    }
+    .pilot-hero p {
+      margin: 14px 0 0;
+      font-size: 1.02rem;
+      line-height: 1.68;
+      color: var(--artifact-text-primary);
+      max-width: 70ch;
+    }
+    .pilot-summary {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .pilot-stat {
+      border: 1px solid var(--artifact-border-light);
+      border-radius: 24px;
+      padding: 18px 18px 16px;
+      background: var(--artifact-surface);
+      min-height: 110px;
+    }
+    .pilot-stat strong {
+      display: block;
+      font-size: 2rem;
+      line-height: 1;
+      color: var(--artifact-primary-brand);
+      margin-bottom: 8px;
+    }
+    .pilot-stat span {
+      display: block;
+      color: var(--artifact-text-secondary);
+      font-size: .86rem;
+      line-height: 1.45;
+    }
+    .pilot-phase-strip {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(130px, 1fr));
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin: 22px 0 28px;
+    }
+    .pilot-phase {
+      border-radius: 20px;
+      padding: 16px 16px 14px;
+      color: var(--artifact-text-highlight);
+      min-height: 88px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 18px 42px rgba(10, 21, 34, 0.12);
+    }
+    .pilot-phase small {
+      display: block;
+      opacity: .85;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-size: .72rem;
+      margin-bottom: 10px;
+    }
+    .pilot-phase strong {
+      display: block;
+      font-size: 1rem;
+      line-height: 1.25;
+    }
+    .pilot-phase.build,
+    .pilot-week.phase-build .pilot-week-header {
+      background: linear-gradient(135deg, #0f5d47, #14795b);
+    }
+    .pilot-phase.setup,
+    .pilot-week.phase-setup .pilot-week-header {
+      background: linear-gradient(135deg, #1b7d68, #23967b);
+    }
+    .pilot-phase.learn,
+    .pilot-week.phase-learn .pilot-week-header {
+      background: linear-gradient(135deg, #1d6e78, #248895);
+    }
+    .pilot-phase.champions,
+    .pilot-week.phase-champions .pilot-week-header {
+      background: linear-gradient(135deg, #285e98, #356fc2);
+    }
+    .pilot-phase.eval,
+    .pilot-week.phase-eval .pilot-week-header {
+      background: linear-gradient(135deg, #485a9b, #6171ba);
+    }
+    .pilot-phase.readout,
+    .pilot-week.phase-readout .pilot-week-header {
+      background: linear-gradient(135deg, #614887, #7f55b7);
+    }
+    .pilot-weeks-shell {
+      border: 1px solid var(--artifact-border-light);
+      border-radius: 28px;
+      background: var(--artifact-surface);
+      padding: 22px;
+      overflow: hidden;
+    }
+    .pilot-weeks-shell h3,
+    .pilot-controls h3,
+    .pilot-systems h3 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+      letter-spacing: -.01em;
+      color: var(--artifact-text-strong);
+    }
+    .pilot-weeks-shell .pilot-note,
+    .pilot-controls .pilot-note,
+    .pilot-systems .pilot-note {
+      margin: 0 0 18px;
+      color: var(--artifact-text-secondary);
+      font-size: .93rem;
+      line-height: 1.55;
+    }
+    .pilot-weeks {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(210px, 1fr));
+      gap: 14px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .pilot-week {
+      border: 1px solid var(--artifact-border-light);
+      border-radius: 22px;
+      background: var(--artifact-background);
+      overflow: hidden;
+      min-width: 0;
+    }
+    .pilot-week-header {
+      color: var(--artifact-text-highlight);
+      padding: 14px 16px 12px;
+    }
+    .pilot-week-header strong {
+      display: block;
+      font-size: 1.02rem;
+      line-height: 1.1;
+    }
+    .pilot-week-header span {
+      display: block;
+      margin-top: 4px;
+      font-size: .82rem;
+      opacity: .9;
+      line-height: 1.3;
+    }
+    .pilot-week-body {
+      padding: 16px;
+    }
+    .pilot-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(0,92,69,.10);
+      color: var(--artifact-primary-brand);
+      font-size: .73rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .pilot-week ul,
+    .pilot-control-card ul,
+    .pilot-system-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--artifact-text-primary);
+      line-height: 1.55;
+      font-size: .9rem;
+    }
+    .pilot-week li + li,
+    .pilot-control-card li + li,
+    .pilot-system-card li + li {
+      margin-top: 8px;
+    }
+    .pilot-lower {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+      margin-top: 22px;
+    }
+    .pilot-controls,
+    .pilot-systems {
+      border: 1px solid var(--artifact-border-light);
+      border-radius: 28px;
+      background: var(--artifact-surface);
+      padding: 22px;
+    }
+    .pilot-controls-grid,
+    .pilot-systems-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .pilot-control-card,
+    .pilot-system-card {
+      border: 1px solid var(--artifact-border-light);
+      border-radius: 22px;
+      padding: 16px;
+      background: var(--artifact-background);
+    }
+    .pilot-control-card h4,
+    .pilot-system-card h4 {
+      margin: 0 0 10px;
+      font-size: .98rem;
+      line-height: 1.3;
+      color: var(--artifact-text-strong);
+    }
+    .pilot-callout {
+      margin-top: 16px;
+      border-radius: 22px;
+      padding: 16px 18px;
+      background: linear-gradient(180deg, rgba(0,92,69,.08), rgba(0,92,69,.02));
+      border: 1px solid rgba(0,92,69,.16);
+      color: var(--artifact-text-primary);
+      line-height: 1.6;
+      font-size: .92rem;
+    }
+    .pilot-callout strong {
+      color: var(--artifact-text-strong);
+    }
+    @media screen and (max-width: 1180px) {
+      .pilot-hero,
+      .pilot-lower,
+      .pilot-controls-grid,
+      .pilot-systems-grid {
+        grid-template-columns: 1fr;
+      }
+      .pilot-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media screen and (max-width: 760px) {
+      .pilot-shell {
+        padding-top: 24px;
+      }
+      .pilot-hero-copy,
+      .pilot-weeks-shell,
+      .pilot-controls,
+      .pilot-systems {
+        padding: 18px;
+        border-radius: 22px;
+      }
+      .pilot-summary {
+        grid-template-columns: 1fr;
+      }
+      .pilot-phase-strip,
+      .pilot-weeks {
+        grid-template-columns: repeat(10, minmax(220px, 1fr));
+      }
+    }
+    /* PILOT_TAB_END */
+
+  
+
+    /* TAB_REPAIR_20260720 */
+    .pilot-shell { padding: 18px 0 8px; }
+    .pilot-weeks-shell,
+    .pilot-controls,
+    .pilot-systems {
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background-light);
+      padding: 22px;
+      box-shadow: var(--artifact-shadow-soft);
+    }
+    .pilot-weeks-shell h3,
+    .pilot-controls h3,
+    .pilot-systems h3 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+    }
+    .pilot-note {
+      margin: 0 0 18px;
+      color: var(--artifact-text-secondary);
+      font-size: 0.94rem;
+    }
+    .pilot-weeks {
+      display: grid;
+      gap: 14px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .pilot-week {
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background);
+      overflow: hidden;
+      min-width: 0;
+      box-shadow: var(--artifact-shadow-soft);
+    }
+    .pilot-week-header {
+      color: var(--artifact-text-highlight);
+      padding: 14px 16px 12px;
+    }
+    .pilot-week-header strong { display:block; font-size:1rem; }
+    .pilot-week-header span { display:block; margin-top:4px; font-size:.82rem; opacity:.9; }
+    .pilot-week.phase-build .pilot-week-header { background: linear-gradient(135deg, #0f5d47, #14795b); }
+    .pilot-week.phase-setup .pilot-week-header { background: linear-gradient(135deg, #1b7d68, #23967b); }
+    .pilot-week.phase-learn .pilot-week-header { background: linear-gradient(135deg, #1d6e78, #248895); }
+    .pilot-week.phase-champions .pilot-week-header { background: linear-gradient(135deg, #285e98, #356fc2); }
+    .pilot-week.phase-eval .pilot-week-header { background: linear-gradient(135deg, #485a9b, #6171ba); }
+    .pilot-week.phase-readout .pilot-week-header { background: linear-gradient(135deg, #614887, #7f55b7); }
+    .pilot-week-body { padding: 16px; }
+    .pilot-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background-light);
+      color: var(--artifact-primary-brand);
+      font-size: .73rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .pilot-week ul,
+    .pilot-control-card ul,
+    .pilot-system-card ul { margin:0; padding-left:18px; color:var(--artifact-text-primary); line-height:1.55; font-size:.92rem; }
+    .pilot-week li + li,
+    .pilot-control-card li + li,
+    .pilot-system-card li + li { margin-top:8px; }
+    .pilot-lower { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:18px; margin-top:22px; }
+    .pilot-controls-grid,
+    .pilot-systems-grid { display:grid; gap:14px; }
+    .pilot-control-card,
+    .pilot-system-card {
+      border: 1px solid var(--artifact-border-light);
+      background: var(--artifact-background);
+      padding: 16px;
+      box-shadow: var(--artifact-shadow-soft);
+    }
+    .pilot-control-card h4,
+    .pilot-system-card h4 { margin:0 0 10px; font-size:.98rem; }
+    @media screen and (max-width: 1180px) {
+      .pilot-lower,
+      .pilot-controls-grid { grid-template-columns: 1fr; }
+    }
+    @media screen and (max-width: 760px) {
+      .pilot-weeks { grid-template-columns: 1fr !important; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brandline">
+        <div class="brand-dot"></div>
+        <div>
+          <div class="brand-title">Northern Trust | Byron 3.0 Context Blueprint</div>
+          <div class="mini-label">Executive architecture view</div>
+        </div>
+      </div>
+      <div class="top-meta">Designed for platform, security, and AI governance review</div>
+    </div>
+  </div>
+
+  
+<main class="container">
+  <div class="page-tabs" role="tablist" aria-label="Blueprint pages">
+    <button class="tab-btn active" id="tab-btn-blueprint" role="tab" aria-selected="true" aria-controls="tab-blueprint" data-tab="tab-blueprint">Byron Context Blueprint</button>
+    <button class="tab-btn" id="tab-btn-onboarding" role="tab" aria-selected="false" aria-controls="tab-onboarding" data-tab="tab-onboarding">Onboarding, Systems &amp; Security</button>
+    <button class="tab-btn" id="tab-btn-pilot" role="tab" aria-selected="false" aria-controls="tab-pilot" data-tab="tab-pilot">Pilot Roadmap Calendar</button>
+  </div>
+  
+<div class="tab-panel active" id="tab-blueprint" role="tabpanel" aria-labelledby="tab-btn-blueprint">
+  <section class="hero" id="top">
+<div class="hero-copy">
+<h1>Glean is the <strong><em>only tool</em></strong> in the market to deliver governed context and orchestration that reduces AI costs while increasing usage and productivity.</h1>
+<p class="lead">For Northern Trust, the best-fit pattern is not a rip-and-replace of Byron, Copilot, or pro-code agents. It is a secure intelligence foundation that unifies connectors, permissions, retrieval, graph context, model routing, and agent governance so Byron can scale across 32,000 users with stronger grounding, lower token waste, and bank-grade controls.</p>
+</div>
+</section>
+  <div class="stats-grid">
+<div class="stat">
+<div class="stat-label">User environment</div>
+<div class="stat-value">32k</div>
+<div>Employees targeted for governed enterprise intelligence.</div>
+</div>
+<div class="stat">
+<div class="stat-label">Existing experience</div>
+<div class="stat-value">Byron</div>
+<div>Internal AI front end already anchored in SharePoint / Microsoft experiences.</div>
+</div>
+<div class="stat">
+<div class="stat-label">AI estate</div>
+<div class="stat-value">Copilot +</div>
+<div>Copilot Premium plus emerging pro-code agents can be preserved.</div>
+</div>
+<div class="stat">
+<div class="stat-label">Integration scale</div>
+<div class="stat-value">200+</div>
+<div>Connector and data-source sprawl requires normalized retrieval and governance.</div>
+</div>
+<div class="stat">
+<div class="stat-label">Model strategy</div>
+<div class="stat-value">BYO LLM</div>
+<div>Supports enterprise-approved models without forcing one provider pattern.</div>
+</div>
+</div>
+  <div class="main-grid">
+    <section id="fit">
+<div class="eyebrow">Why this architecture fits Northern Trust</div>
+<h2>Keep the experiences that work. Standardize the layer that must be governed centrally.</h2>
+<p class="section-intro">Northern Trust’s stated direction is a multi-agent environment with Byron on Microsoft foundations today, plus broader agent orchestration over time. That means the highest-value control point is the shared context layer underneath those experiences, not another isolated chat surface.</p>
+<div class="card-grid three" style="margin-top:20px;">
+<div class="card">
+<div class="pill">Preserve existing investments</div>
+<h3 style="margin:14px 0 10px;">Byron remains the user-facing shell where desired</h3>
+<p>Glean can sit behind Byron, Copilot Studio agents, and pro-code coworkers as the retrieval, permissions, and orchestration substrate.</p>
+</div>
+<div class="card brand">
+<div class="pill">Centralize what scales poorly when duplicated</div>
+<h3 style="margin:14px 0 10px;">One context layer for data, graph, tools, and policy</h3>
+<p>Instead of every agent rebuilding connector logic, ranking, and governance, Glean supplies those once and makes them reusable everywhere.</p>
+</div>
+<div class="card">
+<div class="pill">Reduce operational risk</div>
+<h3 style="margin:14px 0 10px;">A cleaner control plane for security and AI governance</h3>
+<p>Access policy, auditability, model routing, and observability can be standardized instead of being reimplemented by individual teams.</p>
+</div>
+</div>
+</section>
+    <section id="architecture">
+<div class="eyebrow">Target-state blueprint</div>
+<h2>How Glean fits into the Byron 3.0 stack</h2>
+<p class="section-intro">The simplest way to explain the design is to separate what Northern Trust already owns, what Glean standardizes, and where models and agents consume that standardized context.</p>
+<div class="diagram">
+<div class="blueprint">
+<div class="bp-col">
+<div class="eyebrow">Northern Trust retained layers</div>
+<div class="bp-box">
+<h4>Employee experiences</h4>
+<p>Byron in SharePoint, Copilot surfaces, internal portals, line-of-business apps, future embedded experiences.</p>
+</div>
+<div class="bp-box">
+<h4>Agent estate</h4>
+<p>Copilot Studio agents, LangChain / LangGraph digital coworkers, future independent agents.</p>
+</div>
+<div class="bp-box">
+<h4>Model strategy</h4>
+<p>Enterprise-approved LLMs, including NT’s internal model and future provider choices.</p>
+</div>
+<div class="bp-box">
+<h4>Systems of record</h4>
+<p>SharePoint, ServiceNow, Microsoft 365, data platforms, CRM / workflow systems, internal repositories.</p>
+</div>
+</div>
+<div class="arrow-col">→</div>
+<div class="bp-col core">
+<div class="eyebrow">Glean foundation layer</div>
+<div class="bp-box brand">
+<h4>Connectors + ingestion</h4>
+<p>Indexing connectors for unstructured content, query connectors for structured data, federated connectors where real-time pull is the right pattern.</p>
+</div>
+<div class="bp-box brand">
+<h4>Permission-aware indexes</h4>
+<p>Content, code, people, tools, profiles, calendar, and other retrieval layers tuned to the job to be done.</p>
+</div>
+<div class="bp-box brand">
+<h4>Enterprise Graph + Personal Graphs</h4>
+<p>Maps people, content, activity, systems, processes, and relationships to create richer context than app-by-app search can provide.</p>
+</div>
+<div class="bp-box brand">
+<h4>Orchestration + policy + observability</h4>
+<p>Model routing, agent handoff, tool discovery, evaluation, audit, and governance checkpoints.</p>
+</div>
+</div>
+<div class="arrow-col">→</div>
+<div class="bp-col">
+<div class="eyebrow">Consumed by models and agents</div>
+<div class="bp-box">
+<h4>Grounded model calls</h4>
+<p>Only scoped context is sent to the selected model for a specific task rather than exposing a raw enterprise corpus.</p>
+</div>
+<div class="bp-box">
+<h4>Agentic execution</h4>
+<p>Agents discover the right tools, retrieve the right context, act, evaluate, and retry inside a governed loop.</p>
+</div>
+<div class="bp-box">
+<h4>Cross-platform reuse</h4>
+<p>The same system of context can support Byron, other approved AI experiences, developer environments, and third-party agent platforms.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+    
+<section id="context-layer">
+  <div class="eyebrow">Context layer in plain English</div>
+  <h2>Why Glean’s context is richer than a simple retrieval layer</h2>
+  <p class="section-intro">A context layer is only useful if it helps the model understand not just where data lives, but what it means, who it belongs to, what relationships matter, which tools should be used, and which policies apply. That is the distinction between connectivity and enterprise understanding.</p>
+  <div class="step-row">
+<div class="step"><span class="num">01 Understand query</span><h4>Intent</h4><p>Interpret the real work objective, not just keywords.</p></div>
+<div class="step"><span class="num">02 Make a plan</span><h4>Search strategy</h4><p>Determine what sources, tools, and steps are actually needed.</p></div>
+<div class="step"><span class="num">03 Retrieve data</span><h4>Best-fit index</h4><p>Pull the right content from purpose-built indexes and live systems.</p></div>
+<div class="step"><span class="num">04 Understand data</span><h4>Graph context</h4><p>Disambiguate entities, relationships, ownership, and authority.</p></div>
+<div class="step"><span class="num">05 Use tools</span><h4>Action path</h4><p>Select approved actions and agents instead of forcing the model to guess.</p></div>
+<div class="step"><span class="num">06 Evaluate</span><h4>Governed loop</h4><p>Check quality, policy, and next best action before completion.</p></div>
+</div>
+  <div class="card-grid two" style="margin-top:22px;">
+    <div class="card soft">
+      <div class="pill">Why this is richer than federated-only AI</div>
+      <ul class="clean" style="margin-top:14px;">
+        <li>Purpose-built indexes improve retrieval quality instead of forcing every answer through live source queries.</li>
+        <li>Graph context helps resolve people, content, ownership, systems, and relationships across the estate.</li>
+        <li>Permissions, auditability, and policy can be governed once and reused across Byron, Copilot, and future agents.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="pill">What Northern Trust gains</div>
+      <ul class="clean" style="margin-top:14px;">
+        <li>A shared context layer beneath Byron instead of duplicating retrieval logic by agent or team.</li>
+        <li>More grounded answers from Microsoft, ServiceNow, and other enterprise sources.</li>
+        <li>A cleaner operating model for independent agents, connector sprawl, and model choice over time.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+  </div>
+</div>
+
+  
+<div class="tab-panel" id="tab-onboarding" role="tabpanel" aria-labelledby="tab-btn-onboarding">
+  <section class="tab-hero">
+    <div class="eyebrow">Financial-institution onboarding blueprint</div>
+    <h2>How Glean connects into a regulated Northern Trust environment</h2>
+    <p>Glean can be introduced as a governed context layer beneath Byron with a controlled onboarding motion: validate deployment and security first, connect core Microsoft and workflow systems next, prove permissions and retrieval quality, then expand to broader user and agent use cases.</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Onboarding journey</div>
+    <h2>Four checkpoints before wider scale</h2>
+    <div class="journey-rail">
+      <article class="journey-node">
+        <div class="journey-kicker">01 Foundation</div>
+        <h3>Environment and security design</h3>
+        <p>Confirm region, key-management approach, identity path, and network posture before data is brought into the program.</p>
+        <div class="micro-list">
+          <span class="micro-pill">Deployment model</span>
+          <span class="micro-pill">SSO</span>
+          <span class="micro-pill">KMS / keys</span>
+        </div>
+      </article>
+      <article class="journey-node">
+        <div class="journey-kicker">02 Connection</div>
+        <h3>Activate priority systems</h3>
+        <p>Start with Microsoft 365, SharePoint, Outlook, Teams, ServiceNow, and any first-wave structured systems required for pilot use cases.</p>
+        <div class="micro-list">
+          <span class="micro-pill">SharePoint</span>
+          <span class="micro-pill">ServiceNow</span>
+          <span class="micro-pill">Structured data</span>
+        </div>
+      </article>
+      <article class="journey-node">
+        <div class="journey-kicker">03 Validation</div>
+        <h3>Prove permissions and relevance</h3>
+        <p>Run crawl completion checks, permission inheritance tests, and retrieval quality reviews before opening access more broadly.</p>
+        <div class="micro-list">
+          <span class="micro-pill">Crawl health</span>
+          <span class="micro-pill">Access checks</span>
+          <span class="micro-pill">Answer quality</span>
+        </div>
+      </article>
+      <article class="journey-node">
+        <div class="journey-kicker">04 Expansion</div>
+        <h3>Operationalize Byron and future agents</h3>
+        <p>Once the context layer is governed and reliable, Byron and independent agents can consume the same secured retrieval and policy layer.</p>
+        <div class="micro-list">
+          <span class="micro-pill">Byron</span>
+          <span class="micro-pill">Agents</span>
+          <span class="micro-pill">Reuse</span>
+        </div>
+      </article>
+      <article class="journey-node">
+        <div class="journey-kicker">Outcome</div>
+        <h3>Scale with one operating model</h3>
+        <p>The bank gets a reusable onboarding pattern for new systems, new business groups, and new approved model or agent experiences over time.</p>
+        <div class="micro-list">
+          <span class="micro-pill">Governed scale</span>
+          <span class="micro-pill">Lower duplication</span>
+          <span class="micro-pill">Auditability</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Systems roadmap</div>
+    <h2>Northern Trust systems flow</h2>
+    <div class="systems-roadmap-shell">
+      <div class="roadmap-lane">
+        <div class="lane-head">
+          <div>
+            <div class="eyebrow">Source lanes</div>
+            <h3>Priority enterprise systems</h3>
+          </div>
+          <p>Start with the systems most likely to anchor Byron and pilot workflows, then extend connector coverage in waves.</p>
+        </div>
+        <div class="source-lane-grid">
+          <div class="source-lane-card">
+            <div class="pill">Microsoft estate</div>
+            <h4>SharePoint + M365</h4>
+            <p>Unstructured content, collaboration data, Outlook, Teams, and employee-facing knowledge already close to Byron.</p>
+          </div>
+          <div class="source-lane-card">
+            <div class="pill">Workflow systems</div>
+            <h4>ServiceNow</h4>
+            <p>Case, request, and operations data that often needs live or near-live grounding for enterprise workflows.</p>
+          </div>
+          <div class="source-lane-card">
+            <div class="pill">Structured sources</div>
+            <h4>Data platforms</h4>
+            <p>Query-driven access patterns for structured sources when the right answer depends on current operational data.</p>
+          </div>
+          <div class="source-lane-card">
+            <div class="pill">Private systems</div>
+            <h4>Internal repositories</h4>
+            <p>Additional bank systems can be phased in as governance, ownership, and network requirements are cleared.</p>
+          </div>
+        </div>
+      </div>
+      <div class="roadmap-divider">Governed context and orchestration layer</div>
+      <div class="roadmap-lane">
+        <div class="governed-core">
+          <div class="core-topline">
+            <div>
+              <div class="eyebrow">Glean foundation</div>
+              <h3>Normalize retrieval, graph context, permissions, and policy</h3>
+            </div>
+            <p>This is where connector logic, permission-aware retrieval, graph enrichment, model routing, and observability are standardized once.</p>
+          </div>
+          <div class="core-spine">
+            <div class="spine-step"><div class="spine-dot"></div><h4>Connect</h4><p>Activate approved connectors and map source ownership.</p></div>
+            <div class="spine-step"><div class="spine-dot"></div><h4>Index / query</h4><p>Use the right retrieval mode for unstructured and structured systems.</p></div>
+            <div class="spine-step"><div class="spine-dot"></div><h4>Apply permissions</h4><p>Respect source-level access boundaries in every answer path.</p></div>
+            <div class="spine-step"><div class="spine-dot"></div><h4>Enrich context</h4><p>Add relationship and entity understanding across people, content, and work.</p></div>
+            <div class="spine-step"><div class="spine-dot"></div><h4>Govern usage</h4><p>Route model calls, observe activity, and manage agent behavior centrally.</p></div>
+          </div>
+          <div class="governance-ribbon">
+            <div class="ribbon-item">Tenant isolation</div>
+            <div class="ribbon-item">Permission inheritance</div>
+            <div class="ribbon-item">Connector observability</div>
+            <div class="ribbon-item">Model routing controls</div>
+            <div class="ribbon-item">Change management</div>
+          </div>
+        </div>
+      </div>
+      <div class="roadmap-lane">
+        <div class="lane-head">
+          <div>
+            <div class="eyebrow">Consumption layer</div>
+            <h3>Byron and future agent experiences</h3>
+          </div>
+          <p>The same governed context can support Byron, approved copilots, and independent agents without rebuilding the data boundary each time.</p>
+        </div>
+        <div class="outcome-grid">
+          <div class="outcome-card">
+            <div class="pill">Byron</div>
+            <h4>Employee-facing experience</h4>
+            <p>Byron can remain the user shell while Glean standardizes the secured context beneath it.</p>
+          </div>
+          <div class="outcome-card">
+            <div class="pill">Agents</div>
+            <h4>Independent agent usage</h4>
+            <p>Agents can retrieve, reason, and act using the same permissions-aware context and tool layer.</p>
+          </div>
+          <div class="outcome-card">
+            <div class="pill">Operations</div>
+            <h4>Connector lifecycle management</h4>
+            <p>Changes to Microsoft, ServiceNow, or other connectors are managed at the foundation layer instead of inside each downstream experience.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Connector change handling</div>
+    <h2>How version updates and source changes are managed</h2>
+    <div class="update-flow">
+      <article class="update-step">
+        <div class="journey-kicker">Source change</div>
+        <h3>Platform evolves</h3>
+        <p>Microsoft, ServiceNow, or another source changes APIs, metadata, objects, or authentication patterns.</p>
+      </article>
+      <article class="update-step">
+        <div class="journey-kicker">Connector layer</div>
+        <h3>Connector logic is updated once</h3>
+        <p>The integration layer is adjusted centrally so downstream AI experiences do not each need their own fix.</p>
+      </article>
+      <article class="update-step">
+        <div class="journey-kicker">Validation</div>
+        <h3>Health and permissions are rechecked</h3>
+        <p>Crawl status, freshness, permission inheritance, and retrieval quality are reviewed after material source changes.</p>
+      </article>
+      <article class="update-step">
+        <div class="journey-kicker">Consumption</div>
+        <h3>Byron and agents keep working</h3>
+        <p>User-facing experiences continue to consume the same secured context layer with less downstream rework.</p>
+      </article>
+    </div>
+  </section>
+</div>
+
+  
+<div class="tab-panel" id="tab-pilot" role="tabpanel" aria-labelledby="tab-btn-pilot">
+  <section class="tab-hero">
+    <div class="eyebrow">Pilot Roadmap Calendar</div>
+    <h2>Northern Trust × Glean pilot calendar</h2>
+    <p>This page adapts the attached pilot calendar into a client-facing timeline for the RFP appendix, preserving the 8-week structure and phase sequence from the source deck.</p>
+  </section>
+
+  <section class="pilot-shell">
+    <div class="card-grid four" style="margin-bottom:22px;">
+      <div class="card"><div class="stat-label">Duration</div><div class="stat-value">8 weeks</div><div>Aug 17 to Oct 9, 2026.</div></div>
+      <div class="card"><div class="stat-label">Early focus</div><div class="stat-value">Build → Setup</div><div>Environment, SSO, people data, and first-wave connectors.</div></div>
+      <div class="card"><div class="stat-label">Middle focus</div><div class="stat-value">Learn → UAT</div><div>Permission validation, prompt packs, champion sessions, and scoring.</div></div>
+      <div class="card"><div class="stat-label">End state</div><div class="stat-value">Readout</div><div>Results analysis, governance review, launch plan, and go-forward decision.</div></div>
+    </div>
+
+    <div class="pilot-weeks-shell">
+      <h3>Week-by-week calendar</h3>
+      <p class="pilot-note">Calendar adapted from the attached Northern Trust pilot schedule.</p>
+      <div class="pilot-weeks" style="grid-template-columns: repeat(8, minmax(220px, 1fr));">
+        <article class="pilot-week phase-build">
+          <div class="pilot-week-header"><strong>Week 1</strong><span>Aug 17 – Aug 21</span></div>
+          <div class="pilot-week-body"><div class="pilot-badge">Build</div><ul><li>Pilot kickoff</li><li>Environment build begins</li><li>Deployment region and key-management project confirmed</li><li>Platform standup</li><li>Environment stood up</li></ul></div>
+        </article>
+        <article class="pilot-week phase-setup">
+          <div class="pilot-week-header"><strong>Week 2</strong><span>Aug 24 – Aug 28</span></div>
+          <div class="pilot-week-body"><div class="pilot-badge">Setup</div><ul><li>SSO configured</li><li>People data loaded</li><li>Connector config: SharePoint, Teams, Outlook</li><li>Connector config: Snowflake, Databricks, ServiceNow</li><li>Crawls kick off in parallel</li></ul></div>
+        </article>
+        <article class="pilot-week phase-learn">
+          <div class="pilot-week-header"><strong>Week 3</strong><span>Aug 31 – Sep 4</span></div>
+          <div class="pilot-week-body"><div class="pilot-badge">Learn</div><ul><li>Crawl completion tracking</li><li>Permission verification</li><li>Branding applied and prompt packs loaded</li><li>Governance and observability review</li><li>Learn exit review</li></ul></div>
+        </article>
+        <article class="pilot-week phase-champions">
+          <div class="pilot-week-header"><strong>Week 4</strong><span>Sep 7 – Sep 11</span></div>
+          <div class="pilot-week-body"><div class="pilot-badge">Champions / UAT</div><ul><li>Champions kickoff and Glean 101</li><li>Use case deep dives</li><li>Pre-pilot survey</li><li>Champion working session</li><li>Weekly scoring and office hours</li></ul></div>
+        </article>
+        <article class="pilot-week phase-champions">
+          <div class="pilot-week-header"><strong>Week 5</strong><span>Sep 14 – Sep 18</span></div>
+          <div class="pilot-week-body"><div class="pilot-badge">Champions / UAT</div><ul><li>Skill building session</li><li>Prompt and agent refinement</li><li>Champion working session</li><li>Permission validation with champions</li><li>Weekly scoring and office hours</li></ul></div>
+        </article>
+        <article class="pilot-week phase-eval">
+          <div class="pilot-week-header"><strong>Week 6</strong><span>Sep 21 – Sep 25</span></div>
+          <div class="pilot-week-body"><div class="pilot-badge">User Eval</div><ul><li>Pilot user cohort rollout</li><li>Department enablement sessions</li><li>Office hours</li><li>Usage and adoption review</li><li>Weekly champion scoring</li></ul></div>
+        </article>
+        <article class="pilot-week phase-eval">
+          <div class="pilot-week-header"><strong>Week 7</strong><span>Sep 28 – Oct 2</span></div>
+          <div class="pilot-week-body"><div class="pilot-badge">User Eval</div><ul><li>Office hours</li><li>Track working sessions</li><li>Post-pilot survey opens</li><li>Skill and agent library review</li><li>Survey closes and results compiled</li></ul></div>
+        </article>
+        <article class="pilot-week phase-readout">
+          <div class="pilot-week-header"><strong>Week 8</strong><span>Oct 5 – Oct 9</span></div>
+          <div class="pilot-week-body"><div class="pilot-badge">Readout &amp; Launch</div><ul><li>Results analysis vs success criteria</li><li>Architecture and governance readout</li><li>Executive wrap-up</li><li>Launch plan finalized</li><li>Go-forward decision</li></ul></div>
+        </article>
+      </div>
+    </div>
+
+    <div class="pilot-lower" style="display:block;">
+      <section class="pilot-controls" style="width:100%;">
+        <div class="lane-head" style="margin-bottom:18px; max-width:none;">
+          <div>
+            <h3>Control points built into the calendar</h3>
+            <p class="pilot-note">The structure of the pilot deliberately sequences technical activation before broader user exposure.</p>
+          </div>
+        </div>
+        <div class="pilot-controls-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr)); width:100%; align-items:stretch;">
+          <div class="pilot-control-card"><h4>Security and access</h4><ul><li>Identity and SSO are addressed before scale.</li><li>Permissions are validated before wider user rollout.</li><li>Governance review happens before launch decisions.</li></ul></div>
+          <div class="pilot-control-card"><h4>Connector readiness</h4><ul><li>Microsoft and workflow systems are activated early.</li><li>Crawls and freshness are checked before user evaluation.</li><li>Source issues can be remediated before scale decisions.</li></ul></div>
+          <div class="pilot-control-card"><h4>Business proof</h4><ul><li>Champions and surveys create a feedback loop.</li><li>Weekly scoring shows whether the use cases are landing.</li><li>The final readout ties launch to measured outcomes.</li></ul></div>
+        </div>
+      </section>
+    </div>
+  </section>
+</div>
+
+</main>
+
+
+  <script>
+    (function() {
+      function activateTab(tabId) {
+        document.querySelectorAll('.tab-panel').forEach(function(panel) {
+          panel.classList.toggle('active', panel.id === tabId);
+        });
+        document.querySelectorAll('.tab-btn').forEach(function(btn) {
+          var active = btn.getAttribute('data-tab') === tabId;
+          btn.classList.toggle('active', active);
+          btn.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+      }
+
+      document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.tab-btn');
+        if (!btn) return;
+        activateTab(btn.getAttribute('data-tab'));
+      });
+
+      document.addEventListener('keydown', function(e) {
+        var btn = e.target.closest('.tab-btn');
+        if (!btn) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          activateTab(btn.getAttribute('data-tab'));
+        }
+      });
+    })();
+
+    window.GleanBridge.postMessage({
+      actionId: 'export-pdf',
+      type: 'glean-add-menu',
+      metadata: { label: 'Export as PDF', icon: 'export' }
+    });
+    window.GleanBridge.onMessage('action', function(data) {
+      if (data.actionId === 'export-pdf') window.print();
+    });
+
+    function prepareChartsForPrint() {
+      document.querySelectorAll('[_echarts_instance_]').forEach(function(el) {
+        var chart = echarts.getInstanceByDom(el);
+        if (!chart) return;
+        var img = new Image();
+        img.src = chart.getDataURL({ type: 'png', pixelRatio: 2 });
+        img.className = 'print-chart-img';
+        img.style.cssText =
+          'width:100%;height:100%;object-fit:contain;' +
+          'position:absolute;top:0;left:0;z-index:10;';
+        el.dataset.prevPosition = el.style.position;
+        el.style.position = 'relative';
+        el.appendChild(img);
+      });
+    }
+
+    function cleanUpAfterPrint() {
+      document.querySelectorAll('[_echarts_instance_]').forEach(function(el) {
+        var img = el.querySelector('.print-chart-img');
+        if (!img) return;
+        img.remove();
+        el.style.position = el.dataset.prevPosition || '';
+        delete el.dataset.prevPosition;
+      });
+    }
+
+    window.addEventListener('beforeprint', prepareChartsForPrint);
+    window.addEventListener('afterprint', cleanUpAfterPrint);
+  </script>
+</body>
+</html>
