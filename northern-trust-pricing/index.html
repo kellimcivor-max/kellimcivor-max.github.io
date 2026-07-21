@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Northern Trust Pricing Section</title>
+  <style>
+    :root {
+      --artifact-bg: #f6f2ea;
+      --artifact-bg-elevated: #fbf8f3;
+      --artifact-surface: #fffdf9;
+      --artifact-surface-strong: #f3eee5;
+      --artifact-text: #18211d;
+      --artifact-text-soft: #5e6a63;
+      --artifact-text-muted: #7b877f;
+      --artifact-accent: #115740;
+      --artifact-accent-soft: #dde9e4;
+      --artifact-accent-faint: #eef5f1;
+      --artifact-line: #d8d2c7;
+      --artifact-line-strong: #bdb4a6;
+      --artifact-shadow: 0 20px 40px rgba(24, 33, 29, 0.08);
+      --artifact-shadow-soft: 0 10px 24px rgba(24, 33, 29, 0.05);
+      --artifact-pill: #f2efe8;
+    }
+
+    html[data-theme='dark'] {
+      --artifact-bg: #171b18;
+      --artifact-bg-elevated: #1e2420;
+      --artifact-surface: #202823;
+      --artifact-surface-strong: #263029;
+      --artifact-text: #f1eee7;
+      --artifact-text-soft: #c3cdc7;
+      --artifact-text-muted: #99a59d;
+      --artifact-accent: #78a892;
+      --artifact-accent-soft: #27362f;
+      --artifact-accent-faint: #1f2a24;
+      --artifact-line: #334039;
+      --artifact-line-strong: #46554d;
+      --artifact-shadow: 0 20px 44px rgba(0, 0, 0, 0.28);
+      --artifact-shadow-soft: 0 12px 28px rgba(0, 0, 0, 0.18);
+      --artifact-pill: #252d28;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--artifact-bg);
+      color: var(--artifact-text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    .shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 36px 24px 56px;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 16px;
+    }
+
+    .export-button {
+      appearance: none;
+      border: 1px solid var(--artifact-accent-soft);
+      background: var(--artifact-surface);
+      color: var(--artifact-accent);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--artifact-shadow-soft);
+      transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+    }
+
+    .export-button:hover {
+      transform: translateY(-1px);
+      background: var(--artifact-accent-faint);
+      box-shadow: var(--artifact-shadow);
+    }
+
+    .export-button:focus-visible {
+      outline: 2px solid var(--artifact-accent);
+      outline-offset: 2px;
+    }
+
+    .hero {
+      background: var(--artifact-bg-elevated);
+      border: 1px solid var(--artifact-line);
+      border-radius: 28px;
+      padding: 32px 32px 28px;
+      box-shadow: var(--artifact-shadow-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--artifact-accent-faint), transparent 42%);
+      pointer-events: none;
+    }
+
+    .eyebrow,
+    .section-tag,
+    .metric-label,
+    .mini-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .eyebrow {
+      color: var(--artifact-accent);
+      margin-bottom: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(34px, 4.8vw, 58px);
+      line-height: 1.02;
+      max-width: 780px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-copy {
+      margin-top: 16px;
+      max-width: 760px;
+      font-size: 18px;
+      color: var(--artifact-text-soft);
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-metrics {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .metric {
+      background: var(--artifact-surface);
+      border: 1px solid var(--artifact-line);
+      border-radius: 20px;
+      padding: 18px 18px 16px;
+      box-shadow: var(--artifact-shadow-soft);
+    }
+
+    .metric-value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-top: 6px;
+    }
+
+    .metric-label { color: var(--artifact-text-muted); }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      margin-top: 26px;
+    }
+
+    .card {
+      background: var(--artifact-surface);
+      border: 1px solid var(--artifact-line);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: var(--artifact-shadow);
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .section-tag {
+      color: var(--artifact-accent);
+      margin-bottom: 10px;
+    }
+
+    .card-subtitle {
+      color: var(--artifact-text-soft);
+      margin-top: 10px;
+      max-width: 44ch;
+    }
+
+    .price-badge {
+      background: var(--artifact-accent-faint);
+      color: var(--artifact-accent);
+      border: 1px solid var(--artifact-accent-soft);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .pricing-panel {
+      background: var(--artifact-bg-elevated);
+      border: 1px solid var(--artifact-line);
+      border-radius: 22px;
+      padding: 18px;
+      margin-bottom: 20px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .pricing-item {
+      background: var(--artifact-surface);
+      border: 1px solid var(--artifact-line);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .pricing-item strong {
+      display: block;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+      margin-top: 6px;
+    }
+
+    .mini-label {
+      color: var(--artifact-text-muted);
+    }
+
+    .section-block { margin-top: 18px; }
+
+    .block-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--artifact-text);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      background: var(--artifact-pill);
+      border: 1px solid var(--artifact-line);
+      color: var(--artifact-text-soft);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .chip.requirement {
+      background: var(--artifact-accent-faint);
+      border-color: var(--artifact-accent-soft);
+      color: var(--artifact-accent);
+    }
+
+    .detail-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 12px;
+    }
+
+    .detail-list li {
+      display: grid;
+      grid-template-columns: 16px 1fr;
+      gap: 12px;
+      color: var(--artifact-text-soft);
+    }
+
+    .detail-list li::before {
+      content: "•";
+      color: var(--artifact-accent);
+      font-size: 20px;
+      line-height: 1;
+      margin-top: -1px;
+    }
+
+    .formula {
+      background: var(--artifact-surface-strong);
+      border: 1px solid var(--artifact-line);
+      border-radius: 18px;
+      padding: 16px;
+      color: var(--artifact-text-soft);
+      font-size: 14px;
+      margin-top: 18px;
+    }
+
+    .formula strong {
+      color: var(--artifact-text);
+    }
+
+    .footnote {
+      margin-top: 20px;
+      color: var(--artifact-text-muted);
+      font-size: 12px;
+      border-top: 1px solid var(--artifact-line);
+      padding-top: 14px;
+    }
+
+    @media (max-width: 940px) {
+      .hero-metrics,
+      .cards,
+      .pricing-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .shell { padding: 20px 16px 40px; }
+      .hero,
+      .card { padding: 22px; }
+      .hero-metrics,
+      .cards,
+      .pricing-grid {
+        grid-template-columns: 1fr;
+      }
+      .card-header {
+        flex-direction: column;
+      }
+      .price-badge { white-space: normal; }
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0.4in 0.6in;
+        background: #fff;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .container, .dashboard, .shell, main {
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+
+      [style*="position:sticky"], [style*="position: sticky"],
+      [class*="topbar"], [class*="navbar"], [class*="header"][class*="sticky"] {
+        position: static !important;
+      }
+
+      section, [class*="section"], .header {
+        break-inside: avoid;
+        margin-bottom: 20px !important;
+      }
+
+      [class*="card"], [class*="Card"] {
+        break-inside: avoid;
+        padding: 18px !important;
+        box-shadow: none !important;
+        border: 1px solid rgba(0,0,0,0.08);
+      }
+
+      [class*="grid"], [class*="row"] {
+        gap: 10px !important;
+        margin-bottom: 20px !important;
+      }
+
+      [class*="chart"], [class*="Chart"] {
+        break-inside: avoid;
+        height: 240px !important;
+      }
+
+      [class*="chart"][class*="tall"], [class*="Chart"][class*="tall"],
+      [class*="chart"][class*="full"], [class*="Chart"][class*="full"] {
+        height: 280px !important;
+      }
+
+      table, thead, .funnel, .heatmap, .list, .goals {
+        break-inside: avoid;
+      }
+
+      [class*="quote-list"], [class*="scroll"],
+      [style*="max-height"], [style*="overflow"] {
+        max-height: none !important;
+        overflow: visible !important;
+      }
+
+      [class*="tab-panel"], [class*="tabpanel"] {
+        display: block !important;
+      }
+
+      [class*="tab-bar"], [class*="tabs"]:not([class*="panel"]) {
+        display: none !important;
+      }
+
+      [class*="fade"], [class*="animate"], [class*="slide"] {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+
+      button, [role="button"], .interactive-only {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="toolbar">
+      <button class="export-button" onclick="window.print()">Export PDF</button>
+    </div>
+
+    <section class="hero">
+      <div class="eyebrow">Glean × Northern Trust · Byron 3.0 · Pricing Section</div>
+      <h1>Transparent, two-part pricing aligned to Northern Trust’s governed AI architecture.</h1>
+      <div class="hero-copy">
+        A simple commercial structure: a fixed per-user investment for the Glean Core Suite, plus a usage-based model layer that preserves flexibility around model choice, routing, and enterprise control.
+      </div>
+      <div class="hero-metrics">
+        <div class="metric">
+          <div class="metric-label">Users</div>
+          <div class="metric-value">32,000</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Core Suite</div>
+          <div class="metric-value">$18 PUPM</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Premium Support</div>
+          <div class="metric-value">10%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Protect+</div>
+          <div class="metric-value">10%</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cards">
+      <article class="card">
+        <div class="card-header">
+          <div>
+            <div class="section-tag">Section 1</div>
+            <h2>Glean Core Suite</h2>
+            <div class="card-subtitle">
+              Fixed per-user pricing for the governed enterprise intelligence foundation beneath Byron 3.0.
+            </div>
+          </div>
+          <div class="price-badge">32,000 users · $18 per user / month</div>
+        </div>
+
+        <div class="pricing-panel">
+          <div class="pricing-grid">
+            <div class="pricing-item">
+              <div class="mini-label">Annual Core Suite</div>
+              <strong>$6.91M</strong>
+            </div>
+            <div class="pricing-item">
+              <div class="mini-label">Premium Support</div>
+              <strong>$691K</strong>
+            </div>
+            <div class="pricing-item">
+              <div class="mini-label">Protect+</div>
+              <strong>$691K</strong>
+            </div>
+            <div class="pricing-item">
+              <div class="mini-label">Blended Annual Total</div>
+              <strong>$8.29M</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="block-title">Core platform capabilities</div>
+          <div class="chips">
+            <div class="chip">Glean Enterprise Graph</div>
+            <div class="chip">Glean Search</div>
+            <div class="chip">Real-time context &amp; governance</div>
+            <div class="chip">Assistant foundations</div>
+            <div class="chip">Agent foundations</div>
+            <div class="chip">Agent harness</div>
+            <div class="chip">Workplace surfaces</div>
+            <div class="chip">Search API</div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="block-title">Aligned to Northern Trust requirements</div>
+          <div class="chips">
+            <div class="chip requirement">Preserves Byron, Microsoft, and Copilot investments</div>
+            <div class="chip requirement">Permission-aware retrieval and enterprise context</div>
+            <div class="chip requirement">Governed orchestration, auditability, and observability</div>
+            <div class="chip requirement">Scales to 32,000+ employees with bank-grade controls</div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="block-title">Included positioning</div>
+          <ul class="detail-list">
+            <li>Provides the fixed platform layer Northern Trust can standardize once and reuse across Byron, Copilot Studio agents, and future pro-code agent experiences.</li>
+            <li>Separates the value of enterprise context, permissions, orchestration, and governance from underlying model consumption.</li>
+            <li>Supports the regulated, model-agnostic operating pattern already described in Northern Trust’s Byron 3.0 target state.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-header">
+          <div>
+            <div class="section-tag">Section 2</div>
+            <h2>Glean Model Hub</h2>
+            <div class="card-subtitle">
+              Variable, usage-based pricing for model access, routing, and centralized model operations.
+            </div>
+          </div>
+          <div class="price-badge">Usage-based · vendor-published model rates</div>
+        </div>
+
+        <div class="pricing-panel">
+          <div class="pricing-grid">
+            <div class="pricing-item">
+              <div class="mini-label">Model access</div>
+              <strong>30+ models</strong>
+            </div>
+            <div class="pricing-item">
+              <div class="mini-label">Routing layer</div>
+              <strong>Model Router</strong>
+            </div>
+            <div class="pricing-item">
+              <div class="mini-label">Interoperability</div>
+              <strong>MCP Gateway</strong>
+            </div>
+            <div class="pricing-item">
+              <div class="mini-label">Management fee</div>
+              <strong>10% FMM</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="block-title">What this includes</div>
+          <div class="chips">
+            <div class="chip">Access to 30+ leading models</div>
+            <div class="chip">Glean Model Router</div>
+            <div class="chip">Glean MCP Gateway</div>
+            <div class="chip">Granular model choice</div>
+            <div class="chip">Traffic performance management</div>
+            <div class="chip">LLM performance evaluations</div>
+            <div class="chip">Unified model management</div>
+            <div class="chip">Provider flexibility without lock-in</div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="block-title">Commercial structure</div>
+          <ul class="detail-list">
+            <li>Models are priced at the vendor’s published rate, keeping the underlying model economics transparent.</li>
+            <li>Glean Flexible Model Management (FMM) is priced at 10% of total model consumption.</li>
+            <li>This structure gives Northern Trust freedom to evolve model strategy over time without changing the enterprise context and governance layer underneath.</li>
+          </ul>
+        </div>
+
+        <div class="formula">
+          <strong>Usage formula:</strong> Total Model Hub investment = vendor-published model consumption + 10% Flexible Model Management.
+        </div>
+
+        <div class="section-block">
+          <div class="block-title">Why this fits Byron 3.0</div>
+          <div class="chips">
+            <div class="chip requirement">Supports BYO model strategy and future provider choice</div>
+            <div class="chip requirement">Enables intelligent routing across a multi-model estate</div>
+            <div class="chip requirement">Exposes governed model access to Byron and external agent frameworks</div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <div class="footnote">
+      Pricing shown reflects the structure requested for the Northern Trust RFP pricing section: fixed user-based Core Suite pricing, plus usage-based Model Hub pricing.
+    </div>
+  </main>
+
+  <script>
+    (function() {
+      if (window.GleanBridge && typeof window.GleanBridge.postMessage === 'function') {
+        window.GleanBridge.postMessage({
+          actionId: 'export-pdf',
+          type: 'glean-add-menu',
+          metadata: { label: 'Export as PDF', icon: 'export' }
+        });
+
+        if (typeof window.GleanBridge.onMessage === 'function') {
+          window.GleanBridge.onMessage('action', function(data) {
+            if (data.actionId === 'export-pdf') window.print();
+          });
+        }
+      }
+
+      function prepareChartsForPrint() {
+        if (typeof echarts === 'undefined') return;
+        document.querySelectorAll('[_echarts_instance_]').forEach(function(el) {
+          var chart = echarts.getInstanceByDom(el);
+          if (!chart) return;
+          var img = new Image();
+          img.src = chart.getDataURL({ type: 'png', pixelRatio: 2 });
+          img.className = 'print-chart-img';
+          img.style.cssText =
+            'width:100%;height:100%;object-fit:contain;' +
+            'position:absolute;top:0;left:0;z-index:10;';
+          el.dataset.prevPosition = el.style.position;
+          el.style.position = 'relative';
+          el.appendChild(img);
+        });
+      }
+
+      function cleanUpAfterPrint() {
+        document.querySelectorAll('[_echarts_instance_]').forEach(function(el) {
+          var img = el.querySelector('.print-chart-img');
+          if (!img) return;
+          img.remove();
+          el.style.position = el.dataset.prevPosition || '';
+          delete el.dataset.prevPosition;
+        });
+      }
+
+      window.addEventListener('beforeprint', prepareChartsForPrint);
+      window.addEventListener('afterprint', cleanUpAfterPrint);
+    })();
+  </script>
+</body>
+</html>
