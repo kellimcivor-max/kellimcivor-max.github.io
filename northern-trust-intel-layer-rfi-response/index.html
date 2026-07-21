@@ -148,6 +148,35 @@ html[data-theme='dark'] .rm-bar{color:#181620}
 .rm-legend{display:flex;gap:20px;flex-wrap:wrap;margin-top:16px;font-size:12.5px;color:var(--artifact-text-secondary)}
 .rm-legend span{display:flex;align-items:center;gap:7px}
 .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+.roadmap-plus{margin-top:28px}
+.week-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}
+.week-card{background:var(--artifact-background-light);border:1px solid var(--artifact-border-light);border-radius:12px;padding:20px 20px 18px;position:relative;overflow:hidden}
+.week-card::before{content:"";position:absolute;left:0;top:0;right:0;height:5px;background:var(--artifact-border-dark)}
+.week-card.build::before{background:var(--artifact-chart-1)}
+.week-card.setup::before{background:var(--artifact-chart-2)}
+.week-card.learn::before{background:var(--artifact-accent-soft)}
+.week-card.champions::before{background:var(--artifact-chart-4)}
+.week-card.user-eval::before{background:var(--artifact-primary-brand)}
+.week-card.readout::before{background:var(--artifact-border-dark)}
+.week-top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:10px}
+.week-name{font-family:"SF Mono","IBM Plex Mono","Consolas",monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--artifact-primary-brand)}
+.week-date{font-size:12px;color:var(--artifact-text-secondary);font-family:"SF Mono","IBM Plex Mono","Consolas",monospace}
+.week-phase{display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;font-family:"SF Mono","IBM Plex Mono","Consolas",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--artifact-border-light);background:var(--artifact-background);color:var(--artifact-text-primary)}
+.week-card.build .week-phase{background:var(--artifact-chart-1);border-color:var(--artifact-chart-1);color:#fff}
+.week-card.setup .week-phase{background:var(--artifact-chart-2);border-color:var(--artifact-chart-2);color:#fff}
+.week-card.learn .week-phase{background:var(--artifact-accent-soft);border-color:var(--artifact-accent-soft);color:#fff}
+.week-card.champions .week-phase{background:var(--artifact-chart-4);border-color:var(--artifact-chart-4);color:#1c1a20}
+.week-card.user-eval .week-phase{background:var(--artifact-primary-brand);border-color:var(--artifact-primary-brand);color:#fff}
+.week-card.readout .week-phase{background:var(--artifact-border-dark);border-color:var(--artifact-border-dark);color:var(--artifact-text-primary)}
+.week-card ul{margin:10px 0 0;padding-left:18px}
+.week-card li{font-size:14px;line-height:1.45;color:var(--artifact-text-secondary);margin-bottom:6px}
+.control-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:18px}
+.control-card{background:var(--artifact-background-light);border:1px solid var(--artifact-border-light);border-radius:12px;padding:22px}
+.control-card .num{font-family:"SF Mono","IBM Plex Mono","Consolas",monospace;font-size:12px;color:var(--artifact-primary-brand);letter-spacing:.1em;margin-bottom:8px}
+.control-card p{font-size:14.5px;color:var(--artifact-text-secondary);margin:0}
+.control-card ul{margin:10px 0 0;padding-left:18px}
+.control-card li{font-size:14px;color:var(--artifact-text-secondary);margin-bottom:6px}
+@media (max-width: 920px){.week-grid,.control-grid{grid-template-columns:1fr}}
 
 /* Milestone timeline */
 .mstimeline{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:20px}
@@ -551,7 +580,7 @@ html[data-theme='dark'] .rm-bar{color:#181620}
     <section id="roadmap">
       <span class="eyebrow">Scope G &amp; 1.5 · Implementation Timeline</span>
       <h2>A phased roadmap aligned to your delivery motion.</h2>
-      <p class="lead">We map directly to Northern Trust's four-phase model — Architecture &amp; Definition, Orchestration Design, Platform Build, and Operationalize &amp; Scale — reaching a governed MVP in ~24 weeks, with enterprise review-board approvals (cyber, legal, compliance, regulatory, architecture, AI governance) built into the plan.</p>
+      <p class="lead">We map directly to Northern Trust's four-phase model — Architecture &amp; Definition, Orchestration Design, Platform Build, and Operationalize &amp; Scale — with enterprise review-board approvals (cyber, legal, compliance, regulatory, architecture, AI governance) built into the plan.</p>
       <div class="roadmap">
         <div class="roadmap-inner">
           <div class="rm-head"><span>Phase / Workstream</span><span>W1</span><span>W2</span><span>W4</span><span>W6</span><span>W8</span><span>W10</span><span>W12</span><span>W14</span><span>W16</span><span>W20</span><span>W24</span><span>Ongoing</span></div>
@@ -567,6 +596,131 @@ html[data-theme='dark'] .rm-bar{color:#181620}
         <span><span class="dot" style="background:var(--artifact-chart-2)"></span>Phase 2 — Orchestration Design</span>
         <span><span class="dot" style="background:var(--artifact-accent-soft)"></span>Phase 3 — Platform Build / MVP</span>
         <span><span class="dot" style="background:var(--artifact-chart-4)"></span>Phase 4 — Operationalize &amp; Scale</span>
+      </div>
+      <div class="roadmap-plus">
+        <div class="statband">
+          <div class="stat"><div class="metric">8 weeks</div><div class="lab">Pilot timeline from Aug 17 through Oct 9, 2026.</div></div>
+          <div class="stat"><div class="metric">Build &amp; Setup</div><div class="lab">Stand up the environment, configure SSO, load people data, and activate first-wave connectors.</div></div>
+          <div class="stat"><div class="metric">Learning &amp; UAT</div><div class="lab">Validate permissions and relevance while enabling champions, refining prompts, and measuring adoption.</div></div>
+          <div class="stat"><div class="metric">ROI Plan</div><div class="lab">Close with results analysis, governance review, a launch plan, and a clear go-forward recommendation.</div></div>
+        </div>
+        <div class="card" style="margin-top:18px;padding:24px">
+          <div class="num">Pilot Roadmap Calendar</div>
+          <h3 style="margin-bottom:6px">Northern Trust × Glean pilot calendar</h3>
+          <p class="muted">This page adapts the attached pilot calendar into a client-facing timeline for the RFP appendix, preserving the 8-week structure and phase sequence from the source deck.</p>
+        </div>
+        <div class="week-grid">
+          <div class="week-card build">
+            <div class="week-top"><div><div class="week-name">Week 1</div><div class="week-date">Aug 17 – Aug 21</div></div><div class="week-phase">Build</div></div>
+            <ul>
+              <li>Pilot kickoff</li>
+              <li>Environment build begins</li>
+              <li>Deployment region and key-management project confirmed</li>
+              <li>Platform standup</li>
+              <li>Environment stood up</li>
+            </ul>
+          </div>
+          <div class="week-card setup">
+            <div class="week-top"><div><div class="week-name">Week 2</div><div class="week-date">Aug 24 – Aug 28</div></div><div class="week-phase">Setup</div></div>
+            <ul>
+              <li>SSO configured</li>
+              <li>People data loaded</li>
+              <li>Connector config: SharePoint, Teams, Outlook</li>
+              <li>Connector config: Snowflake, Databricks, ServiceNow</li>
+              <li>Crawls kick off in parallel</li>
+            </ul>
+          </div>
+          <div class="week-card learn">
+            <div class="week-top"><div><div class="week-name">Week 3</div><div class="week-date">Aug 31 – Sep 4</div></div><div class="week-phase">Learn</div></div>
+            <ul>
+              <li>Crawl completion tracking</li>
+              <li>Permission verification</li>
+              <li>Branding applied and prompt packs loaded</li>
+              <li>Governance and observability review</li>
+              <li>Learn exit review</li>
+            </ul>
+          </div>
+          <div class="week-card champions">
+            <div class="week-top"><div><div class="week-name">Week 4</div><div class="week-date">Sep 7 – Sep 11</div></div><div class="week-phase">Champions / UAT</div></div>
+            <ul>
+              <li>Champions kickoff and Glean 101</li>
+              <li>Use case deep dives</li>
+              <li>Pre-pilot survey</li>
+              <li>Champion working session</li>
+              <li>Weekly scoring and office hours</li>
+            </ul>
+          </div>
+          <div class="week-card champions">
+            <div class="week-top"><div><div class="week-name">Week 5</div><div class="week-date">Sep 14 – Sep 18</div></div><div class="week-phase">Champions / UAT</div></div>
+            <ul>
+              <li>Skill building session</li>
+              <li>Prompt and agent refinement</li>
+              <li>Champion working session</li>
+              <li>Permission validation with champions</li>
+              <li>Weekly scoring and office hours</li>
+            </ul>
+          </div>
+          <div class="week-card user-eval">
+            <div class="week-top"><div><div class="week-name">Week 6</div><div class="week-date">Sep 21 – Sep 25</div></div><div class="week-phase">User Eval</div></div>
+            <ul>
+              <li>Pilot user cohort rollout</li>
+              <li>Department enablement sessions</li>
+              <li>Office hours</li>
+              <li>Usage and adoption review</li>
+              <li>Weekly champion scoring</li>
+            </ul>
+          </div>
+          <div class="week-card user-eval">
+            <div class="week-top"><div><div class="week-name">Week 7</div><div class="week-date">Sep 28 – Oct 2</div></div><div class="week-phase">User Eval</div></div>
+            <ul>
+              <li>Office hours</li>
+              <li>Track working sessions</li>
+              <li>Post-pilot survey opens</li>
+              <li>Skill and agent library review</li>
+              <li>Survey closes and results compiled</li>
+            </ul>
+          </div>
+          <div class="week-card readout">
+            <div class="week-top"><div><div class="week-name">Week 8</div><div class="week-date">Oct 5 – Oct 9</div></div><div class="week-phase">Readout &amp; Launch</div></div>
+            <ul>
+              <li>Results analysis vs success criteria</li>
+              <li>Architecture and governance readout</li>
+              <li>Executive wrap-up</li>
+              <li>Launch plan finalized</li>
+              <li>Go-forward decision</li>
+            </ul>
+          </div>
+        </div>
+        <div class="card" style="margin-top:18px;padding:24px">
+          <div class="num">Control points built into the calendar</div>
+          <p class="muted">The structure of the pilot deliberately sequences technical activation before broader user exposure.</p>
+        </div>
+        <div class="control-grid">
+          <div class="control-card">
+            <div class="num">Security and access</div>
+            <ul>
+              <li>Identity and SSO are addressed before scale.</li>
+              <li>Permissions are validated before wider user rollout.</li>
+              <li>Governance review happens before launch decisions.</li>
+            </ul>
+          </div>
+          <div class="control-card">
+            <div class="num">Connector readiness</div>
+            <ul>
+              <li>Microsoft and workflow systems are activated early.</li>
+              <li>Crawls and freshness are checked before user evaluation.</li>
+              <li>Source issues can be remediated before scale decisions.</li>
+            </ul>
+          </div>
+          <div class="control-card">
+            <div class="num">Business proof</div>
+            <ul>
+              <li>Champions and surveys create a feedback loop.</li>
+              <li>Weekly scoring shows whether the use cases are landing.</li>
+              <li>The final readout ties launch to measured outcomes.</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </section>
 
