@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glean — Intel Layer | RFP Response for Northern Trust</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+:root{
+  --artifact-background:#ffffff;
+  --artifact-background-light:#f4f2f6;
+  --artifact-border-light:#e6e1ec;
+  --artifact-border-dark:#d3cbde;
+  --artifact-primary-brand:#0b5d3b;
+  --artifact-primary-highlight:#0b5d3b;
+  --artifact-primary-hover:#5e3c85;
+  --artifact-selected:#f2eef7;
+  --artifact-text-primary:#1c1a20;
+  --artifact-text-secondary:#6b6577;
+  --artifact-text-highlight:#ede6f5;
+  --artifact-positive-background:#edf1ea;
+  --artifact-positive-text:#1c1a20;
+  --artifact-positive:#3f7d4f;
+  --artifact-negative:#9e342b;
+  --artifact-accent-soft:#2f8f5b;
+  --artifact-chart-1:#0b5d3b;
+  --artifact-chart-2:#2f8f5b;
+  --artifact-chart-3:#b39ccf;
+  --artifact-chart-4:#c9a24b;
+}
+html[data-theme='dark']{
+  --artifact-background:#181620;
+  --artifact-background-light:#211d2b;
+  --artifact-border-light:#332c40;
+  --artifact-border-dark:#463c57;
+  --artifact-primary-brand:#c3a9e0;
+  --artifact-primary-highlight:#e9def6;
+  --artifact-primary-hover:#d4bff0;
+  --artifact-selected:#282233;
+  --artifact-text-primary:#efe9f5;
+  --artifact-text-secondary:#a89fb8;
+  --artifact-text-highlight:#2d2440;
+  --artifact-positive-background:#1f2b1e;
+  --artifact-positive-text:#d8ecd2;
+  --artifact-positive:#7cab84;
+  --artifact-negative:#d98a7e;
+  --artifact-accent-soft:#b39ccf;
+  --artifact-chart-1:#b39ccf;
+  --artifact-chart-2:#8f6fb8;
+  --artifact-chart-3:#6a4d8f;
+  --artifact-chart-4:#d4b45f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size:16px;line-height:1.6;
+  background:var(--artifact-background);color:var(--artifact-text-primary);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.display,.section-title{font-family:Georgia,"Times New Roman",Times,serif;font-weight:400;line-height:1.06;letter-spacing:-0.02em;color:var(--artifact-text-primary)}
+h1{font-size:clamp(2.6rem,6vw,4.6rem)}
+h2{font-size:clamp(1.8rem,4vw,2.7rem)}
+h3{font-size:1.35rem;font-weight:600;line-height:1.2}
+.eyebrow,.kicker,.field-label,th{font-family:"SF Mono","IBM Plex Mono","Cascadia Code","Consolas",monospace;font-size:12px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--artifact-text-secondary)}
+.metric{font-family:"SF Mono","IBM Plex Mono","Consolas",monospace;font-weight:400;font-size:clamp(2.4rem,5vw,3.6rem);line-height:1;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;color:var(--artifact-primary-brand)}
+.mono{font-family:"SF Mono","IBM Plex Mono","Consolas",monospace}
+
+/* Layout */
+.shell{display:flex;max-width:1240px;margin:0 auto;gap:0}
+.toc{position:sticky;top:0;align-self:flex-start;height:100vh;width:230px;padding:40px 20px 40px 28px;flex-shrink:0;overflow-y:auto;border-right:1px solid var(--artifact-border-light)}
+.toc .logo{font-family:Georgia,serif;font-size:1.25rem;letter-spacing:-0.01em;margin-bottom:4px}
+.toc .logo b{color:var(--artifact-primary-brand)}
+.toc .sub{font-size:11px;color:var(--artifact-text-secondary);margin-bottom:28px;letter-spacing:0.04em}
+.toc a{display:block;font-size:12.5px;color:var(--artifact-text-secondary);text-decoration:none;padding:7px 10px;border-radius:6px;border-left:2px solid transparent;line-height:1.3;transition:all .15s}
+.toc a:hover{color:var(--artifact-text-primary);background:var(--artifact-selected)}
+.toc a.active{color:var(--artifact-primary-brand);border-left-color:var(--artifact-primary-brand);background:var(--artifact-selected)}
+main{flex:1;min-width:0;padding:0 48px 80px}
+section{padding:64px 0;border-bottom:1px solid var(--artifact-border-light)}
+section:last-child{border-bottom:none}
+.eyebrow{margin-bottom:14px;display:block}
+p{margin-bottom:16px;color:var(--artifact-text-primary)}
+p.lead{font-size:1.18rem;color:var(--artifact-text-secondary);max-width:62ch}
+
+/* Hero */
+.hero{padding-top:56px;padding-bottom:56px}
+.hero .tag{display:inline-block;font-family:"SF Mono",monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--artifact-primary-brand);border:1px solid var(--artifact-border-dark);padding:6px 12px;border-radius:20px;margin-bottom:26px}
+.hero h1{margin-bottom:22px}
+.hero .accent{color:var(--artifact-primary-brand)}
+.hero-meta{display:flex;flex-wrap:wrap;gap:28px;margin-top:34px;padding-top:26px;border-top:1px solid var(--artifact-border-light)}
+.hero-meta div{min-width:130px}
+.hero-meta .field-label{display:block;margin-bottom:5px}
+.hero-meta .val{font-size:15px;color:var(--artifact-text-primary)}
+
+/* Stat band */
+.statband{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin:8px 0 4px}
+.stat{padding:22px 20px;background:var(--artifact-background-light);border:1px solid var(--artifact-border-light);border-radius:12px}
+.stat .metric{font-size:clamp(1.9rem,3.4vw,2.7rem)}
+.stat .lab{font-size:12.5px;color:var(--artifact-text-secondary);margin-top:8px;line-height:1.35}
+
+/* Cards */
+.cards{display:grid;gap:20px}
+.cards.c2{grid-template-columns:repeat(2,1fr)}
+.cards.c3{grid-template-columns:repeat(3,1fr)}
+.card{padding:26px 24px;background:var(--artifact-background-light);border:1px solid var(--artifact-border-light);border-radius:12px}
+.card h3{margin-bottom:10px}
+.card .num{font-family:"SF Mono",monospace;font-size:12px;color:var(--artifact-primary-brand);letter-spacing:0.1em;margin-bottom:8px}
+.card p{font-size:14.5px;color:var(--artifact-text-secondary);margin-bottom:0}
+.card ul{margin:10px 0 0;padding-left:18px}
+.card li{font-size:14px;color:var(--artifact-text-secondary);margin-bottom:6px}
+
+/* Coverage matrix */
+table{width:100%;border-collapse:collapse;margin-top:8px;font-size:14.5px}
+th{text-align:left;padding:12px 14px;border-bottom:2px solid var(--artifact-border-dark);vertical-align:bottom}
+td{padding:14px;border-bottom:1px solid var(--artifact-border-light);vertical-align:top;color:var(--artifact-text-primary)}
+td .scope-id{font-family:"SF Mono",monospace;font-weight:600;color:var(--artifact-primary-brand)}
+td.cov{white-space:nowrap}
+.chip{display:inline-block;font-family:"SF Mono",monospace;font-size:11px;padding:3px 9px;border-radius:20px;background:var(--artifact-positive-background);color:var(--artifact-positive-text);border:1px solid var(--artifact-border-light)}
+.chip.full{background:var(--artifact-selected);color:var(--artifact-primary-brand);border-color:var(--artifact-border-dark)}
+
+/* Architecture diagram */
+.arch{background:var(--artifact-background-light);border:1px solid var(--artifact-border-light);border-radius:14px;padding:30px;margin-top:10px}
+.arch-row{display:grid;gap:12px;margin-bottom:14px}
+.arch-lane-label{font-family:"SF Mono",monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--artifact-text-secondary);margin-bottom:8px}
+.arch-boxes{display:grid;gap:10px}
+.abox{padding:14px 12px;border-radius:9px;text-align:center;font-size:13px;line-height:1.3;border:1px solid var(--artifact-border-dark);background:var(--artifact-background)}
+.abox.brand{background:var(--artifact-primary-brand);color:#fff;border-color:var(--artifact-primary-brand);font-weight:500}
+html[data-theme='dark'] .abox.brand{color:#181620}
+.abox.soft{background:var(--artifact-selected);border-color:var(--artifact-border-dark);color:var(--artifact-primary-brand)}
+.abox small{display:block;font-size:11px;opacity:.8;margin-top:3px;font-weight:400}
+.arch-connector{text-align:center;color:var(--artifact-text-secondary);font-size:20px;margin:2px 0;line-height:1}
+
+/* Roadmap */
+.roadmap{margin-top:12px;overflow-x:auto}
+.roadmap-inner{min-width:820px}
+.rm-head{display:grid;grid-template-columns:170px repeat(12,1fr);gap:0;font-family:"SF Mono",monospace;font-size:10.5px;color:var(--artifact-text-secondary);text-transform:uppercase;letter-spacing:0.06em;border-bottom:1px solid var(--artifact-border-dark);padding-bottom:8px;margin-bottom:6px}
+.rm-head span{text-align:center}
+.rm-head span:first-child{text-align:left}
+.rm-row{display:grid;grid-template-columns:170px 1fr;gap:14px;align-items:center;padding:9px 0}
+.rm-label{font-size:13px;font-weight:600}
+.rm-label small{display:block;font-family:"SF Mono",monospace;font-weight:400;font-size:11px;color:var(--artifact-text-secondary);margin-top:2px}
+.rm-track{position:relative;height:34px;background:linear-gradient(90deg,var(--artifact-border-light) 1px,transparent 1px);background-size:calc(100%/12) 100%;border-radius:6px}
+.rm-bar{position:absolute;top:4px;height:26px;border-radius:6px;display:flex;align-items:center;padding:0 12px;font-size:12px;color:#fff;white-space:nowrap;overflow:hidden}
+html[data-theme='dark'] .rm-bar{color:#181620}
+.rm-bar.p1{background:var(--artifact-chart-1)}
+.rm-bar.p2{background:var(--artifact-chart-2)}
+.rm-bar.p3{background:var(--artifact-accent-soft)}
+.rm-bar.p4{background:var(--artifact-chart-4);color:#1c1a20}
+.rm-legend{display:flex;gap:20px;flex-wrap:wrap;margin-top:16px;font-size:12.5px;color:var(--artifact-text-secondary)}
+.rm-legend span{display:flex;align-items:center;gap:7px}
+.dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+/* Milestone timeline */
+.mstimeline{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:20px}
+.ms{position:relative;padding:0 18px}
+.ms::before{content:"";position:absolute;top:9px;left:0;right:0;height:2px;background:var(--artifact-border-dark)}
+.ms .dot-lg{width:16px;height:16px;border-radius:50%;background:var(--artifact-primary-brand);position:relative;z-index:1;margin-bottom:14px;border:3px solid var(--artifact-background)}
+.ms .d{font-family:"SF Mono",monospace;font-size:12px;color:var(--artifact-primary-brand);margin-bottom:4px}
+.ms .t{font-size:14px;font-weight:600;margin-bottom:3px}
+.ms .n{font-size:13px;color:var(--artifact-text-secondary)}
+
+.chartwrap{background:var(--artifact-background-light);border:1px solid var(--artifact-border-light);border-radius:12px;padding:22px 20px 12px}
+.chartwrap h3{font-size:1rem;margin-bottom:4px}
+.chartwrap .cap{font-size:12.5px;color:var(--artifact-text-secondary);margin-bottom:10px}
+.chart{width:100%;height:260px}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.grid2.wide{grid-template-columns:1.3fr 1fr}
+
+.concern{padding:22px 24px;background:var(--artifact-background);border:1px solid var(--artifact-border-light);border-radius:12px;border-top:3px solid var(--artifact-primary-brand)}
+.concern .q{font-size:14.5px;font-weight:600;margin-bottom:8px}
+.concern .q::before{content:"Concern — ";font-family:"SF Mono",monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--artifact-negative);font-weight:500}
+.concern .a{font-size:14px;color:var(--artifact-text-secondary)}
+.concern .a::before{content:"How Glean answers it — ";font-family:"SF Mono",monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--artifact-positive);font-weight:500;display:block;margin-bottom:4px}
+
+.logos{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
+.logo-chip{font-family:Georgia,serif;font-size:15px;padding:10px 18px;border:1px solid var(--artifact-border-dark);border-radius:8px;color:var(--artifact-text-primary);background:var(--artifact-background-light)}
+
+.pricing{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:8px}
+.ptile{padding:26px 24px;border:1px solid var(--artifact-border-light);border-radius:12px;background:var(--artifact-background-light)}
+.ptile h3{margin-bottom:6px}
+.ptile .metric{font-size:1.6rem}
+.ptile ul{margin-top:12px;padding-left:18px}
+.ptile li{font-size:13.5px;color:var(--artifact-text-secondary);margin-bottom:7px}
+
+.callout{background:var(--artifact-selected);border:1px solid var(--artifact-border-dark);border-radius:12px;padding:26px 28px;margin-top:8px}
+.callout p{margin-bottom:0;font-size:1.05rem}
+.next{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}
+.nstep{padding:18px;border:1px solid var(--artifact-border-light);border-radius:10px;background:var(--artifact-background-light)}
+.nstep .n{font-family:"SF Mono",monospace;font-size:22px;color:var(--artifact-primary-brand);margin-bottom:6px}
+.nstep p{font-size:13px;color:var(--artifact-text-secondary);margin-bottom:0}
+
+.matrix{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.5px}
+.matrix th{font-family:"SF Mono",monospace;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--artifact-text-secondary);text-align:center;padding:10px 8px;border-bottom:2px solid var(--artifact-border-dark)}
+.matrix th:first-child{text-align:left}
+.matrix td{padding:11px 8px;border-bottom:1px solid var(--artifact-border-light);text-align:center;vertical-align:middle;font-family:"SF Mono",monospace}
+.matrix td:first-child{text-align:left;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-weight:600;color:var(--artifact-text-primary);font-size:13.5px}
+.matrix .glean-col{background:var(--artifact-selected)}
+.matrix th.glean-col{color:var(--artifact-primary-brand)}
+.mk-full{color:var(--artifact-positive);font-weight:700;font-size:15px}
+.mk-part{color:var(--artifact-chart-4);font-weight:700}
+.mk-none{color:var(--artifact-text-secondary)}
+.mlegend{display:flex;gap:20px;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:var(--artifact-text-secondary)}
+.mlegend span{display:flex;align-items:center;gap:6px}
+.h2h{padding:22px 22px;background:var(--artifact-background);border:1px solid var(--artifact-border-light);border-radius:12px;border-top:3px solid var(--artifact-primary-brand)}
+.h2h .vname{font-family:Georgia,serif;font-size:1.15rem;margin-bottom:10px;color:var(--artifact-text-primary)}
+.h2h .row{font-size:13.5px;margin-bottom:8px;color:var(--artifact-text-secondary)}
+.h2h .row b{font-family:"SF Mono",monospace;font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:2px;font-weight:500}
+.h2h .row.limit b{color:var(--artifact-negative)}
+.h2h .row.win b{color:var(--artifact-positive)}
+.h2h .row.win{color:var(--artifact-text-primary)}
+.footer{padding:40px 0 0;font-size:12px;color:var(--artifact-text-secondary)}
+
+@media (max-width:900px){
+  .shell{flex-direction:column}
+  .toc{position:static;height:auto;width:100%;border-right:none;border-bottom:1px solid var(--artifact-border-light);display:none}
+  main{padding:0 22px 60px}
+  .statband,.cards.c3,.cards.c2,.grid2,.grid2.wide,.pricing,.next,.mstimeline{grid-template-columns:1fr}
+}
+@media print{
+  body{margin:0;padding:0.4in 0.6in;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .toc{display:none}
+  .shell,main{max-width:100%!important;width:100%!important;padding:0!important}
+  section{break-inside:avoid;margin-bottom:16px!important;padding:22px 0!important}
+  .card,.stat,.chartwrap,.concern,.ptile,.arch{break-inside:avoid}
+  .roadmap-inner{min-width:0}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="toc">
+    <div class="logo"><b>Glean</b> × Northern Trust</div>
+    <div class="sub">Northern Trust Intel Layer RFI Response</div>
+    <a href="#exec" class="active">Executive Summary</a>
+    <a href="#compare">Why Glean vs. Alternatives</a>
+    <a href="#understanding">Understanding Byron 3.0</a>
+    <a href="#solution">The Glean Solution</a>
+    <a href="#architecture">Reference Architecture</a>
+    <a href="#scope">Scope of Work Coverage</a>
+    <a href="#orchestration">Agent Orchestration</a>
+    <a href="#data">Data &amp; Content Hygiene</a>
+    <a href="#governance">Governance &amp; Security</a>
+    <a href="#eval">Evaluation &amp; Observability</a>
+    <a href="#roadmap">Delivery Roadmap</a>
+    <a href="#staffing">Staffing &amp; Governance</a>
+    <a href="#value">Value &amp; Accelerators</a>
+    <a href="#proof">Proof &amp; References</a>
+    <a href="#concerns">Addressing Your Concerns</a>
+    <a href="#pricing">Pricing Approach</a>
+    <a href="#next">Next Steps</a>
+  </nav>
+  <main>
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <span class="tag">Confidential RFI repsonse</span>
+      <h1>The most trusted <span class="accent">enterprise intelligence layer</span> in the industry.</h1>
+      <p class="lead">Northern Trust doesn't need to rebuild its AI estate — it needs a governed foundation that unifies data, permissions, context, and orchestration beneath the Microsoft, Copilot Studio, and LangChain investments you already trust. Glean is that layer, purpose-built for regulated financial services and proven at Citi, Capital One, and Nationwide.</p>
+      <div class="hero-meta">
+        <div><span class="field-label">Prepared for</span><span class="val">Northern Trust — Jill Aragona</span></div>
+        <div><span class="field-label">Solution</span><span class="val">Intel Layer</span></div>
+        <div><span class="field-label">Proposal due</span><span class="val">21 July 2026, 12:00 CT</span></div>
+        <div><span class="field-label">Presentation</span><span class="val">23 July 2026, 2–3 PM CT</span></div>
+      </div>
+    </section>
+
+    <!-- EXEC SUMMARY -->
+    <section id="exec">
+      <span class="eyebrow">1.1 · Executive Summary</span>
+      <h2>Preserve what works. Standardize what scales.</h2>
+      <p class="lead">Our recommendation: adopt Glean as the horizontal intelligence and orchestration layer for Byron 3.0 — connectivity, permissions, enterprise context, model routing, governance, and observability — while your teams keep their Copilot Studio agents, LangChain/LangGraph digital coworkers, and existing front ends.</p>
+      <div class="statband" style="margin-top:26px">
+        <div class="stat"><div class="metric">2.5×</div><div class="lab">Better answers vs. other context layers — grounded in your governed enterprise data</div></div>
+        <div class="stat"><div class="metric">30–50%</div><div class="lab">Fewer LLM tokens — retrieval runs against Glean's index before model inference</div></div>
+        <div class="stat"><div class="metric">97.8%</div><div class="lab">Jailbreak / prompt-injection detection accuracy via Glean Protect</div></div>
+        <div class="stat"><div class="metric">250+</div><div class="lab">Productized connectors &amp; 2,000+ actions across the enterprise</div></div>
+      </div>
+      <div class="cards c2" style="margin-top:28px">
+        <div class="card"><div class="num">Why this wins for Northern Trust</div>
+          <ul>
+            <li><b>Complements, never replaces.</b> Byron's existing chat experience and Copilot Studio agents keep running — Glean sits underneath as the shared data, permissions, and orchestration foundation.</li>
+            <li><b>Bank-grade by design.</b> Permission-aware retrieval, full auditability, HITL checkpoints, and certifications built for systemically-important institutions.</li>
+            <li><b>No model lock-in.</b> ~30 models with intelligent routing, bring-your-own keys, and an LLM-agnostic architecture.</li>
+          </ul>
+        </div>
+        <div class="card"><div class="num">Tied to your four business drivers</div>
+          <ul>
+            <li><b>Productivity &amp; time-to-answer</b> — unified, permissioned retrieval across SharePoint, ServiceNow &amp; more.</li>
+            <li><b>Operational scale</b> — reusable connectors and a registry so delivery teams stop building bespoke patterns.</li>
+            <li><b>Quality, safety &amp; trust</b> — continuous evaluation, observability, and SIEM export.</li>
+            <li><b>Governance &amp; lifecycle</b> — agent intake, approval, monitoring &amp; retirement as a managed operating model.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="statband" style="margin-top:18px">
+        <div class="stat"><div class="metric">$18.2T</div><div class="lab">Assets under custody / administration — the operational scale Byron must support with confidence</div></div>
+        <div class="stat"><div class="metric">40+</div><div class="lab">Countries served — making globally consistent permissions and policy enforcement non-negotiable</div></div>
+        <div class="stat"><div class="metric">Anchor Point</div><div class="lab">Existing Byron front end remains intact while Glean upgrades the intelligence layer below it</div></div>
+        <div class="stat"><div class="metric">M365 + Byron</div><div class="lab">Copilot remains the productivity surface; Byron remains the governed domain-intelligence surface</div></div>
+      </div>
+    </section>
+
+    <!-- COMPARE -->
+    <section id="compare">
+      <span class="eyebrow">Competitive Comparison</span>
+      <h2>Why Glean is the best &mdash; and only &mdash; fit for Byron 3.0.</h2>
+      <p class="lead">Every alternative solves one layer of the stack. Only Glean is horizontal, model-agnostic, and permission-aware across your whole estate &mdash; the neutral, governed foundation beneath Copilot, LangChain, and third-party AI, not another interface competing with them.</p>
+      <div class="grid2 wide" style="margin-top:22px">
+        <div class="chartwrap">
+          <h3>Fit for the enterprise-intelligence-layer role</h3>
+          <div class="cap">Overall score /100 &mdash; scored on horizontal context, connector breadth, model-agnostic orchestration, cross-ecosystem agent orchestration, regulated-FS governance &amp; coexistence</div>
+          <div id="chartCompare" class="chart" style="height:300px"></div>
+        </div>
+        <div class="card" style="align-self:stretch">
+          <div class="num">The six requirements &mdash; and who has all six</div>
+          <p>Byron 3.0 demands these capabilities <b>together</b>. No competitor satisfies more than three:</p>
+          <ul>
+            <li>Permission-aware context across 250+ sources</li>
+            <li>LLM-agnostic model routing (no lock-in)</li>
+            <li>Orchestration across Copilot Studio + LangChain + third-party agents</li>
+            <li>Regulated-FS governance &amp; auditability</li>
+            <li>Content-hygiene &amp; retrieval quality</li>
+            <li>Coexistence beneath your existing stack</li>
+          </ul>
+          <p style="margin-top:10px;color:var(--artifact-text-primary)"><b>Only Glean delivers all six.</b></p>
+        </div>
+      </div>
+
+      <table class="matrix" style="margin-top:30px">
+        <thead><tr><th>Capability</th><th class="glean-col">Glean</th><th>Copilot</th><th>Gemini</th><th>Palantir</th><th>Cloudflare</th><th>ServiceNow</th></tr></thead>
+        <tbody>
+          <tr><td>Permission-aware context across 250+ sources</td><td class="glean-col"><span class="mk-full">&#9679;</span></td><td><span class="mk-part">&#9680;</span></td><td><span class="mk-part">&#9680;</span></td><td><span class="mk-part">&#9680;</span></td><td><span class="mk-none">&mdash;</span></td><td><span class="mk-part">&#9680;</span></td></tr>
+          <tr><td>LLM-agnostic model routing (no lock-in)</td><td class="glean-col"><span class="mk-full">&#9679;</span></td><td><span class="mk-none">&mdash;</span></td><td><span class="mk-none">&mdash;</span></td><td><span class="mk-part">&#9680;</span></td><td><span class="mk-part">&#9680;</span></td><td><span class="mk-part">&#9680;</span></td></tr>
+          <tr><td>Orchestrates Copilot Studio + LangChain + 3rd-party</td><td class="glean-col"><span class="mk-full">&#9679;</span></td><td><span class="mk-part">&#9680;</span></td><td><span class="mk-none">&mdash;</span></td><td><span class="mk-part">&#9680;</span></td><td><span class="mk-none">&mdash;</span></td><td><span class="mk-part">&#9680;</span></td></tr>
+          <tr><td>Regulated financial-services governance &amp; audit</td><td class="glean-col"><span class="mk-full">&#9679;</span></td><td><span class="mk-part">&#9680;</span></td><td><span class="mk-part">&#9680;</span></td><td><span class="mk-full">&#9679;</span></td><td><span class="mk-part">&#9680;</span></td><td><span class="mk-full">&#9679;</span></td></tr>
+          <tr><td>Sits beneath / coexists with existing stack (vs. replace)</td><td class="glean-col"><span class="mk-full">&#9679;</span></td><td><span class="mk-part">&#9680;</span></td><td><span class="mk-none">&mdash;</span></td><td><span class="mk-none">&mdash;</span></td><td><span class="mk-part">&#9680;</span></td><td><span class="mk-part">&#9680;</span></td></tr>
+        </tbody>
+      </table>
+      <div class="mlegend"><span><span class="mk-full">&#9679;</span> Full</span><span><span class="mk-part">&#9680;</span> Partial / ecosystem-bound</span><span><span class="mk-none">&mdash;</span> Not designed for this</span></div>
+
+      <h3 style="margin-top:38px;margin-bottom:4px">Head-to-head: where each alternative stops</h3>
+      <div class="cards c3" style="margin-top:16px">
+        <div class="h2h"><div class="vname">Microsoft Copilot</div>
+          <div class="row"><b>Strength</b>Excellent M365 productivity; native to your Copilot Studio agents &mdash; it got Byron to 2.0.</div>
+          <div class="row limit"><b>Where it stops</b>Retrieval bound to the Microsoft Graph; locked to one model family; orchestration clean only inside Microsoft.</div>
+          <div class="row win"><b>Glean&rsquo;s answer</b>Broadens connectivity to 250+ sources, adds model choice &amp; routing, and orchestrates Copilot Studio agents in place &mdash; you keep Copilot; Glean makes it enterprise-wide.</div>
+        </div>
+        <div class="h2h"><div class="vname">Palantir</div>
+          <div class="row"><b>Strength</b>Powerful ontology and operational decisioning on structured data.</div>
+          <div class="row limit"><b>Where it stops</b>Services-heavy, expensive, multi-quarter build; non-portable ontology; weak on horizontal unstructured-knowledge retrieval.</div>
+          <div class="row win"><b>Glean&rsquo;s answer</b>Product-led breadth in ~24 weeks, portable via open standards (API/MCP), 2.5&times; better answers across all content &mdash; no new lock-in.</div>
+        </div>
+        <div class="h2h"><div class="vname">Cloudflare</div>
+          <div class="row"><b>Strength</b>Edge compute, AI gateway, and security primitives.</div>
+          <div class="row limit"><b>Where it stops</b>The wrong layer &mdash; no enterprise context, no permission-aware retrieval, no agent registry or orchestration over content.</div>
+          <div class="row win"><b>Glean&rsquo;s answer</b>The intelligence &amp; governance layer that Cloudflare-class infrastructure sits under, not replaces.</div>
+        </div>
+        <div class="h2h"><div class="vname">ServiceNow (Now Assist)</div>
+          <div class="row"><b>Strength</b>Strong inside ServiceNow ITSM and workflows.</div>
+          <div class="row limit"><b>Where it stops</b>Scoped to its own ecosystem; not horizontal across all enterprise content.</div>
+          <div class="row win"><b>Glean&rsquo;s answer</b>Orchestrates ServiceNow as one connected source among 250+ &mdash; the whole enterprise, not one suite.</div>
+        </div>
+        <div class="h2h"><div class="vname">Google Gemini</div>
+          <div class="row"><b>Strength</b>Strong models and a capable Google-ecosystem assistant.</div>
+          <div class="row limit"><b>Where it stops</b>A Google play in a Microsoft house; not a permission-aware context layer over your stack.</div>
+          <div class="row win"><b>Glean&rsquo;s answer</b>Routes to Gemini&rsquo;s models when they&rsquo;re best &mdash; without adopting its ecosystem or a second silo.</div>
+        </div>
+        <div class="h2h" style="border-top-color:var(--artifact-positive);background:var(--artifact-selected)"><div class="vname">Glean</div>
+          <div class="row win"><b>The only foundation</b>Horizontal, model-agnostic, permission-aware, cross-ecosystem, and regulated-FS ready &mdash; the single governed layer that unifies everything above.</div>
+          <div class="row"><b>Proven</b>The coexistence-beneath-Microsoft pattern is live at peer banks including Capital One.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- UNDERSTANDING -->
+    <section id="understanding">
+      <span class="eyebrow">1.2 · Our Understanding</span>
+      <h2>From connected agents to an enterprise intelligence layer.</h2>
+      <p class="lead">Byron has matured from SharePoint-connected agents (1.0) to a parent-agent orchestration model in Copilot Studio (2.0). Byron 3.0 is the leap to an enterprise intelligence layer that orchestrates Copilot Studio agents, pro-code LangChain/LangGraph agents, and third-party AI — under context-aware routing, governance, and a marketplace of approved agents.</p>
+      <div class="roadmap" style="margin-top:8px">
+        <div class="roadmap-inner" style="min-width:0">
+          <div class="cards c3">
+            <div class="card"><div class="num">Byron 1.0 — Retrieval</div><h3>Individual connected agents</h3><p>SharePoint-scoped agents; users had to know which agent to query; static retrieval, minimal orchestration.</p></div>
+            <div class="card"><div class="num">Byron 2.0 — Orchestration</div><h3>Parent-agent routing</h3><p>A single entry point determines intent, builds context, and routes to child agents (HR, corp ops, workplace) in Copilot Studio.</p></div>
+            <div class="card" style="border-color:var(--artifact-primary-brand)"><div class="num" style="color:var(--artifact-primary-brand)">Byron 3.0 — Intelligence Layer</div><h3>Enterprise orchestration</h3><p>Governed routing across Copilot Studio, pro-code agents &amp; third-party AI; registry, marketplace, metadata &amp; content hygiene at scale.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SOLUTION -->
+    <section id="solution">
+      <span class="eyebrow">1.2 · Solution Description</span>
+      <h2>Three foundations, one governed platform.</h2>
+      <p class="lead">Glean delivers the exact platform capabilities the Byron 3.0 scope calls for — orchestration, model routing, memory/context, an agent registry, evaluation and observability — through three integrated pillars.</p>
+      <div class="cards c3" style="margin-top:22px">
+        <div class="card"><div class="num">01 · Enterprise Context</div><h3>A connected layer across people, content &amp; systems</h3><p>The Enterprise Graph + Personal Graph build a permission-aware understanding of your data, activity, and how associates actually work — the grounding that makes retrieval precise and answers trustworthy.</p></div>
+        <div class="card"><div class="num">02 · Glean Intelligence</div><h3>Orchestration without model lock-in</h3><p>Intelligent model routing across ~30 models, an agent harness, continual learning, and token efficiency — retrieval against Glean's index before inference cuts token burn 30–50%.</p></div>
+        <div class="card"><div class="num">03 · Glean Protect</div><h3>Multi-layered security &amp; agent guardrails</h3><p>AI-powered access controls, automated remediation, audit &amp; observability — with jailbreak detection at 97.8% accuracy for regulated, high-scrutiny environments.</p></div>
+      </div>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section id="architecture">
+      <span class="eyebrow">Reference Architecture · Scope A</span>
+      <h2>Glean sits beneath your front ends — not in front of them.</h2>
+      <p class="lead">The Byron chat experience on Anchor Point, Copilot Studio agents, and pro-code coworkers all keep their interfaces. Glean provides the pro-code enterprise intelligence layer with clear separation of concerns: orchestration, routing, memory/context, registry, and observability — accessible via API to everything above it.</p>
+      <div class="arch">
+        <div class="arch-lane-label">Experience Layer — preserved &amp; unchanged</div>
+        <div class="arch-boxes" style="grid-template-columns:repeat(4,1fr)">
+          <div class="abox">Byron on Anchor Point<small>Intranet chat</small></div>
+          <div class="abox">Copilot / M365<small>Productivity</small></div>
+          <div class="abox">Embedded portal experiences<small>Client &amp; internal</small></div>
+          <div class="abox">Agent Marketplace<small>Discover &amp; use</small></div>
+        </div>
+        <div class="arch-connector">▲ &nbsp; API / SDK / MCP &nbsp; ▲</div>
+        <div class="arch-lane-label">Glean Enterprise Intelligence Layer — the Byron 3.0 foundation</div>
+        <div class="arch-boxes" style="grid-template-columns:repeat(5,1fr)">
+          <div class="abox brand">Orchestration &amp; Intent Routing</div>
+          <div class="abox brand">Model Router<small>~30 models · BYO keys</small></div>
+          <div class="abox brand">Memory &amp; Context</div>
+          <div class="abox brand">Agent &amp; Tool Registry</div>
+          <div class="abox brand">Eval &amp; Observability</div>
+        </div>
+        <div class="arch-boxes" style="grid-template-columns:repeat(3,1fr);margin-top:10px">
+          <div class="abox soft">Enterprise Graph + Personal Graph<small>Permission-aware context</small></div>
+          <div class="abox soft">Glean Protect<small>Access control · guardrails · audit</small></div>
+          <div class="abox soft">Standardized Agent-to-Agent Handoff<small>Context transfer protocol</small></div>
+        </div>
+        <div class="arch-connector">▼ &nbsp; Permission-aware, productized connectors &amp; MCP &nbsp; ▼</div>
+        <div class="arch-lane-label">Agent &amp; Data Ecosystem — orchestrated, not owned</div>
+        <div class="arch-boxes" style="grid-template-columns:repeat(6,1fr)">
+          <div class="abox">Copilot Studio agents</div>
+          <div class="abox">LangChain / LangGraph coworkers</div>
+          <div class="abox">Third-party AI</div>
+          <div class="abox">ServiceNow</div>
+          <div class="abox">SharePoint</div>
+          <div class="abox">Snowflake · Databricks · Salesforce</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCOPE COVERAGE -->
+    <section id="scope">
+      <span class="eyebrow">Scope of Work · Sections A–G</span>
+      <h2>Full coverage of every scope area.</h2>
+      <p class="lead">Each Byron 3.0 scope requirement maps directly to a productized Glean capability — no bespoke build required to meet the core, with configuration and integration handled during delivery.</p>
+      <table>
+        <thead><tr><th style="width:30px"></th><th>Scope area</th><th>Glean capability</th><th class="cov">Coverage</th></tr></thead>
+        <tbody>
+          <tr><td class="scope-id">A</td><td>Platform Architecture &amp; Core Services</td><td>Orchestration layer, model router, memory/context, agent &amp; tool registry, eval/observability, standardized handoff protocols — all native.</td><td class="cov"><span class="chip full">Native</span></td></tr>
+          <tr><td class="scope-id">B</td><td>Orchestration Across Agent Ecosystems</td><td>Intent routing, tool selection, cross-agent handoff &amp; human escalation across Copilot Studio, pro-code agents, and third-party AI.</td><td class="cov"><span class="chip full">Native</span></td></tr>
+          <tr><td class="scope-id">C</td><td>Enterprise Data Integration Layer</td><td>250+ permission-aware connectors incl. ServiceNow &amp; SharePoint, plus MCP-based interoperability and reusable connector patterns.</td><td class="cov"><span class="chip full">Native</span></td></tr>
+          <tr><td class="scope-id">D</td><td>Content Hygiene &amp; Retrieval Quality</td><td>Metadata tagging standards, content-hygiene &amp; retirement workflows, orphaned-library archiving, enterprise-grounded RAG.</td><td class="cov"><span class="chip">Native + Delivery</span></td></tr>
+          <tr><td class="scope-id">E</td><td>Governance, Compliance &amp; Controls</td><td>RBAC &amp; permission-aware generation, agent intake/registry, full auditability &amp; traceability, HITL checkpoints.</td><td class="cov"><span class="chip full">Native</span></td></tr>
+          <tr><td class="scope-id">F</td><td>Evaluation, Testing &amp; Observability</td><td>Automated agent test pipelines, evaluation frameworks for accuracy/relevance/reliability, observability under multi-agent load, SIEM export.</td><td class="cov"><span class="chip full">Native</span></td></tr>
+          <tr><td class="scope-id">G</td><td>Delivery Approach &amp; Phasing</td><td>Phased motion mapped to your 6–8 / 6–8 / 10-week / ongoing model, with enterprise review-board assumptions built in.</td><td class="cov"><span class="chip">Delivery</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ORCHESTRATION -->
+    <section id="orchestration">
+      <span class="eyebrow">Scope B · Orchestration</span>
+      <h2>One intelligence layer, every class of agent.</h2>
+      <p class="lead">Byron 3.0 must orchestrate multiple categories of agents and endpoints. Glean routes intent to the right agent, tool, or workflow — with a standardized protocol for transferring context across copilots, child agents, digital coworkers, and third-party systems, and clean escalation to a human when needed.</p>
+      <div class="cards c3" style="margin-top:20px">
+        <div class="card"><div class="num">Copilot Studio agents</div><h3>Byron 2.0, preserved</h3><p>Existing SharePoint- and ServiceNow-connected agents are registered and orchestrated in place — no rebuild.</p></div>
+        <div class="card"><div class="num">Pro-code &amp; digital coworkers</div><h3>LangChain / LangGraph</h3><p>Enterprise-grade agents built by your teams plug into the registry with standardized handoff and shared context.</p></div>
+        <div class="card"><div class="num">Third-party AI</div><h3>Governed context passing</h3><p>Scoped context is passed and results received for end-user experiences — subject to policy, security &amp; contractual controls.</p></div>
+      </div>
+    </section>
+
+    <!-- DATA & CONTENT HYGIENE -->
+    <section id="data">
+      <span class="eyebrow">Scope C &amp; D · Data &amp; Retrieval Quality</span>
+      <h2>Connect everything. Surface only what's right — and permitted.</h2>
+      <div class="grid2 wide" style="margin-top:18px">
+        <div>
+          <div class="cards c2">
+            <div class="card"><div class="num">Integration layer</div><h3>Reusable connectors that scale</h3><ul><li>ServiceNow, SharePoint &amp; knowledge repositories</li><li>MCP-compatible tool integration patterns</li><li>Security controls enforce access at the connector boundary</li><li>Patterns reusable across business units</li></ul></div>
+            <div class="card"><div class="num">Retrieval quality</div><h3>Precision that improves over time</h3><ul><li>Metadata tagging standards across BUs</li><li>Content-hygiene &amp; outdated-content retirement</li><li>Orphaned-library archiving</li><li>RAG grounded in Northern Trust research &amp; documents</li></ul></div>
+          </div>
+        </div>
+        <div class="chartwrap">
+          <h3>Indexed retrieval vs. federated search</h3>
+          <div class="cap">Answer preference &amp; token efficiency, Glean vs. alternative context layers</div>
+          <div id="chartQuality" class="chart"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GOVERNANCE -->
+    <section id="governance">
+      <span class="eyebrow">Scope E · Governance, Compliance &amp; Non-Functional</span>
+      <h2>Built for a systemically-important, risk-averse institution.</h2>
+      <p class="lead">Glean's governance model was designed for regulated environments: role- and permission-aware reasoning, a registry and intake process, full auditability of agent actions and tool calls, and human-in-the-loop checkpoints for sensitive actions — with observability that exports to your SIEM.</p>
+      <div class="grid2" style="margin-top:20px">
+        <div class="cards c2">
+          <div class="card"><div class="num">Security</div><p>Secure-by-design, defense-in-depth, aligned to enterprise cyber controls; Glean Protect blocks jailbreak/injection at 97.8% accuracy.</p></div>
+          <div class="card"><div class="num">Privacy</div><p>Clear data boundaries, minimization, and compliant handling of sensitive data — enforced before any agent executes.</p></div>
+          <div class="card"><div class="num">Resilience</div><p>High availability, DR alignment, and graceful degradation when an agent or integration fails — without full-platform outage.</p></div>
+          <div class="card"><div class="num">Auditability</div><p>Traceability for routing decisions, tool calls, and data-access decisions; artifacts ready for audit, risk &amp; compliance reviews.</p></div>
+        </div>
+        <div class="card" style="align-self:stretch">
+          <div class="num">Certifications &amp; compliance posture</div>
+          <div class="logos" style="margin-top:12px">
+            <span class="logo-chip mono" style="font-family:'SF Mono',monospace;font-size:12px">SOC 2 Type II</span>
+            <span class="logo-chip mono" style="font-family:'SF Mono',monospace;font-size:12px">ISO 27001</span>
+            <span class="logo-chip mono" style="font-family:'SF Mono',monospace;font-size:12px">ISO 42001</span>
+            <span class="logo-chip mono" style="font-family:'SF Mono',monospace;font-size:12px">HIPAA</span>
+            <span class="logo-chip mono" style="font-family:'SF Mono',monospace;font-size:12px">GDPR</span>
+            <span class="logo-chip mono" style="font-family:'SF Mono',monospace;font-size:12px">TX-RAMP Level 2</span>
+          </div>
+          <p style="margin-top:16px">Permission-aware by default: every retrieval and action respects the user's identity and entitlements, so Byron never surfaces what a user isn't authorized to see — the single most important control for a fiduciary institution.</p>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:16px"><p><b>Confidentiality, communication and proposal handling.</b> Glean will treat all Byron 3.0 RFP materials as confidential and non-public, route all clarifications solely through Jill Aragona, respect Northern Trust's email-based Q&amp;A process and vendor question limits, clearly identify any deviations, and disclose any subcontractor use for approval before any Northern Trust information is shared.</p></div>
+    </section>
+
+    <!-- EVAL -->
+    <section id="eval">
+      <span class="eyebrow">Scope F · Evaluation, Testing &amp; Observability</span>
+      <h2>Quality you can prove, continuously.</h2>
+      <div class="grid2" style="margin-top:18px">
+        <div class="cards c3" style="grid-template-columns:1fr">
+          <div class="card"><div class="num">Automated testing</div><p>Test pipelines for new agents and existing Copilot Studio agents integrated into Byron — SIT-ready with audit &amp; application-team signoff documentation.</p></div>
+          <div class="card"><div class="num">Evaluation frameworks</div><p>Metrics aligned to business objectives — accuracy, relevance, reliability — monitored over time and under multi-agent load.</p></div>
+          <div class="card"><div class="num">Observability</div><p>Operational dashboards for performance, reliability &amp; usage; traceability for every routing decision and tool call, exportable to your SIEM.</p></div>
+        </div>
+        <div class="chartwrap">
+          <h3>Value realization across delivery phases</h3>
+          <div class="cap">Indicative outcome curve — time-to-answer reduction &amp; agents under governance</div>
+          <div id="chartValue" class="chart"></div>
+        </div>
+      </div>
+      <div class="cards c2" style="margin-top:18px">
+        <div class="card"><div class="num">Service levels</div><ul>
+          <li><b>Orchestration &amp; execution:</b> reliable routing, cross-agent workflow execution, failure isolation, prioritization, and throttling during peak demand.</li>
+          <li><b>Context &amp; policy enforcement:</b> consistent context assembly, permission checks, and predictable fallback behavior when context or services are unavailable.</li>
+          <li><b>Availability &amp; reliability:</b> enterprise-aligned uptime targets, planned maintenance discipline, and graceful partial degradation.</li>
+        </ul></div>
+        <div class="card"><div class="num">Operational support &amp; reporting</div><ul>
+          <li><b>Incident response:</b> time-bound escalation based on impact to enterprise experiences, multi-agent workflows, and shared intelligence services.</li>
+          <li><b>Root-cause analysis:</b> formal review for recurring platform or integration failures.</li>
+          <li><b>Governance reporting:</b> regular visibility into routing outcomes, retries, policy events, incident trends, and artifacts for audit/risk/compliance reviews.</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <!-- ROADMAP -->
+    <section id="roadmap">
+      <span class="eyebrow">Scope G &amp; 1.5 · Implementation Timeline</span>
+      <h2>A phased roadmap aligned to your delivery motion.</h2>
+      <p class="lead">We map directly to Northern Trust's four-phase model — Architecture &amp; Definition, Orchestration Design, Platform Build, and Operationalize &amp; Scale — reaching a governed MVP in ~24 weeks, with enterprise review-board approvals (cyber, legal, compliance, regulatory, architecture, AI governance) built into the plan.</p>
+      <div class="roadmap">
+        <div class="roadmap-inner">
+          <div class="rm-head"><span>Phase / Workstream</span><span>W1</span><span>W2</span><span>W4</span><span>W6</span><span>W8</span><span>W10</span><span>W12</span><span>W14</span><span>W16</span><span>W20</span><span>W24</span><span>Ongoing</span></div>
+          <div class="rm-row"><div class="rm-label">1 · Architecture &amp; Definition<small>6–8 weeks</small></div><div class="rm-track"><div class="rm-bar p1" style="left:0%;width:29%">Architecture, context &amp; identity, guardrails model</div></div></div>
+          <div class="rm-row"><div class="rm-label">2 · Orchestration Design<small>6–8 weeks</small></div><div class="rm-track"><div class="rm-bar p2" style="left:25%;width:29%">Routing, handoff &amp; integration patterns, governance model</div></div></div>
+          <div class="rm-row"><div class="rm-label">3 · Platform Build (MVP)<small>10 weeks</small></div><div class="rm-track"><div class="rm-bar p3" style="left:50%;width:34%">Build intelligence layer, integrate agents, validate perf &amp; security</div></div></div>
+          <div class="rm-row"><div class="rm-label">4 · Operationalize &amp; Scale<small>ongoing</small></div><div class="rm-track"><div class="rm-bar p4" style="left:75%;width:25%">Operating model, registry, continuous improvement</div></div></div>
+          <div class="rm-row"><div class="rm-label" style="color:var(--artifact-text-secondary)">Enterprise review boards<small>parallel</small></div><div class="rm-track"><div class="rm-bar" style="left:12%;width:66%;background:var(--artifact-border-dark);color:var(--artifact-text-primary)">Cyber · Legal · Compliance · Architecture · AI governance</div></div></div>
+        </div>
+      </div>
+      <div class="rm-legend">
+        <span><span class="dot" style="background:var(--artifact-chart-1)"></span>Phase 1 — Architecture</span>
+        <span><span class="dot" style="background:var(--artifact-chart-2)"></span>Phase 2 — Orchestration Design</span>
+        <span><span class="dot" style="background:var(--artifact-accent-soft)"></span>Phase 3 — Platform Build / MVP</span>
+        <span><span class="dot" style="background:var(--artifact-chart-4)"></span>Phase 4 — Operationalize &amp; Scale</span>
+      </div>
+    </section>
+
+    <!-- STAFFING -->
+    <section id="staffing">
+      <span class="eyebrow">1.3, 1.4 &amp; 1.6 · Staffing, Knowledge Transfer &amp; Governance</span>
+      <h2>A multi-disciplinary team that hands the keys back to you.</h2>
+      <p class="lead">We propose a blended onshore/nearshore pod that scales by phase, with knowledge transfer engineered in from day one so Northern Trust owns and operates Byron 3.0 at engagement close.</p>
+      <table>
+        <thead><tr><th>Role</th><th>Responsibility</th><th>Weighting by phase</th></tr></thead>
+        <tbody>
+          <tr><td><b>Solution &amp; Platform Architects</b></td><td>Byron 3.0 architecture, intent/context/agent models, integration &amp; governance standards</td><td>Heavy P1–P2</td></tr>
+          <tr><td><b>GenAI &amp; Orchestration Engineers</b></td><td>LangChain/LangGraph orchestration, routing logic, RAG pipelines &amp; memory strategy</td><td>Heavy P2–P3</td></tr>
+          <tr><td><b>Integration Developers</b></td><td>Connectors to enterprise systems &amp; vendor tools, MCP servers, permission enforcement</td><td>Heavy P3</td></tr>
+          <tr><td><b>Evaluation &amp; QA Specialists</b></td><td>Automated test pipelines, evaluation frameworks, quality/reliability monitoring at scale</td><td>P3–P4</td></tr>
+          <tr><td><b>Security &amp; Compliance Specialists</b></td><td>Security architecture, permission enforcement, auditability, regulatory alignment</td><td>All phases</td></tr>
+          <tr><td><b>Experience &amp; Intent Designers</b></td><td>Conversational flows, escalation paths, persona-based interaction across experiences</td><td>P2–P4</td></tr>
+        </tbody>
+      </table>
+      <div class="cards c2" style="margin-top:22px">
+        <div class="card"><div class="num">Knowledge transfer (1.4)</div><p>Structured transfer covering architecture, integration patterns, orchestration behavior, and governance processes — with runbooks, enablement sessions, and a shadow-then-lead model so your teams operate the platform independently at close.</p></div>
+        <div class="card"><div class="num">Engagement governance (1.6)</div><p>Joint steering committee, phase-gate reviews, defined escalation paths for platform- or data-level issues, and regular service reviews feeding continuous improvement — aligned to Northern Trust SDLC, change &amp; release practices.</p></div>
+      </div>
+      <div class="cards c2" style="margin-top:18px">
+        <div class="card"><div class="num">Team shape by phase</div><ul>
+          <li><b>Phase 1:</b> 4–6 resources across architecture, security, and program leadership.</li>
+          <li><b>Phase 2:</b> 6–8 resources as orchestration, experience, and governance design ramps.</li>
+          <li><b>Phase 3:</b> 8–12 resources including integrations, QA/evaluation, and platform engineering.</li>
+          <li><b>Phase 4:</b> 4–6 resources focused on scaled onboarding, service operations, and enablement.</li>
+          <li><b>Delivery model:</b> blended onshore / nearshore pod with clear workstream ownership and escalation paths.</li>
+        </ul></div>
+        <div class="card"><div class="num">Joint delivery assumptions</div><ul>
+          <li>Northern Trust SMEs support requirements definition, validation, prioritization, testing, and rollout governance.</li>
+          <li>Northern Trust provides relevant system access, integration endpoints, SDLC tooling, and environment support.</li>
+          <li>Glean owns platform design, connector patterns, orchestration behavior, enablement, issue resolution, and cross-team coordination.</li>
+          <li>Knowledge-transfer artifacts include runbooks, architecture packs, connector standards, governance workflows, and escalation maps.</li>
+        </ul></div>
+      </div>
+    </section>
+
+    <!-- VALUE & ACCELERATORS -->
+    <section id="value">
+      <span class="eyebrow">1.7, 1.11–1.14 · Value-Added Services &amp; Accelerators</span>
+      <h2>Accelerators that shorten time-to-value.</h2>
+      <div class="cards c3" style="margin-top:18px">
+        <div class="card"><div class="num">Connector library</div><h3>250+ productized connectors</h3><p>ServiceNow, SharePoint, Salesforce, Snowflake, Databricks &amp; more — pre-built and permission-aware, eliminating bespoke integration work.</p></div>
+        <div class="card"><div class="num">Agent harness &amp; registry</div><h3>Onboarding templates</h3><p>Standardized intake, versioning &amp; lifecycle patterns so new agents ship without reinventing governance each time.</p></div>
+        <div class="card"><div class="num">Automated eval kit</div><h3>Test scripting as a value-add (1.11)</h3><p>Reusable evaluation harnesses and test scripts your application teams maintain going forward — measuring accuracy, relevance &amp; reliability.</p></div>
+        <div class="card"><div class="num">Model router</div><h3>~30 models, no lock-in</h3><p>Intelligent routing plus bring-your-own keys and 30–50% token savings — pass-through economics with efficiency built in.</p></div>
+        <div class="card"><div class="num">Content-hygiene toolkit</div><h3>Retrieval quality at scale</h3><p>Metadata tagging, outdated-content retirement &amp; orphaned-library archiving to protect search precision across BUs.</p></div>
+        <div class="card"><div class="num">Retained accelerators (1.14)</div><h3>Yours to keep</h3><p>Connectors, harnesses &amp; eval kits can be retained by Northern Trust at project conclusion for ongoing internal reuse.</p></div>
+      </div>
+    </section>
+
+    <!-- PROOF -->
+    <section id="proof">
+      <span class="eyebrow">1.9 &amp; 1.13 · Relevant Experience &amp; References</span>
+      <h2>Proven where trust is non-negotiable.</h2>
+      <p class="lead">Glean is deployed as the enterprise foundation at leading financial institutions and Fortune 100 enterprises — organizations with the same regulatory scrutiny, scale, and risk posture as Northern Trust.</p>
+      <div class="logos">
+        <span class="logo-chip">Citi</span>
+        <span class="logo-chip">Capital One</span>
+        <span class="logo-chip">Nationwide</span>
+        <span class="logo-chip">Coinbase</span>
+        <span class="logo-chip">General Motors</span>
+      </div>
+      <div class="grid2" style="margin-top:26px">
+        <div class="chartwrap">
+          <h3>Where Glean drives measurable outcomes</h3>
+          <div class="cap">Platform impact metrics observed across enterprise deployments</div>
+          <div id="chartProof" class="chart"></div>
+        </div>
+        <div class="card" style="align-self:stretch">
+          <div class="num">Reference approach (1.13)</div>
+          <p>We will arrange referenceable customer conversations with financial-services peers — including a Capital One reference — so your team can validate deployment choices, realized value, and coexistence with Microsoft investments directly with a peer institution.</p>
+          <p style="margin-bottom:0">These references speak specifically to Glean operating as the foundational layer beneath existing agent estates — the exact pattern Byron 3.0 requires.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONCERNS -->
+    <section id="concerns">
+      <span class="eyebrow">Risk &amp; Objection Handling</span>
+      <h2>We've heard your concerns. Here's how we answer them.</h2>
+      <div class="cards c2" style="margin-top:20px">
+        <div class="concern"><div class="q">"We don't want to rip out Microsoft, Copilot Studio, or LangChain."</div><div class="a">You don't. Glean sits underneath as the shared foundation — your front ends and agents stay in place. Customers routinely keep their own UIs and use Glean as the backend platform.</div></div>
+        <div class="concern"><div class="q">"How portable is the context layer if we ever exit?"</div><div class="a">Observability and context data are exportable, connectors are configuration-driven, and access runs through open standards (APIs, MCP). We'll cover portability and exit options in depth under NDA in technical diligence.</div></div>
+        <div class="concern"><div class="q">"How do you validate model routing and maintain output quality?"</div><div class="a">Routing decisions are traceable and continuously evaluated against accuracy/relevance/reliability metrics; retrieval is grounded in your governed data before inference to prevent hallucination and bias.</div></div>
+        <div class="concern"><div class="q">"Will security satisfy bank-grade, regulated requirements?"</div><div class="a">Secure-by-design, permission-aware, SOC 2 Type II / ISO 27001 / ISO 42001 certified, with SIEM export and HITL checkpoints — built for systemically-important institutions.</div></div>
+        <div class="concern"><div class="q">"Can you support client-facing / embedded experiences?"</div><div class="a">Yes — with the same permission-aware governance and access controls applied to internal use, plus standardized handoff and human escalation for sensitive wealth and portfolio contexts.</div></div>
+        <div class="concern"><div class="q">"Buy vs. build — why not build this ourselves?"</div><div class="a">Glean gives you the plumbing — connectivity, permissions, context, routing, governance — as a maintained product, so your teams build differentiated agents instead of re-engineering foundation as regulations and downstream systems change.</div></div>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="pricing">
+      <span class="eyebrow">1.8 &amp; 2.6 · Pricing Approach</span>
+      <h2>Transparent commercials, both models offered.</h2>
+      <p class="lead">Per your template, we provide both a fixed-bid delivery structure with milestone gating and a T&amp;M option, plus the platform's ongoing commercial model. Final sizing follows the data exchange already underway between our teams.</p>
+      <div class="pricing">
+        <div class="ptile"><div class="num" style="font-family:'SF Mono',monospace;font-size:12px;color:var(--artifact-primary-brand);letter-spacing:0.1em">Delivery — Fixed-bid, milestone-gated</div>
+          <ul>
+            <li>Milestone 1 — Architecture &amp; Definition accepted (Phase 1)</li>
+            <li>Milestone 2 — Orchestration &amp; governance design accepted (Phase 2)</li>
+            <li>Milestone 3 — Governed MVP validated for performance &amp; security (Phase 3)</li>
+            <li>Milestone 4 — Operating model &amp; registry established (Phase 4)</li>
+            <li>T&amp;M option available for scope discovered during delivery</li>
+          </ul>
+        </div>
+        <div class="ptile"><div class="num" style="font-family:'SF Mono',monospace;font-size:12px;color:var(--artifact-primary-brand);letter-spacing:0.1em">Platform — Ongoing</div>
+          <ul>
+            <li>User-based licensing for the intelligence layer</li>
+            <li>Pass-through token consumption — reduced 30–50% by index-first retrieval</li>
+            <li>Bring-your-own model keys across ~30 supported models</li>
+            <li>Accelerators (connectors, harnesses, eval kits) retainable at project close</li>
+            <li>Detailed pricing finalized on receipt of sizing data</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEXT STEPS -->
+    <section id="next">
+      <span class="eyebrow">Next Steps</span>
+      <h2>A clear path from RFP to governed MVP.</h2>
+      <div class="callout"><p>Glean is ready to move immediately into joint solution design. We recommend a focused first pilot connecting your highest-value data sources for a defined user group — the fastest way to prove Byron 3.0's foundation with real Northern Trust content.</p></div>
+      <div class="mstimeline">
+        <div class="ms"><div class="dot-lg"></div><div class="d">21 JUL 2026</div><div class="t">RFP proposal submitted</div><div class="n">Delivered to Jill Aragona by 12:00 CT.</div></div>
+        <div class="ms"><div class="dot-lg"></div><div class="d">23 JUL 2026</div><div class="t">Vendor presentation</div><div class="n">2–3 PM CT — live walkthrough &amp; Q&amp;A.</div></div>
+        <div class="ms"><div class="dot-lg"></div><div class="d">POST-DOWN-SELECT</div><div class="t">Joint solution design &amp; NDA diligence</div><div class="n">Portability, model-routing validation, observability &amp; regulated-environment security.</div></div>
+      </div>
+      <div class="next">
+        <div class="nstep"><div class="n">01</div><p>Confirm pilot data sources &amp; priority user group</p></div>
+        <div class="nstep"><div class="n">02</div><p>Complete sizing exchange for final pricing</p></div>
+        <div class="nstep"><div class="n">03</div><p>Capital One reference conversation</p></div>
+        <div class="nstep"><div class="n">04</div><p>Technical deep-dive under NDA</p></div>
+      </div>
+      <div class="cards c3" style="margin-top:18px">
+        <div class="card"><div class="num">Selection process alignment</div><p>This response is built to support Northern Trust's three-step process: RFP evaluation, down-select plus joint solution design, and negotiation / contracting transition.</p></div>
+        <div class="card"><div class="num">Evaluation criteria coverage</div><p>We explicitly address solution fit, prior comparable experience, resource profiles, additional value-adds, and pricing detail — the evaluation areas Northern Trust highlighted.</p></div>
+        <div class="card"><div class="num">Clarification protocol</div><p>All questions will be submitted via email to Jill Aragona within Northern Trust's stated process and vendor question limits, with no side-channel outreach.</p></div>
+      </div>
+      <div class="footer">
+        <p style="margin-bottom:4px">Prepared by Glean for Northern Trust · Intel Layer · Confidential.</p>
+        <p style="margin-bottom:0">All communications regarding this RFP directed to Jill Aragona (ja255@ntrs.com) per Section 3.1.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  var isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+  var c1=css('--artifact-chart-1')||'#0b5d3b', c2=css('--artifact-chart-2')||'#2f8f5b', c3=css('--artifact-chart-3')||'#b39ccf', c4=css('--artifact-chart-4')||'#c9a24b';
+  var ink=css('--artifact-text-primary')||'#1c1a20', muted=css('--artifact-text-secondary')||'#6b6577', grid=css('--artifact-border-light')||'#e6e1ec';
+  var baseText={color:muted,fontFamily:'SF Mono, Consolas, monospace',fontSize:11};
+
+  var q=echarts.init(document.getElementById('chartQuality'),null,{renderer:'svg'});
+  q.setOption({
+    grid:{left:70,right:20,top:30,bottom:30},
+    tooltip:{trigger:'axis'},
+    legend:{data:['Glean (indexed)','Alternative (federated)'],textStyle:{color:muted},top:0},
+    xAxis:{type:'category',data:['Answer\nquality','Token\nefficiency','Retrieval\nprecision'],axisLabel:baseText,axisLine:{lineStyle:{color:grid}}},
+    yAxis:{type:'value',axisLabel:baseText,splitLine:{lineStyle:{color:grid}}},
+    series:[
+      {name:'Glean (indexed)',type:'bar',data:[100,100,100],itemStyle:{color:c1,borderRadius:[4,4,0,0]},barWidth:22},
+      {name:'Alternative (federated)',type:'bar',data:[40,55,50],itemStyle:{color:c3,borderRadius:[4,4,0,0]},barWidth:22}
+    ]
+  });
+
+  var v=echarts.init(document.getElementById('chartValue'),null,{renderer:'svg'});
+  v.setOption({
+    grid:{left:45,right:55,top:30,bottom:40},
+    tooltip:{trigger:'axis'},
+    legend:{data:['Time-to-answer reduction (%)','Agents under governance'],textStyle:{color:muted},top:0},
+    xAxis:{type:'category',data:['P1','P2','P3 (MVP)','P4','P4+'],axisLabel:baseText,axisLine:{lineStyle:{color:grid}}},
+    yAxis:[
+      {type:'value',name:'%',axisLabel:baseText,splitLine:{lineStyle:{color:grid}},max:80},
+      {type:'value',name:'agents',axisLabel:baseText,splitLine:{show:false}}
+    ],
+    series:[
+      {name:'Time-to-answer reduction (%)',type:'line',smooth:true,data:[5,15,40,60,72],itemStyle:{color:c1},lineStyle:{width:3,color:c1},areaStyle:{color:c1,opacity:0.08}},
+      {name:'Agents under governance',type:'line',yAxisIndex:1,smooth:true,data:[0,3,12,30,60],itemStyle:{color:c4},lineStyle:{width:3,color:c4,type:'dashed'}}
+    ]
+  });
+
+  var p=echarts.init(document.getElementById('chartProof'),null,{renderer:'svg'});
+  p.setOption({
+    grid:{left:130,right:40,top:16,bottom:24},
+    tooltip:{trigger:'axis',formatter:'{b}: {c}'},
+    xAxis:{type:'value',axisLabel:baseText,splitLine:{lineStyle:{color:grid}},max:100},
+    yAxis:{type:'category',data:['Jailbreak detection','Token reduction (max)','Answer quality gain','Connectors ready'],axisLabel:{color:ink,fontFamily:'SF Mono, monospace',fontSize:11}},
+    series:[{type:'bar',data:[97.8,50,60,{value:100,label:{formatter:'250+'}}],itemStyle:{color:function(pm){return [c1,c2,c3,c4][pm.dataIndex];},borderRadius:[0,4,4,0]},barWidth:16,
+      label:{show:true,position:'right',color:muted,fontFamily:'SF Mono, monospace',fontSize:11,formatter:function(pm){return ['97.8%','30–50%','2.5×','250+'][pm.dataIndex];}}}]
+  });
+
+  var cmp=echarts.init(document.getElementById('chartCompare'),null,{renderer:'svg'});
+  window.__cmp=cmp;
+  cmp.setOption({
+    grid:{left:110,right:44,top:10,bottom:24},
+    tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:'{b}: {c}/100'},
+    xAxis:{type:'value',max:100,axisLabel:baseText,splitLine:{lineStyle:{color:grid}}},
+    yAxis:{type:'category',data:['Cloudflare','ServiceNow','Google Gemini','Palantir','Microsoft Copilot','Glean'],axisLabel:{color:ink,fontFamily:'SF Mono, monospace',fontSize:11.5}},
+    series:[{type:'bar',data:[
+      {value:45,itemStyle:{color:c3}},
+      {value:58,itemStyle:{color:c3}},
+      {value:60,itemStyle:{color:c3}},
+      {value:64,itemStyle:{color:c3}},
+      {value:68,itemStyle:{color:c2}},
+      {value:95,itemStyle:{color:c1}}
+    ],barWidth:18,itemStyle:{borderRadius:[0,4,4,0]},
+      label:{show:true,position:'right',color:muted,fontFamily:'SF Mono, monospace',fontSize:11,formatter:'{c}'}}]
+  });
+
+  window.addEventListener('resize',function(){q.resize();v.resize();p.resize();if(window.__cmp)window.__cmp.resize();});
+})();
+</script>
+<script>
+  window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
+  window.GleanBridge.onMessage('action',function(data){if(data.actionId==='export-pdf')window.print();});
+  function prepareChartsForPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var chart=echarts.getInstanceByDom(el);if(!chart)return;var img=new Image();img.src=chart.getDataURL({type:'png',pixelRatio:2});img.className='print-chart-img';img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';el.dataset.prevPosition=el.style.position;el.style.position='relative';el.appendChild(img);});}
+  function cleanUpAfterPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var img=el.querySelector('.print-chart-img');if(!img)return;img.remove();el.style.position=el.dataset.prevPosition||'';delete el.dataset.prevPosition;});}
+  window.addEventListener('beforeprint',prepareChartsForPrint);
+  window.addEventListener('afterprint',cleanUpAfterPrint);
+</script>
+<script>
+  var links=document.querySelectorAll('.toc a');var secs=[].slice.call(document.querySelectorAll('main section'));
+  function onScroll(){var y=window.scrollY+140;var cur=secs[0];secs.forEach(function(s){if(s.offsetTop<=y)cur=s;});links.forEach(function(a){a.classList.toggle('active',a.getAttribute('href')==='#'+cur.id);});}
+  window.addEventListener('scroll',onScroll);onScroll();
+  links.forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var t=document.querySelector(a.getAttribute('href'));if(t)window.scrollTo({top:t.offsetTop-20,behavior:'smooth'});});});
+</script>
+</body>
+</html>
