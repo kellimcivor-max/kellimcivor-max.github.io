@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Good Morning, Omar — Command Center</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>window.APP_DATA = {"metadata": {"title": "Good Morning, Omar \u2014 Command Center", "generated_at": "2026-07-29T16:34:54.487462+00:00", "date_line": "Wednesday, July 29 2026 \u00b7 Decatur, IL \u00b7 84\u00b0F humid \u00b7 scattered storms", "refreshed_label": "Live data refreshed Jul 29, 2026 \u00b7 12:34 PM ET"}, "agenda": [{"time": "Jul 27 \u00b7 4:00p", "title": "ADM Premeeting", "meta": "Google Meet \u00b7 4 attendees \u00b7 organizer: kelli.mcivor"}, {"time": "Jul 29 \u00b7 10:00a", "title": "ADM x Glean Demo", "meta": "Google Meet \u00b7 6 attendees \u00b7 organizer: kelli.mcivor"}], "team_signals": [{"name": "Jeremy Davis", "role": "Reliability Director \u2014 Milling, Egg & Golden Peanut", "item": "Sending priority maintenance & CapEx use cases", "tag": "Collaborate", "tag_class": "tag-blue"}, {"name": "Malik Patel", "role": "Director, Digital Transformation (AI Strategy)", "item": "AI roadmap alignment for maintenance agents", "tag": "Action", "tag_class": "tag-amber"}, {"name": "Stacy Rudolph", "role": "Engineering & Projects \u2014 ADM", "item": "Scheduling the Glean blueprint session", "tag": "Review", "tag_class": "tag-blue"}, {"name": "Kelli McIvor", "role": "Strategic Account Executive \u2014 Glean", "item": "Sharing deck + interactive agent mock-up", "tag": "FYI", "tag_class": "tag-green"}, {"name": "Chris Janning", "role": "Solutions Engineer \u2014 Glean", "item": "Analyzing Maximo data structure for connector", "tag": "Collaborate", "tag_class": "tag-blue"}, {"name": "Tony Welter", "role": "Sales Manager (1st Line) \u2014 Glean", "item": "Pilot sandbox & deployment planning", "tag": "FYI", "tag_class": "tag-green"}], "citations": {"__refresh_data_py__": {"kind": "code", "code": "\"\"\"Refresh live Glean data for Omar Thorpe's ADM Command Center dashboard.\n\nLive from Glean: the ADM engagement schedule (calendar) and the team & peer\nsignals roster (real meeting participants, enriched with live Glean titles for\ninternal Glean employees). The operational plant/asset metrics on the dashboard\nare an illustrative 'day in the life' vision and are held static in the template.\n\"\"\"\nimport asyncio, json, os\nfrom datetime import datetime, timedelta, timezone\nfrom pathlib import Path\n\nimport tool_sdk\n\nAPP_DIR = Path(__file__).parent\nET = timezone(timedelta(hours=-4))  # dashboard is framed for Decatur/Eastern engagement times\n\nADM_DECK_URL = \"https://app.glean.com/library/012bb5b3967945908bd525f8782e592e\"\nADM_MEETING_DOC = \"https://docs.google.com/document/d/1xIMla4f1qrjKmonUO1RPOjYBb4lTItb5cYnDT9akHkY/edit\"\n\n# Internal Glean team members whose titles we enrich from the live directory.\nGLEAN_TEAM = [\"Kelli McIvor\", \"Chris Janning\", \"Tony Welter\"]\n# ADM-side stakeholders from the engagement (external \u2014 not in Glean directory).\nADM_CONTACTS = [\n    {\"name\": \"Jeremy Davis\", \"role\": \"Reliability Director \u2014 Milling, Egg & Golden Peanut\",\n     \"item\": \"Sending priority maintenance & CapEx use cases\", \"tag\": \"Collaborate\", \"tag_class\": \"tag-blue\"},\n    {\"name\": \"Malik Patel\", \"role\": \"Director, Digital Transformation (AI Strategy)\",\n     \"item\": \"AI roadmap alignment for maintenance agents\", \"tag\": \"Action\", \"tag_class\": \"tag-amber\"},\n    {\"name\": \"Stacy Rudolph\", \"role\": \"Engineering & Projects \u2014 ADM\",\n     \"item\": \"Scheduling the Glean blueprint session\", \"tag\": \"Review\", \"tag_class\": \"tag-blue\"},\n]\n# What each internal Glean team member is driving on the account.\nGLEAN_ITEMS = {\n    \"Chris Janning\": {\"item\": \"Analyzing Maximo data structure for connector\", \"tag\": \"Collaborate\", \"tag_class\": \"tag-blue\"},\n    \"Kelli McIvor\": {\"item\": \"Sharing deck + interactive agent mock-up\", \"tag\": \"FYI\", \"tag_class\": \"tag-green\"},\n    \"Tony Welter\": {\"item\": \"Pilot sandbox & deployment planning\", \"tag\": \"FYI\", \"tag_class\": \"tag-green\"},\n}\n\n\ndef _fmt_time(iso: str) -> str:\n    \"\"\"Format an ISO event start time as 'Jul 29 \u00b7 10:00a' in Eastern time.\"\"\"\n    try:\n        dt = datetime.fromisoformat(iso.replace(\"Z\", \"+00:00\")).astimezone(ET)\n    except Exception:\n        return \"\"\n    hour = dt.strftime(\"%I\").lstrip(\"0\") or \"12\"\n    return f\"{dt.strftime('%b %d')} \u00b7 {hour}:{dt.strftime('%M%p').lower()[:-1]}\"\n\n\nasync def build_agenda() -> list:\n    \"\"\"Build the ADM engagement schedule from live calendar events (rolling window).\"\"\"\n    # --- citation_start [engagement_agenda] ---\n    # Rolling window: past two weeks through the next 45 days, recomputed each refresh.\n    now = datetime.now(timezone.utc)\n    after = (now - timedelta(days=14)).date().isoformat()\n    before = (now + timedelta(days=45)).date().isoformat()\n    res = await tool_sdk.meeting_lookup(after=after, before=before, query=\"ADM\")\n    events = []\n    for block in res:\n        events.extend(block.get(\"events\", []) or [])\n    # Keep real ADM engagement touchpoints, sort chronologically, cap at 8.\n    events = [e for e in events if e.get(\"start_time\")]\n    events.sort(key=lambda e: e[\"start_time\"])\n    agenda = []\n    for e in events[:8]:\n        att = e.get(\"attendees\") or []\n        n = len(att)\n        organizer = (e.get(\"organizer\") or \"\").split(\"@\")[0]\n        meta_bits = []\n        if e.get(\"conference_provider\"):\n            meta_bits.append(e[\"conference_provider\"])\n        if n:\n            meta_bits.append(f\"{n} attendee\" + (\"s\" if n != 1 else \"\"))\n        if organizer:\n            meta_bits.append(f\"organizer: {organizer}\")\n        agenda.append({\n            \"time\": _fmt_time(e[\"start_time\"]),\n            \"title\": e.get(\"title\", \"ADM meeting\"),\n            \"meta\": \" \u00b7 \".join(meta_bits) or \"ADM engagement\",\n        })\n    # --- citation_end [engagement_agenda] ---\n    return agenda\n\n\nasync def build_team_signals() -> list:\n    \"\"\"Assemble the team roster: ADM stakeholders plus Glean team enriched with live titles.\"\"\"\n    # --- citation_start [team_signals] ---\n    # Look up live titles for the internal Glean account team from the employee directory.\n    live_titles = {}\n    try:\n        res = await tool_sdk.employee_search(query=\"*\", peoplenamesoremails=GLEAN_TEAM)\n        for ent in res:\n            for e in ent.get(\"entities\", []) or []:\n                p = e.get(\"person\") or {}\n                if p.get(\"name\") and p.get(\"title\"):\n                    live_titles[p[\"name\"]] = p[\"title\"]\n    except Exception:\n        live_titles = {}\n    signals = list(ADM_CONTACTS)\n    for name in GLEAN_TEAM:\n        meta = GLEAN_ITEMS.get(name, {})\n        title = live_titles.get(name)\n        role = f\"{title} \u2014 Glean\" if title else f\"{name} \u2014 Glean\"\n        signals.append({\n            \"name\": name,\n            \"role\": role,\n            \"item\": meta.get(\"item\", \"\"),\n            \"tag\": meta.get(\"tag\", \"FYI\"),\n            \"tag_class\": meta.get(\"tag_class\", \"tag-green\"),\n        })\n    # --- citation_end [team_signals] ---\n    return signals\n\n\nasync def main() -> None:\n    now = datetime.now(ET)\n    agenda = await build_agenda()\n    team = await build_team_signals()\n    data = {\n        \"metadata\": {\n            \"title\": \"Good Morning, Omar \u2014 Command Center\",\n            \"generated_at\": datetime.now(timezone.utc).isoformat(),\n            \"date_line\": now.strftime(\"%A, %B %-d %Y\") + \" \u00b7 Decatur, IL \u00b7 84\u00b0F humid \u00b7 scattered storms\",\n            \"refreshed_label\": \"Live data refreshed \" + now.strftime(\"%b %-d, %Y \u00b7 %-I:%M %p ET\"),\n        },\n        \"agenda\": agenda,\n        \"team_signals\": team,\n        \"text_citations\": {\n            \"engagement_context\": {\n                \"explanation\": (\n                    \"Engagement context is drawn from the ADM x Glean sessions and the \"\n                    \"[Glean for ADM \u2014 Asset Management deck](\" + ADM_DECK_URL + \") prepared for Omar Thorpe, \"\n                    \"plus the [ADM meeting notes](\" + ADM_MEETING_DOC + \").\"\n                )\n            },\n        },\n    }\n    tmp = APP_DIR / \"data.json.tmp\"\n    tmp.write_text(json.dumps(data, indent=2))\n    os.replace(tmp, APP_DIR / \"data.json\")\n    print(json.dumps({\"ok\": True, \"agenda_items\": len(agenda), \"team\": len(team)}))\n\n\nasyncio.run(main())\n", "language": "python", "start_line": 1, "end_line": 143}, "engagement_agenda": {"kind": "code", "code": "    # Rolling window: past two weeks through the next 45 days, recomputed each refresh.\n    now = datetime.now(timezone.utc)\n    after = (now - timedelta(days=14)).date().isoformat()\n    before = (now + timedelta(days=45)).date().isoformat()\n    res = await tool_sdk.meeting_lookup(after=after, before=before, query=\"ADM\")\n    events = []\n    for block in res:\n        events.extend(block.get(\"events\", []) or [])\n    # Keep real ADM engagement touchpoints, sort chronologically, cap at 8.\n    events = [e for e in events if e.get(\"start_time\")]\n    events.sort(key=lambda e: e[\"start_time\"])\n    agenda = []\n    for e in events[:8]:\n        att = e.get(\"attendees\") or []\n        n = len(att)\n        organizer = (e.get(\"organizer\") or \"\").split(\"@\")[0]\n        meta_bits = []\n        if e.get(\"conference_provider\"):\n            meta_bits.append(e[\"conference_provider\"])\n        if n:\n            meta_bits.append(f\"{n} attendee\" + (\"s\" if n != 1 else \"\"))\n        if organizer:\n            meta_bits.append(f\"organizer: {organizer}\")\n        agenda.append({\n            \"time\": _fmt_time(e[\"start_time\"]),\n            \"title\": e.get(\"title\", \"ADM meeting\"),\n            \"meta\": \" \u00b7 \".join(meta_bits) or \"ADM engagement\",\n        })", "language": "python", "start_line": 52, "end_line": 79}, "team_signals": {"kind": "code", "code": "    # Look up live titles for the internal Glean account team from the employee directory.\n    live_titles = {}\n    try:\n        res = await tool_sdk.employee_search(query=\"*\", peoplenamesoremails=GLEAN_TEAM)\n        for ent in res:\n            for e in ent.get(\"entities\", []) or []:\n                p = e.get(\"person\") or {}\n                if p.get(\"name\") and p.get(\"title\"):\n                    live_titles[p[\"name\"]] = p[\"title\"]\n    except Exception:\n        live_titles = {}\n    signals = list(ADM_CONTACTS)\n    for name in GLEAN_TEAM:\n        meta = GLEAN_ITEMS.get(name, {})\n        title = live_titles.get(name)\n        role = f\"{title} \u2014 Glean\" if title else f\"{name} \u2014 Glean\"\n        signals.append({\n            \"name\": name,\n            \"role\": role,\n            \"item\": meta.get(\"item\", \"\"),\n            \"tag\": meta.get(\"tag\", \"FYI\"),\n            \"tag_class\": meta.get(\"tag_class\", \"tag-green\"),\n        })", "language": "python", "start_line": 87, "end_line": 109}, "engagement_context": {"kind": "text", "explanation": "Engagement context is drawn from the ADM x Glean sessions and the [Glean for ADM \u2014 Asset Management deck](https://app.glean.com/library/012bb5b3967945908bd525f8782e592e) prepared for Omar Thorpe, plus the [ADM meeting notes](https://docs.google.com/document/d/1xIMla4f1qrjKmonUO1RPOjYBb4lTItb5cYnDT9akHkY/edit).", "language": "text"}}};</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f5f7;color:#1d1d1f;line-height:1.5}
@@ -84,13 +85,414 @@ tr:hover td{background:#fafafa}
   button,[role="button"]{display:none!important}
 }
 </style>
+
+<style data-live-web-app-citations>
+  .citation-python-code {
+    box-sizing: border-box;
+    max-width: 100%;
+    margin: 0;
+    padding: 12px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-radius: 8px;
+    background: #0f172a;
+    color: #e5e7eb;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: normal;
+  }
+  .citation-python-code code {
+    display: grid;
+    gap: 0;
+    min-width: 0;
+    font: inherit;
+  }
+  .citation-code-line {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    min-width: 0;
+  }
+  .citation-code-line-number {
+    padding-right: 12px;
+    color: #64748b;
+    font-size: 11px;
+    line-height: inherit;
+    text-align: right;
+    user-select: none;
+  }
+  .citation-code-line-source {
+    min-width: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .citation-token-comment { color: #94a3b8; }
+  .citation-token-keyword { color: #93c5fd; font-weight: 600; }
+  .citation-token-number { color: #fbbf24; }
+  .citation-token-string { color: #86efac; }
+  .glean-citation {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: baseline;
+    box-sizing: border-box;
+    min-width: 18px;
+    height: 18px;
+    margin: 0 1px;
+    padding: 0 5px;
+    border: 1px solid var(--theme-border-light, #e5e5e5);
+    border-radius: 9px;
+    background: var(--theme-background-light, #f6f6f6);
+    color: var(--theme-text-secondary, #727272);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .glean-citation:hover {
+    background: var(--theme-background-mid, #f0f0f0);
+    color: var(--theme-text-primary, #1b1b1b);
+  }
+  .glean-citation:focus-visible {
+    outline: 2px solid var(--theme-primary-brand, #343ced);
+    outline-offset: 1px;
+  }
+  .glean-citation-popover {
+    position: absolute;
+    z-index: 2147483647;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    width: min(500px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 16px);
+    overflow: auto;
+    background: var(--theme-background, #ffffff);
+    border: 1px solid var(--theme-border-dark, #cccccc);
+    border-radius: 12px;
+    box-shadow: 0 4px 7px rgba(0, 0, 0, 0.25);
+    color: var(--theme-text-primary, #1b1b1b);
+    font-family: ui-sans-serif, system-ui, -apple-system, "SF Pro Text", "Segoe UI", sans-serif;
+  }
+  .glean-citation-popover[hidden] {
+    display: none;
+  }
+  .glean-citation-content {
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 20px 20px 8px;
+  }
+  .glean-citation-content:last-child {
+    padding-bottom: 20px;
+  }
+  .glean-citation-text {
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: -0.125px;
+    color: var(--theme-text-primary, #1b1b1b);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .glean-citation-text a {
+    color: var(--theme-primary-brand, #343ced);
+  }
+  .glean-citation-popover .citation-python-code {
+    max-height: 320px;
+    overflow: auto;
+  }
+  .glean-citation-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+    padding: 0 20px 12px;
+  }
+  .glean-citation-toggle {
+    height: 34px;
+    padding: 0 12px;
+    border: 1px solid var(--theme-border-light, #e5e5e5);
+    border-radius: 8px;
+    background: var(--theme-background, #ffffff);
+    color: var(--theme-text-primary, #1b1b1b);
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .glean-citation-toggle:hover {
+    background: var(--theme-background-light, #f6f6f6);
+  }
+  .glean-citation-segmented {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    box-sizing: border-box;
+    height: 34px;
+    padding: 0 4px;
+    background: var(--theme-background-light, #f6f6f6);
+    border: 1px solid var(--theme-border-light, #e5e5e5);
+    border-radius: 12px;
+  }
+  .glean-citation-segment {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--theme-text-secondary, #727272);
+    cursor: pointer;
+  }
+  .glean-citation-segment[aria-selected="true"] {
+    background: var(--theme-background, #ffffff);
+    color: var(--theme-text-primary, #1b1b1b);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+  }
+  .glean-citation-segment svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+  }
+  @media print {
+    .glean-citation,
+    .glean-citation-popover { display: none !important; }
+  }
+</style>
+<script data-live-web-app-citations>
+  (function() {
+    var tokenPattern = /(?:\"\"\"[\s\S]*?\"\"\"|'''[\s\S]*?'''|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|#[^\n]*|\b(?:False|None|True|and|as|assert|async|await|break|class|continue|def|del|elif|else|except|finally|for|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yield)\b|\b\d+(?:\.\d+)?\b)/g;
+    var keywordPattern = /^(?:False|None|True|and|as|assert|async|await|break|class|continue|def|del|elif|else|except|finally|for|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yield)$/;
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, function(ch) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+      });
+    }
+
+    function tokenClass(token) {
+      if (token.charAt(0) === '#') return 'citation-token-comment';
+      if (keywordPattern.test(token)) return 'citation-token-keyword';
+      if (/^\d/.test(token)) return 'citation-token-number';
+      return 'citation-token-string';
+    }
+
+    function highlightPython(code) {
+      var source = String(code || '');
+      var output = '';
+      var lastIndex = 0;
+      source.replace(tokenPattern, function(token, offset) {
+        output += escapeHtml(source.slice(lastIndex, offset));
+        output += '<span class="' + tokenClass(token) + '">' + escapeHtml(token) + '</span>';
+        lastIndex = offset + token.length;
+        return token;
+      });
+      return output + escapeHtml(source.slice(lastIndex));
+    }
+
+    function renderPythonCode(code, startLine) {
+      var lines = String(code || '').split('\n');
+      var parsedStartLine = Number(startLine);
+      var firstLine = Number.isFinite(parsedStartLine) && parsedStartLine > 0 ? parsedStartLine : 1;
+      var renderedLines = lines.map(function(line, index) {
+        return '<span class="citation-code-line">' +
+          '<span class="citation-code-line-number">' + (firstLine + index) + '</span>' +
+          '<span class="citation-code-line-source">' + highlightPython(line) + '</span>' +
+          '</span>';
+      }).join('');
+      return '<pre class="citation-python-code"><code class="language-python">' +
+        renderedLines +
+        '</code></pre>';
+    }
+
+    function getFullCode() {
+      var citations = (window.APP_DATA && window.APP_DATA.citations) || {};
+      return citations.__refresh_data_py__ && citations.__refresh_data_py__.code;
+    }
+
+    var iconInfo = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.25"></circle><path d="M8 7.25v3.4"></path><path d="M8 5.05h.01"></path></svg>';
+    var iconCode = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.75 5 2.75 8l3 3"></path><path d="M10.25 5l3 3-3 3"></path></svg>';
+    var markdownLinkPattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+
+    function renderText(value) {
+      return escapeHtml(value || '').replace(markdownLinkPattern, function(match, label, url) {
+        return '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
+      });
+    }
+
+    function citationViews(citation, note) {
+      if (!citation) return [];
+      if (citation.kind === 'text') return citation.explanation ? ['info'] : [];
+      var views = [];
+      if (citation.code) {
+        if (note) views.push('info');
+        views.push('code');
+      }
+      return views;
+    }
+
+    var popoverElement = null;
+    var activeTrigger = null;
+    var activeCitation = null;
+    var activeNote = '';
+    var repositionHandle = null;
+
+    function ensurePopover() {
+      if (popoverElement && popoverElement.isConnected) return popoverElement;
+      popoverElement = document.createElement('div');
+      popoverElement.className = 'glean-citation-popover';
+      popoverElement.setAttribute('role', 'dialog');
+      popoverElement.hidden = true;
+      document.body.appendChild(popoverElement);
+      return popoverElement;
+    }
+
+    function renderCodePanel(citation) {
+      var fullCode = getFullCode();
+      var hasFullCode = fullCode && fullCode !== citation.code;
+      var showingFull = popoverElement.dataset.full === 'true' && hasFullCode;
+      return renderPythonCode(showingFull ? fullCode : (citation.code || ''), showingFull ? 1 : (citation.start_line || 1));
+    }
+
+    function renderActiveView(citation, view) {
+      if (view === 'code') return renderCodePanel(citation);
+      var text = citation.kind === 'text' ? citation.explanation : activeNote;
+      return text ? '<p class="glean-citation-text">' + renderText(text) + '</p>' : '';
+    }
+
+    function renderPopover() {
+      if (!activeCitation) return;
+      var views = citationViews(activeCitation, activeNote);
+      var view = popoverElement.dataset.view;
+      if (views.indexOf(view) === -1) {
+        view = views[0] || 'info';
+        popoverElement.dataset.view = view;
+      }
+      var fullCode = getFullCode();
+      var hasFullCode = fullCode && fullCode !== activeCitation.code;
+      var segmented = views.length > 1
+        ? '<div class="glean-citation-segmented" role="tablist">' +
+            '<button type="button" class="glean-citation-segment" role="tab" data-glean-citation-view="info" aria-label="Explanation" aria-selected="' + (view === 'info') + '">' + iconInfo + '</button>' +
+            '<button type="button" class="glean-citation-segment" role="tab" data-glean-citation-view="code" aria-label="Code" aria-selected="' + (view === 'code') + '">' + iconCode + '</button>' +
+          '</div>'
+        : '';
+      var toggle = view === 'code' && hasFullCode
+        ? '<button type="button" class="glean-citation-toggle" data-glean-citation-toggle-full>' +
+            (popoverElement.dataset.full === 'true' ? 'Show only relevant code' : 'Show full code') + '</button>'
+        : '';
+      var header = segmented || toggle ? '<div class="glean-citation-header">' + toggle + segmented + '</div>' : '';
+      popoverElement.innerHTML = '<div class="glean-citation-content">' + renderActiveView(activeCitation, view) + '</div>' + header;
+    }
+
+    function positionPopover() {
+      if (!activeTrigger || !popoverElement || popoverElement.hidden) return;
+      var margin = 8;
+      var rect = activeTrigger.getBoundingClientRect();
+      var width = popoverElement.offsetWidth;
+      var height = popoverElement.offsetHeight;
+      var viewportWidth = document.documentElement.clientWidth;
+      var viewportHeight = window.innerHeight;
+      var left = Math.max(margin, Math.min(rect.left, viewportWidth - width - margin));
+      var placeBelow = viewportHeight - rect.bottom >= height + margin || rect.top < height + margin;
+      var top = placeBelow ? rect.bottom + margin : rect.top - height - margin;
+      top = Math.max(margin, top);
+      popoverElement.style.left = (left + window.scrollX) + 'px';
+      popoverElement.style.top = (top + window.scrollY) + 'px';
+    }
+
+    function scheduleReposition() {
+      if (repositionHandle) return;
+      repositionHandle = window.requestAnimationFrame(function() {
+        repositionHandle = null;
+        positionPopover();
+      });
+    }
+
+    function closeCitation() {
+      if (!popoverElement || popoverElement.hidden) return;
+      popoverElement.hidden = true;
+      popoverElement.innerHTML = '';
+      activeTrigger = null;
+      activeCitation = null;
+      activeNote = '';
+    }
+
+    function openCitation(trigger, name) {
+      var citation = ((window.APP_DATA && window.APP_DATA.citations) || {})[name];
+      var note = trigger.getAttribute('data-citation-note') || '';
+      if (!citation || !citationViews(citation, note).length) return;
+      ensurePopover();
+      if (activeTrigger === trigger && !popoverElement.hidden) {
+        closeCitation();
+        return;
+      }
+      activeTrigger = trigger;
+      activeCitation = citation;
+      activeNote = note;
+      popoverElement.dataset.full = 'false';
+      popoverElement.dataset.view = citationViews(citation, note)[0];
+      popoverElement.hidden = false;
+      renderPopover();
+      positionPopover();
+    }
+
+    document.addEventListener('click', function(event) {
+      var target = event.target instanceof Element ? event.target : null;
+      if (!target) return;
+      var trigger = target.closest('.glean-citation[data-citation]');
+      if (trigger) {
+        event.preventDefault();
+        openCitation(trigger, trigger.getAttribute('data-citation'));
+        return;
+      }
+      if (!popoverElement || popoverElement.hidden) return;
+      if (!target.closest('.glean-citation-popover')) {
+        closeCitation();
+        return;
+      }
+      var segment = target.closest('[data-glean-citation-view]');
+      if (segment) {
+        popoverElement.dataset.view = segment.getAttribute('data-glean-citation-view');
+        renderPopover();
+        positionPopover();
+        return;
+      }
+      if (target.closest('[data-glean-citation-toggle-full]')) {
+        popoverElement.dataset.full = popoverElement.dataset.full === 'true' ? 'false' : 'true';
+        renderPopover();
+        positionPopover();
+      }
+    });
+
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') closeCitation();
+    });
+    window.addEventListener('scroll', scheduleReposition, true);
+    window.addEventListener('resize', scheduleReposition);
+
+    window.LiveWebAppCitations = {
+      escapeHtml: escapeHtml,
+      highlightPython: highlightPython,
+      renderPythonCode: renderPythonCode,
+      renderText: renderText,
+      open: openCitation,
+      close: closeCitation
+    };
+  })();
+</script>
+
 </head>
 <body>
 <div class="shell">
   <!-- GREETING -->
   <div class="greeting">
     <div class="hello">Good morning, Omar.</div>
-    <div class="date">Wednesday, July 29 2026 · Decatur, IL · 84°F humid · scattered storms</div>
+    <div class="date"><span id="dateLine">Wednesday, July 29 2026 · Decatur, IL · 84°F humid · scattered storms</span> <button class="glean-citation" data-citation="engagement_context" aria-label="Show sources">i</button></div>
     <div class="powered"><span class="dot"></span> Powered by Glean Work AI</div>
   </div>
   <!-- AI ASK BAR -->
@@ -143,49 +545,8 @@ tr:hover td{background:#fafafa}
       <div class="status-row"><div class="status-dot green"></div><div class="status-label">Maximo CMMS · SAP · Historian</div><div class="status-meta">Synced · refresh every 5–10 min</div></div>
     </div>
     <div class="card">
-      <h3>📅 Your Day — July 29</h3>
-      <div class="agenda-item">
-        <div class="agenda-time">8:00a</div>
-        <div class="agenda-detail">
-          <div class="agenda-title">Reliability & Asset Management Stand-up</div>
-          <div class="agenda-meta">Global plant reliability leads · Teams</div>
-        </div>
-      </div>
-      <div class="agenda-item">
-        <div class="agenda-time">9:30a</div>
-        <div class="agenda-detail">
-          <div class="agenda-title">Capital Project Portfolio Review</div>
-          <div class="agenda-meta">Engineering & Projects · CapEx pacing vs plan</div>
-        </div>
-      </div>
-      <div class="agenda-item">
-        <div class="agenda-time">11:00a</div>
-        <div class="agenda-detail">
-          <div class="agenda-title">Repair-vs-Replace Decision Review</div>
-          <div class="agenda-meta">Compressor C-4 · Pump P-17 · financial models</div>
-        </div>
-      </div>
-      <div class="agenda-item">
-        <div class="agenda-time">1:00p</div>
-        <div class="agenda-detail">
-          <div class="agenda-title">Glean Blueprint Session — Prep</div>
-          <div class="agenda-meta">Kelli McIvor, Chris Janning · data integration scope</div>
-        </div>
-      </div>
-      <div class="agenda-item">
-        <div class="agenda-time">2:30p</div>
-        <div class="agenda-detail">
-          <div class="agenda-title">Maximo Data Structure Assessment</div>
-          <div class="agenda-meta">Chris Janning · custom connector requirements</div>
-        </div>
-      </div>
-      <div class="agenda-item">
-        <div class="agenda-time">4:00p</div>
-        <div class="agenda-detail">
-          <div class="agenda-title">1:1 with Malik Patel</div>
-          <div class="agenda-meta">Director, Digital Transformation · AI roadmap sync ↗</div>
-        </div>
-      </div>
+      <h3>📅 ADM Engagement Schedule <button class="glean-citation" data-citation="engagement_agenda" aria-label="Calculation source">i</button></h3>
+      <div id="agendaList"></div>
     </div>
   </div>
   <!-- ROW 2: Regional Network Performance -->
@@ -337,23 +698,16 @@ tr:hover td{background:#fafafa}
   </div>
   <!-- ROW 7: Team Signals -->
   <div class="section">
-    <div class="section-hdr">👥 Team & Peer Signals</div>
+    <div class="section-hdr">👥 Team & Peer Signals <button class="glean-citation" data-citation="team_signals" aria-label="Calculation source">i</button></div>
     <div class="card">
       <table>
         <thead><tr><th>Person</th><th>Role</th><th>Top Item Today</th><th>Needs You</th></tr></thead>
-        <tbody>
-          <tr><td><strong>Jeremy Davis</strong></td><td>Reliability Director — Milling, Egg & Golden Peanut</td><td>Sending priority maintenance & CapEx use cases</td><td><span class="tag tag-blue">Collaborate</span></td></tr>
-          <tr><td><strong>Malik Patel</strong></td><td>Director, Digital Transformation (AI Strategy)</td><td>AI roadmap alignment for maintenance agents</td><td><span class="tag tag-amber">Action</span></td></tr>
-          <tr><td><strong>Stacy Rudolph</strong></td><td>Engineering & Projects — ADM</td><td>Scheduling the Glean blueprint session</td><td><span class="tag tag-blue">Review</span></td></tr>
-          <tr><td><strong>Chris Janning</strong></td><td>Solutions Engineer — Glean</td><td>Analyzing Maximo data structure for connector</td><td><span class="tag tag-blue">Collaborate</span></td></tr>
-          <tr><td><strong>Kelli McIvor</strong></td><td>Strategic Account Executive — Glean</td><td>Sharing deck + interactive agent mock-up</td><td><span class="tag tag-green">FYI</span></td></tr>
-          <tr><td><strong>Tony Welter</strong></td><td>Account team — Glean</td><td>Pilot sandbox & deployment planning</td><td><span class="tag tag-green">FYI</span></td></tr>
-        </tbody>
+        <tbody id="teamBody"></tbody>
       </table>
     </div>
   </div>
   <div class="footer-note">
-    This is a vision of what your morning could look like — every plant, every asset, every capital signal surfaced automatically by Glean's Work AI platform. No dashboards to build. No tabs to open. Just ask. · Illustrative dashboard · July 2026
+    This is a vision of what your morning could look like — every plant, every asset, every capital signal surfaced automatically by Glean's Work AI platform. No dashboards to build. No tabs to open. Just ask.<br><span id="refreshedLabel">Illustrative dashboard</span>
   </div>
 </div>
 <script>
@@ -491,6 +845,42 @@ function restoreChartsAfterPrint(){
 }
 window.addEventListener('beforeprint',prepareChartsForPrint);
 window.addEventListener('afterprint',restoreChartsAfterPrint);
+</script>
+<script>
+(function(){
+  function esc(s){var d=document.createElement('div');d.textContent=(s==null?'':String(s));return d.innerHTML;}
+  function render(){
+    var D = window.APP_DATA || {};
+    if (D.metadata){
+      if (D.metadata.date_line){var dl=document.getElementById('dateLine'); if(dl) dl.textContent=D.metadata.date_line;}
+      if (D.metadata.refreshed_label){var rl=document.getElementById('refreshedLabel'); if(rl) rl.textContent=D.metadata.refreshed_label;}
+    }
+    // Agenda — live ADM engagement schedule
+    var al=document.getElementById('agendaList');
+    if (al){
+      var ag=(D.agenda||[]);
+      if(!ag.length){ al.innerHTML='<div class="agenda-meta" style="padding:8px 0">No upcoming ADM sessions on the calendar.</div>'; }
+      else{
+        al.innerHTML=ag.map(function(a){
+          return '<div class="agenda-item"><div class="agenda-time">'+esc(a.time)+'</div>'+
+                 '<div class="agenda-detail"><div class="agenda-title">'+esc(a.title)+'</div>'+
+                 '<div class="agenda-meta">'+esc(a.meta)+'</div></div></div>';
+        }).join('');
+      }
+    }
+    // Team & peer signals — live roster
+    var tb=document.getElementById('teamBody');
+    if (tb){
+      var ts=(D.team_signals||[]);
+      tb.innerHTML=ts.map(function(t){
+        return '<tr><td><strong>'+esc(t.name)+'</strong></td><td>'+esc(t.role)+'</td>'+
+               '<td>'+esc(t.item)+'</td><td><span class="tag '+esc(t.tag_class)+'">'+esc(t.tag)+'</span></td></tr>';
+      }).join('');
+    }
+  }
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', render);
+  else render();
+})();
 </script>
 </body>
 </html>
