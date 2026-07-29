@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CapEx Maintenance Intelligence Agent</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+  :root{
+    --artifact-background: var(--theme-background, #f7f8fa);
+    --artifact-surface: var(--theme-background-light, #ffffff);
+    --artifact-surface-2: #eef1f6;
+    --artifact-ink: var(--theme-text-primary, #131722);
+    --artifact-muted: #5a6577;
+    --artifact-faint: #8a94a6;
+    --artifact-border: #e2e6ee;
+    --artifact-primary: #1257ff;
+    --artifact-primary-soft: rgba(18,87,255,0.09);
+    --artifact-steel: #33415c;
+    --artifact-healthy: #12a05c;
+    --artifact-healthy-soft: rgba(18,160,92,0.12);
+    --artifact-watch: #d98a00;
+    --artifact-watch-soft: rgba(217,138,0,0.13);
+    --artifact-exception: #e0413b;
+    --artifact-exception-soft: rgba(224,65,59,0.12);
+    --artifact-shadow: 0 1px 2px rgba(18,23,34,0.05), 0 6px 22px rgba(18,23,34,0.06);
+    --mono: ui-monospace, "SFMono-Regular", "Menlo", "Consolas", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  html[data-theme='dark']{
+    --artifact-background:#0d1017; --artifact-surface:#151a24; --artifact-surface-2:#1c2432;
+    --artifact-ink:#eef1f6; --artifact-muted:#a3adbf;  --artifact-faint:#7c8798;
+    --artifact-border:#26303f; --artifact-primary:#4d84ff; --artifact-primary-soft:rgba(77,132,255,0.15);
+    --artifact-steel:#c3ccdb;
+    --artifact-healthy-soft:rgba(18,160,92,0.20); --artifact-watch-soft:rgba(217,138,0,0.22); --artifact-exception-soft:rgba(224,65,59,0.22);
+    --artifact-shadow:0 1px 2px rgba(0,0,0,0.4), 0 6px 22px rgba(0,0,0,0.5);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--artifact-background);color:var(--artifact-ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px 80px;}
+  a{color:var(--artifact-primary);text-decoration:none;}
+
+  /* HERO */
+  .hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#0e1730 0%,#122a5c 55%,#0e1730 100%);color:#fff;border-radius:0 0 22px 22px;}
+  .hero-inner{max-width:1120px;margin:0 auto;padding:56px 24px 44px;position:relative;z-index:2;}
+  .hero::after{content:"";position:absolute;inset:0;background:radial-gradient(600px 300px at 82% 12%,rgba(77,132,255,0.35),transparent 60%);z-index:1;}
+  .tag{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#9fc0ff;border:1px solid rgba(159,192,255,0.35);padding:6px 12px;border-radius:999px;}
+  .hero h1{font-size:clamp(30px,4.6vw,50px);line-height:1.05;margin:20px 0 12px;font-weight:700;letter-spacing:-.02em;max-width:16ch;}
+  .hero p.sub{font-size:clamp(16px,1.8vw,20px);color:#c9d6ee;max-width:62ch;margin:0;}
+  .hero .flow{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px;}
+  .hero .flow span{font-family:var(--mono);font-size:12.5px;color:#dbe6fb;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);padding:7px 13px;border-radius:8px;}
+  .hero .flow span b{color:#fff;font-weight:600;}
+
+  /* SECTION */
+  section{margin-top:52px;scroll-margin-top:80px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--artifact-primary);margin:0 0 6px;}
+  h2{font-size:clamp(22px,2.6vw,30px);letter-spacing:-.02em;margin:0 0 6px;font-weight:700;}
+  .lead{color:var(--artifact-muted);max-width:70ch;margin:0 0 22px;font-size:16px;}
+
+  /* KPI RAIL */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:-38px;position:relative;z-index:5;}
+  .kpi{background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:14px;padding:18px 18px 16px;box-shadow:var(--artifact-shadow);}
+  .kpi .lab{font-size:12.5px;color:var(--artifact-muted);font-weight:500;}
+  .kpi .val{font-size:30px;font-weight:750;letter-spacing:-.02em;margin:6px 0 2px;font-variant-numeric:tabular-nums;}
+  .kpi .delta{font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:5px;}
+  .up{color:var(--artifact-healthy);} .down-good{color:var(--artifact-healthy);} .warn{color:var(--artifact-watch);}
+  .kpi .foot{font-size:11.5px;color:var(--artifact-faint);margin-top:7px;}
+
+  /* STEP FLOW */
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .step{background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:14px;padding:20px;position:relative;box-shadow:var(--artifact-shadow);}
+  .step .n{font-family:var(--mono);font-size:12px;color:var(--artifact-primary);background:var(--artifact-primary-soft);width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:600;}
+  .step h4{margin:14px 0 6px;font-size:15.5px;}
+  .step p{margin:0;font-size:13.5px;color:var(--artifact-muted);}
+
+  /* CARDS / CHART GRID */
+  .grid-2{display:grid;grid-template-columns:1.2fr 1fr;gap:18px;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .card{background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:16px;padding:20px 22px;box-shadow:var(--artifact-shadow);}
+  .card h3{margin:0 0 2px;font-size:16px;font-weight:650;}
+  .card .cap{margin:0 0 14px;font-size:13px;color:var(--artifact-muted);}
+  .chart{width:100%;height:290px;}
+  .chart.tall{height:340px;}
+
+  /* EXCEPTION FEED */
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center;}
+  .filters .flabel{font-size:12.5px;color:var(--artifact-muted);margin-right:2px;}
+  .chip{font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:999px;border:1px solid var(--artifact-border);background:var(--artifact-surface);color:var(--artifact-muted);cursor:pointer;transition:all .15s;font-family:var(--sans);}
+  .chip:hover{border-color:var(--artifact-primary);color:var(--artifact-primary);}
+  .chip.active{background:var(--artifact-primary);border-color:var(--artifact-primary);color:#fff;}
+  .feed{display:flex;flex-direction:column;gap:10px;}
+  .exc{border:1px solid var(--artifact-border);border-radius:12px;overflow:hidden;background:var(--artifact-surface);transition:box-shadow .15s;}
+  .exc:hover{box-shadow:var(--artifact-shadow);}
+  .exc-head{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;padding:14px 18px;cursor:pointer;}
+  .sev{width:9px;height:9px;border-radius:50%;flex:none;}
+  .sev.critical{background:var(--artifact-exception);box-shadow:0 0 0 4px var(--artifact-exception-soft);}
+  .sev.watch{background:var(--artifact-watch);box-shadow:0 0 0 4px var(--artifact-watch-soft);}
+  .sev.info{background:var(--artifact-primary);box-shadow:0 0 0 4px var(--artifact-primary-soft);}
+  .exc-title{font-weight:600;font-size:14.5px;}
+  .exc-asset{font-family:var(--mono);font-size:12px;color:var(--artifact-faint);margin-top:2px;}
+  .badge{font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:4px 9px;border-radius:6px;white-space:nowrap;}
+  .badge.critical{color:var(--artifact-exception);background:var(--artifact-exception-soft);}
+  .badge.watch{color:var(--artifact-watch);background:var(--artifact-watch-soft);}
+  .badge.info{color:var(--artifact-primary);background:var(--artifact-primary-soft);}
+  .val-badge{font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--artifact-healthy);white-space:nowrap;}
+  .caret{color:var(--artifact-faint);transition:transform .2s;font-size:13px;}
+  .exc.open .caret{transform:rotate(90deg);}
+  .exc-body{max-height:0;overflow:hidden;transition:max-height .28s ease;}
+  .exc.open .exc-body{max-height:340px;}
+  .exc-body-inner{padding:2px 18px 18px 41px;display:grid;grid-template-columns:1fr 1fr;gap:16px 26px;border-top:1px dashed var(--artifact-border);margin-top:2px;padding-top:14px;}
+  .ib .k{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--artifact-faint);margin-bottom:4px;}
+  .ib .v{font-size:13.5px;color:var(--artifact-ink);}
+  .rec{grid-column:1/-1;background:var(--artifact-primary-soft);border-radius:10px;padding:12px 14px;font-size:13.5px;}
+  .rec b{color:var(--artifact-primary);}
+
+  /* VALUE CAPTURE */
+  .vcap{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .vc{background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:14px;padding:20px;box-shadow:var(--artifact-shadow);}
+  .vc .icn{font-size:20px;}
+  .vc .v{font-size:26px;font-weight:750;letter-spacing:-.02em;margin:10px 0 3px;font-variant-numeric:tabular-nums;}
+  .vc .l{font-size:13px;color:var(--artifact-muted);}
+
+  /* PROOF */
+  .proof{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .pf{background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:14px;padding:20px;box-shadow:var(--artifact-shadow);}
+  .pf .co{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--artifact-primary);font-weight:600;}
+  .pf .stat{font-size:19px;font-weight:700;margin:8px 0 5px;letter-spacing:-.01em;}
+  .pf .d{font-size:13px;color:var(--artifact-muted);}
+
+  /* TRUST */
+  .trust{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .tr{border:1px solid var(--artifact-border);border-radius:12px;padding:16px 18px;background:var(--artifact-surface);}
+  .tr .t{font-size:14px;font-weight:650;margin-bottom:4px;}
+  .tr .s{font-size:12.5px;color:var(--artifact-muted);}
+
+  /* CTA */
+  .cta{background:linear-gradient(135deg,#0e1730,#12306b);color:#fff;border-radius:18px;padding:34px 36px;margin-top:52px;}
+  .cta h2{color:#fff;}
+  .cta .lead{color:#c9d6ee;}
+  .cta-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:6px;}
+  .cta-steps .c{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);border-radius:12px;padding:18px;}
+  .cta-steps .c .n{font-family:var(--mono);color:#9fc0ff;font-size:12px;}
+  .cta-steps .c .h{font-weight:650;margin:8px 0 5px;font-size:15px;}
+  .cta-steps .c p{margin:0;font-size:13px;color:#c9d6ee;}
+
+  /* TOC */
+  .toc{position:fixed;top:50%;right:18px;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:9px;}
+  .toc a{width:10px;height:10px;border-radius:50%;background:var(--artifact-border);border:2px solid transparent;transition:all .2s;position:relative;}
+  .toc a:hover,.toc a.active{background:var(--artifact-primary);transform:scale(1.25);}
+  .toc a span{position:absolute;right:20px;top:50%;transform:translateY(-50%);white-space:nowrap;background:var(--artifact-ink);color:var(--artifact-background);font-size:11.5px;padding:4px 9px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .18s;font-family:var(--sans);}
+  .toc a:hover span{opacity:1;}
+  .foot-note{margin-top:40px;font-size:12px;color:var(--artifact-faint);text-align:center;border-top:1px solid var(--artifact-border);padding-top:20px;}
+
+  /* LIFECYCLE */
+  .lc-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+  .lc-layout{display:grid;grid-template-columns:296px 1fr;gap:18px;align-items:start;}
+  .lc-right{display:flex;flex-direction:column;gap:18px;}
+  .lc-panel{background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:16px;padding:22px;box-shadow:var(--artifact-shadow);position:sticky;top:16px;}
+  .lc-name{font-size:18px;font-weight:750;margin:0;letter-spacing:-.01em;}
+  .lc-sub{font-family:var(--mono);font-size:11.5px;color:var(--artifact-faint);margin:4px 0 18px;}
+  .lc-health{display:flex;align-items:center;gap:14px;padding:14px;border-radius:12px;margin-bottom:16px;}
+  .lc-health .hs{font-size:34px;font-weight:750;line-height:1;font-variant-numeric:tabular-nums;}
+  .lc-health .hl{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+  .lc-health .hd{font-size:12px;color:var(--artifact-muted);margin-top:3px;}
+  .lc-stat{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-top:1px solid var(--artifact-border);font-size:13px;}
+  .lc-stat .k{color:var(--artifact-muted);}
+  .lc-stat .v{font-weight:650;font-variant-numeric:tabular-nums;text-align:right;}
+  .lc-stat .v.crit{color:var(--artifact-exception);}
+  .lc-stat .v.warnc{color:var(--artifact-watch);}
+  .lc-stat .v.okc{color:var(--artifact-healthy);}
+  .phase-track{display:flex;height:38px;border-radius:9px;overflow:hidden;margin:4px 0 0;}
+  .phase-seg{display:flex;align-items:center;justify-content:center;font-size:10.5px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;padding:0 6px;position:relative;}
+  .phase-now-lab{margin-top:10px;font-size:12.5px;color:var(--artifact-muted);}
+  .phase-now-lab b{color:var(--artifact-primary);}
+
+  @media (max-width:900px){
+    .kpis,.steps,.vcap,.trust{grid-template-columns:repeat(2,1fr);}
+    .grid-2,.grid-3,.proof,.cta-steps{grid-template-columns:1fr;}
+    .exc-head{grid-template-columns:auto 1fr auto;}
+    .val-badge{display:none;}
+    .exc-body-inner{grid-template-columns:1fr;}
+    .lc-layout{grid-template-columns:1fr;}
+    .lc-panel{position:static;}
+    .toc{display:none;}
+  }
+
+  @media print{
+    body{margin:0;padding:0.4in 0.6in;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact;}
+    .wrap,.hero-inner{max-width:100%!important;width:100%!important;}
+    .toc{display:none!important;}
+    .hero{border-radius:0;}
+    section,.hero{break-inside:avoid;margin-bottom:20px!important;}
+    .card,.kpi,.step,.vc,.pf,.tr{break-inside:avoid;box-shadow:none!important;border:1px solid rgba(0,0,0,0.08);}
+    .kpis,.steps,.grid-2,.grid-3,.vcap,.proof,.trust{gap:10px!important;margin-bottom:20px!important;}
+    .chart{height:240px!important;}
+    .chart.tall{height:280px!important;}
+    .exc-body{max-height:none!important;overflow:visible!important;}
+    .exc-body-inner{display:grid!important;}
+    *,*::before,*::after{animation:none!important;transition:none!important;}
+    .chip,button{display:none!important;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="toc" aria-label="Section navigation">
+  <a href="#overview" class="active"><span>Overview</span></a>
+  <a href="#how"><span>How it works</span></a>
+  <a href="#fleet"><span>Fleet signals</span></a>
+  <a href="#lifecycle"><span>Machine lifecycle</span></a>
+  <a href="#exceptions"><span>Exception feed</span></a>
+  <a href="#value"><span>Value tracker</span></a>
+  <a href="#next"><span>Next step</span></a>
+</nav>
+
+<header class="hero">
+  <div class="hero-inner">
+    <span class="tag">● Capital Asset Management · Agent Concept</span>
+    <h1>CapEx Maintenance Intelligence Agent</h1>
+    <p class="sub">Proactive, exception-based reporting across your machine fleet — so every dollar of capital keeps earning. The agent watches your CMMS, historian, work orders and OEM manuals, surfaces the signals that matter, and drafts the action before downtime, warranty loss, or idle capital ever hits the P&amp;L.</p>
+    <div class="flow">
+      <span><b>1.</b> Sees the signal</span>
+      <span><b>2.</b> Reasons across context</span>
+      <span><b>3.</b> Flags the exception</span>
+      <span><b>4.</b> Drafts the action</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section id="overview">
+    <div class="kpis">
+      <div class="kpi">
+        <div class="lab">Capital asset base monitored</div>
+        <div class="val">$2.4B</div>
+        <div class="delta"><span style="color:var(--artifact-faint)">1,280 critical machines across 6 plants</span></div>
+      </div>
+      <div class="kpi">
+        <div class="lab">Unplanned downtime</div>
+        <div class="val">&minus;32%</div>
+        <div class="delta down-good">▼ vs. pre-agent baseline</div>
+        <div class="foot">Faster diagnosis → lower MTTR</div>
+      </div>
+      <div class="kpi">
+        <div class="lab">Asset / capital utilization (OEE)</div>
+        <div class="val">84%</div>
+        <div class="delta up">▲ from 76%</div>
+        <div class="foot">More from the installed base</div>
+      </div>
+      <div class="kpi">
+        <div class="lab">Proactive exceptions this week</div>
+        <div class="val">47</div>
+        <div class="delta warn">12 critical · flagged before failure</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <p class="eyebrow">A day in the life</p>
+    <h2>From raw signal to a governed, ready-to-act work product</h2>
+    <p class="lead">The agent runs the reliability engineer's workflow continuously — not on a schedule, but the moment a signal crosses a threshold. Every recommendation is grounded in your own records, cited, and permissions-aware.</p>
+    <div class="steps">
+      <div class="step"><div class="n">01</div><h4>Sees the signal</h4><p>Pulls maintenance history from the CMMS, prior work orders, condition-monitoring alarms, and OEM manuals — no dashboards to check.</p></div>
+      <div class="step"><div class="n">02</div><h4>Reasons across context</h4><p>Correlates recurring failures, parts, warranty status, and past fixes across silos that don't normally talk to each other.</p></div>
+      <div class="step"><div class="n">03</div><h4>Flags the exception</h4><p>Only what deviates: a failure signature repeating, capital sitting idle, a warranty about to lapse — ranked by cost and urgency.</p></div>
+      <div class="step"><div class="n">04</div><h4>Drafts the action</h4><p>A diagnosis brief, the right expert to call, and a draft work order or claim — queued for review, governed by permissions.</p></div>
+    </div>
+  </section>
+
+  <section id="fleet">
+    <p class="eyebrow">Fleet health &amp; capital signals</p>
+    <h2>Where the investment is at risk — and where it's paying off</h2>
+    <p class="lead">Exception-based, not report-based: 71% of the fleet is healthy and needs no attention, so the team's time goes only to the 29% that carries risk or upside.</p>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Unplanned downtime is falling since go-live</h3>
+        <p class="cap">Monthly downtime hours across critical machines · agent live from March</p>
+        <div id="c_downtime" class="chart"></div>
+      </div>
+      <div class="card">
+        <h3>Most of the fleet needs no attention</h3>
+        <p class="cap">Live status across 1,280 monitored machines</p>
+        <div id="c_health" class="chart"></div>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-top:18px;">
+      <div class="card">
+        <h3>Capital utilization vs. plan, by asset class</h3>
+        <p class="cap">Idle or under-used capital is a signal too — the agent flags right-sizing and redeployment opportunities</p>
+        <div id="c_util" class="chart"></div>
+      </div>
+      <div class="card">
+        <h3>Faster, more first-time-right repairs</h3>
+        <p class="cap">MTTR (hrs) and first-time-fix rate, quarter over quarter</p>
+        <div id="c_mttr" class="chart"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="lifecycle">
+    <p class="eyebrow">Asset lifecycle · interactive</p>
+    <h2>Track any machine across its full capital life</h2>
+    <p class="lead">Select a machine to see where it sits in its lifecycle, how its health is degrading, and how maintenance spend is tracking against the capital invested — the full picture behind each capitalize-or-replace decision.</p>
+    <div class="lc-tabs" id="lcTabs"></div>
+    <div class="lc-layout">
+      <div class="lc-panel" id="lcStats"></div>
+      <div class="lc-right">
+        <div class="card">
+          <h3>Lifecycle stage</h3>
+          <p class="cap" id="lcPhaseCap"></p>
+          <div class="phase-track" id="lcPhase"></div>
+          <div class="phase-now-lab" id="lcPhaseNow"></div>
+        </div>
+        <div class="card">
+          <h3>Health index &amp; remaining useful life</h3>
+          <p class="cap">Actual condition to date, with projected degradation to end-of-life · maintenance events marked</p>
+          <div id="c_life" class="chart"></div>
+        </div>
+        <div class="card">
+          <h3>Maintenance spend vs. capital value</h3>
+          <p class="cap">Cumulative maintenance cost against original CapEx — the signal for repair-vs-replace</p>
+          <div id="c_cost" class="chart"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="exceptions">
+    <p class="eyebrow">Exception feed · live</p>
+    <h2>This week's proactive signals</h2>
+    <p class="lead">Each item is an exception the agent raised on its own — with the evidence it reasoned across and a drafted next action. Filter by severity, then expand any signal.</p>
+    <div class="filters">
+      <span class="flabel">Filter:</span>
+      <button class="chip active" data-f="all">All (7)</button>
+      <button class="chip" data-f="critical">Critical (3)</button>
+      <button class="chip" data-f="watch">Watch (3)</button>
+      <button class="chip" data-f="info">Info (1)</button>
+    </div>
+    <div class="feed" id="feed"></div>
+  </section>
+
+  <section id="value">
+    <p class="eyebrow">Capitalizing on the investment</p>
+    <h2>Value tracked, quarter over quarter</h2>
+    <p class="lead">The point isn't more alerts — it's protecting and extending the return on capital already spent. Every exception the agent resolves is booked to a value category and tracked over time. Illustrative full-year view across the monitored fleet.</p>
+    <div class="vcap">
+      <div class="vc"><div class="icn">🛠️</div><div class="v">$4.1M</div><div class="l">Downtime avoided by catching failure signatures before they escalated</div></div>
+      <div class="vc"><div class="icn">📄</div><div class="v">$1.3M</div><div class="l">Warranty &amp; service claims recovered before coverage lapsed</div></div>
+      <div class="vc"><div class="icn">♻️</div><div class="v">$2.8M</div><div class="l">Capital re-buy avoided by redeploying under-used assets</div></div>
+      <div class="vc"><div class="icn">⏱️</div><div class="v">~9,600</div><div class="l">Engineer hours given back from manual triage &amp; report-building</div></div>
+    </div>
+    <div class="grid-2" style="margin-top:18px;">
+      <div class="card">
+        <h3>Value captured builds every quarter</h3>
+        <p class="cap">Value booked by category, with cumulative total · $M</p>
+        <div id="c_valqtr" class="chart"></div>
+      </div>
+      <div class="card">
+        <h3>Where the value comes from</h3>
+        <p class="cap">Full-year share by value driver</p>
+        <div id="c_valmix" class="chart"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="next">
+    <div class="cta">
+      <p class="eyebrow" style="color:#9fc0ff;">From concept to a day in the life</p>
+      <h2>Prove it on one plant, one asset class</h2>
+      <p class="lead">Start with the workflow your reliability team feels every day — then scale it across the fleet.</p>
+      <div class="cta-steps">
+        <div class="c"><div class="n">01</div><div class="h">Scoped demo</div><p>Reliability, asset-health, and capital workflows on your real, plant-shaped scenarios.</p></div>
+        <div class="c"><div class="n">02</div><div class="h">Focused pilot</div><p>One plant / one asset class, connected to your CMMS and capital systems.</p></div>
+        <div class="c"><div class="n">03</div><div class="h">Measure &amp; expand</div><p>Downtime, MTTR, and hours-back baselined and tracked from day one.</p></div>
+      </div>
+    </div>
+    <p class="foot-note">Illustrative concept — figures are representative of documented Glean outcomes in asset-intensive operations and are shown to demonstrate the agent's reporting. Powered by Glean.</p>
+  </section>
+
+</div>
+
+<script>
+  var css = getComputedStyle(document.documentElement);
+  function c(n){return css.getPropertyValue(n).trim();}
+  var COL={ink:c('--artifact-ink'),muted:c('--artifact-muted'),border:c('--artifact-border'),
+    primary:c('--artifact-primary'),healthy:c('--artifact-healthy'),watch:c('--artifact-watch'),exc:c('--artifact-exception'),steel:'#5a6577'};
+  var axisCol=COL.muted, gridCol=COL.border;
+  var charts=[];
+  function mk(id,opt){var el=document.getElementById(id);var ch=echarts.init(el,null,{renderer:'svg'});ch.setOption(opt);charts.push(ch);return ch;}
+  var baseGrid={left:8,right:14,top:30,bottom:6,containLabel:true};
+  var tip={trigger:'axis',backgroundColor:COL.ink,borderWidth:0,textStyle:{color:'#fff',fontSize:12},confine:true};
+
+  // Downtime trend
+  mk('c_downtime',{
+    grid:baseGrid,tooltip:tip,
+    legend:{data:['Unplanned','Planned'],right:0,top:0,textStyle:{color:COL.muted,fontSize:11},itemWidth:10,itemHeight:10},
+    xAxis:{type:'category',data:['Jan','Feb','Mar','Apr','May','Jun','Jul'],axisLine:{lineStyle:{color:gridCol}},axisLabel:{color:axisCol,fontSize:11},axisTick:{show:false}},
+    yAxis:{type:'value',name:'hrs',nameTextStyle:{color:axisCol,fontSize:10},axisLabel:{color:axisCol,fontSize:11},splitLine:{lineStyle:{color:gridCol,type:'dashed'}}},
+    series:[
+      {name:'Unplanned',type:'line',smooth:true,data:[420,405,388,340,300,268,240],symbol:'circle',symbolSize:6,lineStyle:{width:3,color:COL.exc},itemStyle:{color:COL.exc},areaStyle:{color:'rgba(224,65,59,0.10)'},
+        markLine:{silent:true,symbol:'none',lineStyle:{color:COL.primary,type:'dashed'},label:{formatter:'Agent live',color:COL.primary,fontSize:10,position:'insideEndTop'},data:[{xAxis:'Mar'}]}},
+      {name:'Planned',type:'line',smooth:true,data:[180,176,182,178,170,172,168],symbol:'circle',symbolSize:5,lineStyle:{width:2,color:COL.steel},itemStyle:{color:COL.steel}}
+    ]
+  });
+
+  // Fleet health donut
+  mk('c_health',{
+    tooltip:{trigger:'item',backgroundColor:COL.ink,borderWidth:0,textStyle:{color:'#fff',fontSize:12},formatter:'{b}: {c} machines ({d}%)'},
+    legend:{orient:'vertical',right:6,top:'center',textStyle:{color:COL.muted,fontSize:12},itemWidth:11,itemHeight:11},
+    series:[{type:'pie',radius:['58%','80%'],center:['34%','52%'],avoidLabelOverlap:true,label:{show:false},labelLine:{show:false},
+      data:[
+        {value:909,name:'Healthy',itemStyle:{color:COL.healthy}},
+        {value:282,name:'Watch',itemStyle:{color:COL.watch}},
+        {value:89,name:'Exception',itemStyle:{color:COL.exc}}
+      ]}],
+    graphic:{elements:[
+      {type:'text',left:'30%',top:'44%',style:{text:'71%',fontSize:26,fontWeight:700,fill:COL.ink,textAlign:'center'}},
+      {type:'text',left:'27%',top:'60%',style:{text:'healthy',fontSize:12,fill:COL.muted,textAlign:'center'}}
+    ]}
+  });
+
+  // Capital utilization horizontal bar
+  var utilCats=['HVAC / Utilities','Pumps','Turbines','CNC / Machining','Compressors','Conveyors'];
+  mk('c_util',{
+    grid:{left:8,right:44,top:30,bottom:6,containLabel:true},
+    tooltip:{trigger:'axis',axisPointer:{type:'shadow'},backgroundColor:COL.ink,borderWidth:0,textStyle:{color:'#fff',fontSize:12}},
+    legend:{data:['Utilization','Target'],right:0,top:0,textStyle:{color:COL.muted,fontSize:11},itemWidth:10,itemHeight:10},
+    xAxis:{type:'value',max:100,axisLabel:{color:axisCol,fontSize:11,formatter:'{value}%'},splitLine:{lineStyle:{color:gridCol,type:'dashed'}}},
+    yAxis:{type:'category',data:utilCats,axisLabel:{color:axisCol,fontSize:11.5},axisLine:{lineStyle:{color:gridCol}},axisTick:{show:false}},
+    series:[
+      {name:'Utilization',type:'bar',data:[
+        {value:74,itemStyle:{color:COL.watch}},{value:79,itemStyle:{color:COL.primary}},{value:82,itemStyle:{color:COL.primary}},
+        {value:86,itemStyle:{color:COL.primary}},{value:88,itemStyle:{color:COL.primary}},{value:91,itemStyle:{color:COL.primary}}
+      ],barWidth:14,itemStyle:{borderRadius:[0,4,4,0]},label:{show:true,position:'right',color:COL.muted,fontSize:11,formatter:'{c}%'}},
+      {name:'Target',type:'scatter',data:[85,80,80,85,85,85],symbol:'rect',symbolSize:[3,20],itemStyle:{color:COL.ink}}
+    ]
+  });
+
+  // MTTR + first-time-fix
+  mk('c_mttr',{
+    grid:{left:8,right:24,top:30,bottom:6,containLabel:true},
+    tooltip:tip,
+    legend:{data:['MTTR (hrs)','First-time-fix %'],right:0,top:0,textStyle:{color:COL.muted,fontSize:11},itemWidth:10,itemHeight:10},
+    xAxis:{type:'category',data:['Q1','Q2','Q3','Q4'],axisLine:{lineStyle:{color:gridCol}},axisLabel:{color:axisCol,fontSize:11},axisTick:{show:false}},
+    yAxis:[
+      {type:'value',name:'hrs',nameTextStyle:{color:axisCol,fontSize:10},axisLabel:{color:axisCol,fontSize:11},splitLine:{lineStyle:{color:gridCol,type:'dashed'}}},
+      {type:'value',min:60,max:100,axisLabel:{color:axisCol,fontSize:11,formatter:'{value}%'},splitLine:{show:false}}
+    ],
+    series:[
+      {name:'MTTR (hrs)',type:'bar',data:[6.8,5.9,5.2,4.9],barWidth:26,itemStyle:{color:COL.steel,borderRadius:[4,4,0,0]}},
+      {name:'First-time-fix %',yAxisIndex:1,type:'line',smooth:true,data:[71,78,84,89],symbol:'circle',symbolSize:7,lineStyle:{width:3,color:COL.healthy},itemStyle:{color:COL.healthy},label:{show:true,color:COL.healthy,fontSize:11,formatter:'{c}%'}}
+    ]
+  });
+
+  // Exception feed data
+  var exceptions=[
+    {sev:'critical',title:'Recurring seal-failure signature on Compressor C-4',asset:'ASSET C-4 · Plant 2 · Rotating Equipment',val:'$820K downtime at risk',
+      signal:'3rd mechanical-seal failure in 90 days; vibration + temp pattern matches prior two events.',context:'CMMS work orders WO-4471 / WO-4602, historian trend, OEM manual §7.',impact:'Next failure would halt Line 3 for an estimated 14–18 hrs.',
+      action:'Schedule PM this window and pre-stage seal kit P/N 22-118 (in stock). Diagnosis brief + draft work order queued for the reliability engineer.'},
+    {sev:'critical',title:'Warranty expires in 45 days on Pump P-17 with 2 open defects',asset:'ASSET P-17 · Plant 4 · Fluid Handling',val:'$310K claim recoverable',
+      signal:'OEM warranty coverage lapses in 45 days; two unresolved defect reports still open against the asset.',context:'Equipment master, service contract terms, defect logs DR-3390 / DR-3421.',impact:'Coverage would lapse before claim is filed — cost shifts to CapEx.',
+      action:'File warranty claim before expiry. Draft claim package with evidence assembled and routed to the asset owner for approval.'},
+    {sev:'critical',title:'Bearing fault trending on Turbine T-2',asset:'ASSET T-2 · Plant 1 · Power Generation',val:'$1.1M outage exposure',
+      signal:'Vibration amplitude 41% above baseline and rising; envelope matches 2023 bearing fault.',context:'Condition-monitoring feed, prior outage report OR-221, OEM service bulletin.',impact:'Unaddressed, historical pattern led to a 3-day forced outage.',
+      action:'Inspect at next planned stop; expert (M. Alvarez, Rotating Equip.) flagged. Draft inspection order created.'},
+    {sev:'watch',title:'Conveyor CV-9 running 41% below planned utilization',asset:'ASSET CV-9 · Plant 3 · Material Handling',val:'$2.8M re-buy avoidable',
+      signal:'Sustained utilization 41% under plan for 60 days while a capital request exists for added capacity.',context:'ERP utilization data, capital portfolio request CR-88.',impact:'New spend may be unnecessary — existing asset is under-used.',
+      action:'Right-size / redeploy before approving CR-88. Utilization brief attached for the capital review.'},
+    {sev:'watch',title:'Spare-parts stockout risk for critical HVAC units',asset:'ASSET GROUP · HVAC / Utilities · All plants',val:'Downtime risk',
+      signal:'Two failure-prone components below reorder point across 3 plants heading into peak season.',context:'ERP inventory, failure history, seasonal demand pattern.',impact:'A failure with no spare on hand extends MTTR by days.',
+      action:'Consolidated reorder recommendation drafted for procurement.'},
+    {sev:'watch',title:'Rising overtime maintenance spend on Line 5',asset:'ASSET GROUP · Plant 2 · Packaging',val:'Cost drift',
+      signal:'Reactive maintenance hours up 22% QoQ, concentrated on 3 aging assets.',context:'CMMS labor records, cost variance report.',impact:'Signals shift toward run-to-failure on assets nearing end-of-life.',
+      action:'Lifecycle / replace-vs-repair brief drafted for the capital planning review.'},
+    {sev:'info',title:'OEM service bulletin references outdated spec on CNC M-22',asset:'ASSET M-22 · Plant 1 · Machining',val:'Compliance',
+      signal:'Referenced maintenance procedure cites a superseded OEM specification (SB-118).',context:'Document control, OEM bulletin library.',impact:'Low urgency, but procedure should be updated to current revision.',
+      action:'Draft updated standard-work note flagged to document control.'}
+  ];
+
+  function render(filter){
+    var feed=document.getElementById('feed');
+    feed.innerHTML='';
+    exceptions.filter(function(e){return filter==='all'||e.sev===filter;}).forEach(function(e){
+      var d=document.createElement('div');d.className='exc';
+      d.innerHTML=
+        '<div class="exc-head">'
+        +'<span class="sev '+e.sev+'"></span>'
+        +'<div><div class="exc-title">'+e.title+'</div><div class="exc-asset">'+e.asset+'</div></div>'
+        +'<span class="val-badge">'+e.val+'</span>'
+        +'<span class="badge '+e.sev+'">'+e.sev+'</span>'
+        +'<span class="caret">▶</span>'
+        +'</div>'
+        +'<div class="exc-body"><div class="exc-body-inner">'
+        +'<div class="ib"><div class="k">Signal detected</div><div class="v">'+e.signal+'</div></div>'
+        +'<div class="ib"><div class="k">Context reasoned across</div><div class="v">'+e.context+'</div></div>'
+        +'<div class="ib"><div class="k">Impact if ignored</div><div class="v">'+e.impact+'</div></div>'
+        +'<div class="ib"><div class="k">Estimated exposure</div><div class="v">'+e.val+'</div></div>'
+        +'<div class="rec"><b>Agent recommendation → </b>'+e.action+'</div>'
+        +'</div></div>';
+      d.querySelector('.exc-head').addEventListener('click',function(){d.classList.toggle('open');});
+      feed.appendChild(d);
+    });
+  }
+  render('all');
+  document.querySelectorAll('.chip').forEach(function(ch){
+    ch.addEventListener('click',function(){
+      document.querySelectorAll('.chip').forEach(function(x){x.classList.remove('active');});
+      ch.classList.add('active');render(ch.dataset.f);
+    });
+  });
+
+  // resize
+  window.addEventListener('resize',function(){charts.forEach(function(ch){ch.resize();});});
+
+  // TOC scrollspy
+  var links=document.querySelectorAll('.toc a');
+  var secs=Array.prototype.map.call(links,function(l){return document.querySelector(l.getAttribute('href'));});
+  window.addEventListener('scroll',function(){
+    var y=window.scrollY+window.innerHeight*0.35;var idx=0;
+    secs.forEach(function(s,i){if(s&&s.offsetTop<=y)idx=i;});
+    links.forEach(function(l){l.classList.remove('active');});
+    if(links[idx])links[idx].classList.add('active');
+  });
+
+  // ===== Quarterly value tracker =====
+  var Q=['Q1','Q2','Q3','Q4'];
+  var vDown=[0.6,0.9,1.1,1.5], vWar=[0.2,0.4,0.3,0.4], vRe=[0.0,0.8,1.2,0.8], vHrs=[0.3,0.4,0.5,0.5];
+  var cum=[];(function(){var t=0;for(var i=0;i<4;i++){t+=vDown[i]+vWar[i]+vRe[i]+vHrs[i];cum.push(+t.toFixed(1));}})();
+  function stack(name,data,color){return {name:name,type:'bar',stack:'v',data:data,itemStyle:{color:color},barWidth:30,emphasis:{focus:'series'}};}
+  mk('c_valqtr',{
+    grid:{left:8,right:40,top:34,bottom:6,containLabel:true},
+    tooltip:{trigger:'axis',axisPointer:{type:'shadow'},backgroundColor:COL.ink,borderWidth:0,textStyle:{color:'#fff',fontSize:12},valueFormatter:function(v){return v?('$'+v+'M'):'';}},
+    legend:{data:['Downtime avoided','Warranty recovered','Re-buy avoided','Hours-back value','Cumulative'],top:0,textStyle:{color:COL.muted,fontSize:10.5},itemWidth:10,itemHeight:10},
+    xAxis:{type:'category',data:Q,axisLine:{lineStyle:{color:gridCol}},axisLabel:{color:axisCol,fontSize:12},axisTick:{show:false}},
+    yAxis:[
+      {type:'value',name:'$M',nameTextStyle:{color:axisCol,fontSize:10},axisLabel:{color:axisCol,fontSize:11,formatter:'${value}M'},splitLine:{lineStyle:{color:gridCol,type:'dashed'}}},
+      {type:'value',name:'cum $M',nameTextStyle:{color:axisCol,fontSize:10},axisLabel:{color:axisCol,fontSize:11,formatter:'${value}M'},splitLine:{show:false}}
+    ],
+    series:[
+      stack('Downtime avoided',vDown,COL.exc),
+      stack('Warranty recovered',vWar,COL.watch),
+      stack('Re-buy avoided',vRe,COL.primary),
+      stack('Hours-back value',vHrs,COL.steel),
+      {name:'Cumulative',type:'line',yAxisIndex:1,data:cum,smooth:true,symbol:'circle',symbolSize:7,lineStyle:{width:3,color:COL.healthy},itemStyle:{color:COL.healthy},label:{show:true,color:COL.healthy,fontSize:11,formatter:'${c}M'}}
+    ]
+  });
+  mk('c_valmix',{
+    tooltip:{trigger:'item',backgroundColor:COL.ink,borderWidth:0,textStyle:{color:'#fff',fontSize:12},valueFormatter:function(v){return '$'+v+'M';}},
+    legend:{orient:'vertical',right:4,top:'center',textStyle:{color:COL.muted,fontSize:11.5},itemWidth:11,itemHeight:11},
+    series:[{type:'pie',radius:['52%','78%'],center:['32%','52%'],label:{show:false},labelLine:{show:false},
+      data:[
+        {value:4.1,name:'Downtime avoided',itemStyle:{color:COL.exc}},
+        {value:1.3,name:'Warranty recovered',itemStyle:{color:COL.watch}},
+        {value:2.8,name:'Re-buy avoided',itemStyle:{color:COL.primary}},
+        {value:1.7,name:'Hours-back value',itemStyle:{color:COL.steel}}
+      ]}],
+    graphic:{elements:[
+      {type:'text',left:'26%',top:'44%',style:{text:'$9.9M',fontSize:23,fontWeight:700,fill:COL.ink,textAlign:'center'}},
+      {type:'text',left:'27%',top:'60%',style:{text:'per year',fontSize:12,fill:COL.muted,textAlign:'center'}}
+    ]}
+  });
+
+  // ===== Machine lifecycle explorer =====
+  var NOW=2026;
+  var machines=[
+    {id:'C-4',name:'Compressor C-4',cls:'Rotating Equipment · Plant 2',install:2015,life:20,capex:3.2,cumMaint:1.44,util:78,warranty:'Expired',health:62,band:'watch',nextPM:'Aug 2026',
+      hActual:[100,96,94,89,91,85,82,89,83,76,68,62],projEnd:26,
+      cActual:[0,0.05,0.11,0.28,0.34,0.42,0.55,1.05,1.14,1.25,1.38,1.44],
+      events:[{y:2018,n:'Seal replace'},{y:2022,n:'Major overhaul'},{y:2025,n:'Seal replace'}]},
+    {id:'T-2',name:'Turbine T-2',cls:'Power Generation · Plant 1',install:2012,life:25,capex:12.5,cumMaint:3.9,util:82,warranty:'Expired',health:58,band:'watch',nextPM:'Planned stop Q4',
+      hActual:[100,98,95,93,90,92,88,85,87,83,80,76,72,66,58],projEnd:24,
+      cActual:[0,0.1,0.2,0.4,0.6,1.1,1.4,1.7,2.3,2.6,2.9,3.2,3.5,3.7,3.9],
+      events:[{y:2017,n:'Rotor inspection'},{y:2019,n:'Bearing service'},{y:2023,n:'Hot-section overhaul'}]},
+    {id:'P-17',name:'Pump P-17',cls:'Fluid Handling · Plant 4',install:2021,life:15,capex:0.6,cumMaint:0.09,util:79,warranty:'45 days left',health:74,band:'watch',nextPM:'Sep 2026',
+      hActual:[100,98,95,92,86,74],projEnd:30,
+      cActual:[0,0.01,0.02,0.04,0.06,0.09],
+      events:[{y:2024,n:'Impeller service'},{y:2026,n:'Defects open (x2)'}]},
+    {id:'CV-9',name:'Conveyor CV-9',cls:'Material Handling · Plant 3',install:2019,life:18,capex:1.1,cumMaint:0.22,util:41,warranty:'Expired',health:81,band:'ok',nextPM:'Oct 2026',
+      hActual:[100,99,97,95,92,88,84,81],projEnd:40,
+      cActual:[0,0.02,0.04,0.07,0.10,0.14,0.18,0.22],
+      events:[{y:2022,n:'Belt replace'},{y:2025,n:'Drive service'}]}
+  ];
+  var bandColor={ok:COL.healthy,watch:COL.watch,crit:COL.exc};
+  var bandBg={ok:c('--artifact-healthy-soft'),watch:c('--artifact-watch-soft'),crit:c('--artifact-exception-soft')};
+  var lcLife=echarts.init(document.getElementById('c_life'),null,{renderer:'svg'});
+  var lcCost=echarts.init(document.getElementById('c_cost'),null,{renderer:'svg'});
+  charts.push(lcLife,lcCost);
+  var current='C-4';
+
+  function years(m){var a=[];for(var y=m.install;y<=m.install+m.life;y++)a.push(y);return a;}
+
+  function renderMachine(id){
+    var m=machines.filter(function(x){return x.id===id;})[0];current=id;
+    var yrs=years(m), age=NOW-m.install, lifePct=Math.round(age/m.life*100);
+    // stats panel
+    var wcls=(m.warranty==='Expired')?'crit':(m.warranty.indexOf('day')>-1?'warnc':'okc');
+    var maintPct=Math.round(m.cumMaint/m.capex*100);
+    document.getElementById('lcStats').innerHTML=
+      '<p class="lc-name">'+m.name+'</p><p class="lc-sub">ASSET '+m.id+' · '+m.cls+'</p>'
+      +'<div class="lc-health" style="background:'+bandBg[m.band]+';">'
+      +'<div class="hs" style="color:'+bandColor[m.band]+';">'+m.health+'</div>'
+      +'<div><div class="hl" style="color:'+bandColor[m.band]+';">Health index</div><div class="hd">'+(m.band==='ok'?'Healthy':(m.band==='watch'?'Watch — monitor':'Exception'))+'</div></div></div>'
+      +'<div class="lc-stat"><span class="k">Commissioned</span><span class="v">'+m.install+'</span></div>'
+      +'<div class="lc-stat"><span class="k">Age / useful life</span><span class="v">'+age+' of '+m.life+' yrs ('+lifePct+'%)</span></div>'
+      +'<div class="lc-stat"><span class="k">Capital value (CapEx)</span><span class="v">$'+m.capex.toFixed(1)+'M</span></div>'
+      +'<div class="lc-stat"><span class="k">Cumulative maintenance</span><span class="v">$'+m.cumMaint.toFixed(2)+'M ('+maintPct+'% of CapEx)</span></div>'
+      +'<div class="lc-stat"><span class="k">Utilization</span><span class="v '+(m.util<60?'warnc':'okc')+'">'+m.util+'%</span></div>'
+      +'<div class="lc-stat"><span class="k">Warranty</span><span class="v '+wcls+'">'+m.warranty+'</span></div>'
+      +'<div class="lc-stat"><span class="k">Next planned maintenance</span><span class="v">'+m.nextPM+'</span></div>';
+
+    // phase bar
+    var phases=[['Commissioning',0.05],['Productive life',0.45],['Wear-in / watch',0.35],['Overhaul / end-of-life',0.15]];
+    var pcols=[COL.primary,COL.healthy,COL.watch,COL.exc];
+    var ph='';for(var i=0;i<phases.length;i++){ph+='<div class="phase-seg" style="flex:'+phases[i][1]+';background:'+pcols[i]+';">'+phases[i][0]+'</div>';}
+    document.getElementById('lcPhase').innerHTML=ph;
+    document.getElementById('lcPhaseCap').textContent='Machine is '+lifePct+'% through its '+m.life+'-year design life';
+    var stageName=lifePct<10?'commissioning':(lifePct<55?'productive life':(lifePct<85?'the wear-in / watch stage':'the overhaul / end-of-life stage'));
+    document.getElementById('lcPhaseNow').innerHTML='Currently in <b>'+stageName+'</b> — '+(m.band==='crit'?'flagged for action':(m.band==='watch'?'monitored for capitalize-vs-replace':'running healthy'));
+
+    // health + RUL chart
+    var hAll=yrs.map(function(y,i){return i<m.hActual.length?m.hActual[i]:null;});
+    var proj=yrs.map(function(y,i){
+      if(i<m.hActual.length-1)return null;
+      if(i===m.hActual.length-1)return m.hActual[m.hActual.length-1];
+      var startI=m.hActual.length-1, startV=m.hActual[startI], endI=yrs.length-1;
+      var t=(i-startI)/(endI-startI);return +(startV+(m.projEnd-startV)*t).toFixed(1);
+    });
+    var evMarks=m.events.map(function(e){var idx=e.y-m.install;return {xAxis:e.y,yAxis:m.hActual[idx]!=null?m.hActual[idx]:null,name:e.n,value:'🔧',label:{formatter:e.n,color:COL.muted,fontSize:9,position:'top'}};});
+    lcLife.setOption({
+      grid:{left:8,right:14,top:16,bottom:6,containLabel:true},
+      tooltip:{trigger:'axis',backgroundColor:COL.ink,borderWidth:0,textStyle:{color:'#fff',fontSize:12}},
+      xAxis:{type:'category',data:yrs,axisLine:{lineStyle:{color:gridCol}},axisLabel:{color:axisCol,fontSize:10,interval:2},axisTick:{show:false}},
+      yAxis:{type:'value',min:0,max:100,name:'health',nameTextStyle:{color:axisCol,fontSize:10},axisLabel:{color:axisCol,fontSize:11},splitLine:{lineStyle:{color:gridCol,type:'dashed'}}},
+      series:[
+        {name:'Health (actual)',type:'line',data:hAll,smooth:true,symbol:'circle',symbolSize:5,connectNulls:false,lineStyle:{width:3,color:bandColor[m.band]},itemStyle:{color:bandColor[m.band]},areaStyle:{color:bandBg[m.band]},
+          markPoint:{symbol:'pin',symbolSize:26,itemStyle:{color:COL.steel},label:{color:'#fff',fontSize:10},data:evMarks},
+          markLine:{silent:true,symbol:'none',lineStyle:{color:COL.primary,type:'dashed'},label:{formatter:'today',color:COL.primary,fontSize:10},data:[{xAxis:NOW}]}},
+        {name:'Health (projected)',type:'line',data:proj,smooth:true,symbol:'none',connectNulls:true,lineStyle:{width:2.5,color:bandColor[m.band],type:'dashed',opacity:0.7}}
+      ]
+    },true);
+
+    // cost vs capex chart
+    var cAll=yrs.map(function(y,i){return i<m.cActual.length?m.cActual[i]:null;});
+    lcCost.setOption({
+      grid:{left:8,right:14,top:26,bottom:6,containLabel:true},
+      tooltip:{trigger:'axis',backgroundColor:COL.ink,borderWidth:0,textStyle:{color:'#fff',fontSize:12},valueFormatter:function(v){return v!=null?('$'+v+'M'):'';}},
+      legend:{data:['Cumulative maintenance','Capital value'],top:0,right:0,textStyle:{color:COL.muted,fontSize:10.5},itemWidth:10,itemHeight:10},
+      xAxis:{type:'category',data:yrs,axisLine:{lineStyle:{color:gridCol}},axisLabel:{color:axisCol,fontSize:10,interval:2},axisTick:{show:false}},
+      yAxis:{type:'value',name:'$M',nameTextStyle:{color:axisCol,fontSize:10},axisLabel:{color:axisCol,fontSize:11,formatter:'${value}M'},splitLine:{lineStyle:{color:gridCol,type:'dashed'}}},
+      series:[
+        {name:'Cumulative maintenance',type:'line',data:cAll,smooth:true,connectNulls:false,symbol:'circle',symbolSize:5,lineStyle:{width:3,color:COL.watch},itemStyle:{color:COL.watch},areaStyle:{color:c('--artifact-watch-soft')}},
+        {name:'Capital value',type:'line',data:yrs.map(function(){return m.capex;}),symbol:'none',lineStyle:{width:2,color:COL.primary,type:'dashed'}}
+      ]
+    },true);
+
+    document.querySelectorAll('#lcTabs .chip').forEach(function(x){x.classList.toggle('active',x.dataset.m===id);});
+    lcLife.resize();lcCost.resize();
+  }
+
+  (function(){
+    var t=document.getElementById('lcTabs');
+    machines.forEach(function(m){
+      var b=document.createElement('button');b.className='chip'+(m.id===current?' active':'');b.dataset.m=m.id;
+      b.textContent=m.name;b.addEventListener('click',function(){renderMachine(m.id);});t.appendChild(b);
+    });
+    renderMachine(current);
+  })();
+
+  // PDF export
+  window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
+  window.GleanBridge.onMessage('action',function(data){if(data.actionId==='export-pdf')window.print();});
+  function prepareChartsForPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var ch=echarts.getInstanceByDom(el);if(!ch)return;var img=new Image();img.src=ch.getDataURL({type:'png',pixelRatio:2});img.className='print-chart-img';img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';el.dataset.prevPosition=el.style.position;el.style.position='relative';el.appendChild(img);});}
+  function cleanUpAfterPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var img=el.querySelector('.print-chart-img');if(!img)return;img.remove();el.style.position=el.dataset.prevPosition||'';delete el.dataset.prevPosition;});}
+  window.addEventListener('beforeprint',prepareChartsForPrint);
+  window.addEventListener('afterprint',cleanUpAfterPrint);
+</script>
+</body>
+</html>
