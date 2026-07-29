@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Good Morning, Jeremy — Command Center</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f5f7;color:#1d1d1f;line-height:1.5}
+.shell{max-width:1180px;margin:0 auto;padding:32px 24px 64px}
+.greeting{padding:40px 0 32px}
+.greeting .hello{font-size:36px;font-weight:700;letter-spacing:-.025em;line-height:1.15}
+.greeting .date{font-size:15px;color:#86868b;margin-top:4px;font-weight:400}
+.greeting .powered{display:inline-flex;align-items:center;gap:6px;background:#1d1d1f;color:#fff;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-top:14px}
+.greeting .powered .dot{width:6px;height:6px;border-radius:50%;background:#34c759;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:32px}
+.kpi-card{background:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 1px 3px rgba(0,0,0,0.08),0 8px 24px rgba(0,0,0,0.06);transition:transform .2s ease,box-shadow .2s ease}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:0 2px 8px rgba(0,0,0,0.1),0 16px 36px rgba(0,0,0,0.08)}
+.kpi-card .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#86868b;font-weight:600}
+.kpi-card .val{font-size:26px;font-weight:700;margin-top:3px;letter-spacing:-.02em}
+.kpi-card .delta{font-size:12px;margin-top:2px;font-weight:500}
+.up{color:#34c759}.down{color:#d32f2f}.flat{color:#86868b}
+.section{margin-top:32px}
+.section-hdr{font-size:20px;font-weight:700;margin-bottom:16px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.card{background:#fff;border-radius:14px;padding:26px;box-shadow:0 1px 3px rgba(0,0,0,0.08),0 8px 24px rgba(0,0,0,0.06);margin-bottom:18px}
+.card h3{font-size:16px;font-weight:700;margin-bottom:12px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.status-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #f0f0f2}
+.status-row:last-child{border-bottom:none}
+.status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.status-dot.green{background:#34c759}.status-dot.amber{background:#ff9f0a}.status-dot.red{background:#ff3b30}.status-dot.blue{background:#0071e3}
+.status-label{font-size:14px;font-weight:500;flex:1}
+.status-meta{font-size:12px;color:#86868b;text-align:right}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;letter-spacing:.04em}
+.tag-green{background:#e8f5e9;color:#2e7d32}.tag-amber{background:#fff3e0;color:#e65100}.tag-red{background:#fde8e8;color:#d32f2f}.tag-blue{background:#e3f2fd;color:#1565c0}.tag-gray{background:#f0f0f2;color:#6e6e73}
+.ask-bar{background:#fff;border-radius:14px;padding:20px 26px;box-shadow:0 1px 3px rgba(0,0,0,0.08),0 8px 24px rgba(0,0,0,0.06);display:flex;align-items:center;gap:14px;margin-bottom:32px;cursor:pointer;transition:box-shadow .2s ease}
+.ask-bar:hover{box-shadow:0 2px 10px rgba(0,0,0,0.1),0 18px 40px rgba(0,0,0,0.08)}
+.ask-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#0071e3,#5856d6);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;flex-shrink:0}
+.ask-text{flex:1}
+.ask-text .prompt{font-size:15px;color:#86868b;font-weight:400}
+.ask-text .hint{font-size:12px;color:#d2d2d7;margin-top:2px}
+.chart-box{height:280px;width:100%}
+.chart-box-sm{height:240px;width:100%}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:600;padding:10px 12px;border-bottom:2px solid #e8e8ed;color:#1d1d1f;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+td{padding:10px 12px;border-bottom:1px solid #f0f0f2;color:#333}
+tr:hover td{background:#fafafa}
+.agenda-item{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid #f0f0f2}
+.agenda-item:last-child{border-bottom:none}
+.agenda-time{font-size:13px;font-weight:600;color:#0071e3;white-space:nowrap;min-width:70px;padding-top:1px}
+.agenda-detail .agenda-title{font-size:14px;font-weight:600;color:#1d1d1f}
+.agenda-detail .agenda-meta{font-size:12px;color:#86868b;margin-top:2px}
+.insight{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f0f0f2}
+.insight:last-child{border-bottom:none}
+.insight .ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.insight .txt{font-size:13px;color:#333;line-height:1.5}
+.insight .txt strong{color:#1d1d1f}
+.prog-wrap{margin-top:8px}
+.prog-label{display:flex;justify-content:space-between;font-size:12px;color:#6e6e73;margin-bottom:4px}
+.prog-bar{height:6px;border-radius:3px;background:#f0f0f2;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.region-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+.region-card{background:#fafafa;border-radius:10px;padding:14px 16px;text-align:center;transition:background .2s ease}
+.region-card:hover{background:#f0f0f2}
+.region-card .r-name{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#86868b;font-weight:600}
+.region-card .r-val{font-size:22px;font-weight:700;margin-top:4px;letter-spacing:-.02em}
+.region-card .r-sub{font-size:11px;color:#6e6e73;margin-top:2px}
+.footer-note{text-align:center;font-size:11px;color:#86868b;margin-top:40px;padding-top:18px;border-top:1px solid #e8e8ed}
+@media screen and (max-width:900px){.kpi-strip{grid-template-columns:repeat(2,1fr)}.grid-2,.grid-3{grid-template-columns:1fr}.region-grid{grid-template-columns:repeat(2,1fr)}}
+@media screen and (max-width:600px){.kpi-strip{grid-template-columns:1fr}.greeting .hello{font-size:26px}}
+@media print{
+  @page{margin:0;size:8.5in 999in}
+  body{margin:0;padding:.4in .6in;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .shell{max-width:100%!important;width:100%!important}
+  .ask-bar{display:none!important}
+  [class*="card"]{padding:18px!important;box-shadow:none!important;border:1px solid rgba(0,0,0,.08)}
+  [class*="grid"],[class*="row"]{gap:10px!important;margin-bottom:20px!important}
+  [class*="chart"]{height:240px!important}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  button,[role="button"]{display:none!important}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- GREETING -->
+  <div class="greeting">
+    <div class="hello">Good morning, Jeremy.</div>
+    <div class="date">Wednesday, July 29 2026 · Minneapolis, MN · 80&deg;F sunny</div>
+    <div class="powered"><span class="dot"></span> Powered by Glean Work AI</div>
+  </div>
+  <!-- AI ASK BAR -->
+  <div class="ask-bar">
+    <div class="ask-icon">&#10022;</div>
+    <div class="ask-text">
+      <div class="prompt">Ask me anything across ADM's reliability &amp; asset data&hellip;</div>
+      <div class="hint">"Which assets are at risk of unplanned downtime this week?" &middot; "Summarize open warranty claims before they lapse" &middot; "Draft a repair-vs-replace brief for Compressor C-4"</div>
+    </div>
+  </div>
+  <!-- KPI STRIP -->
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <div class="lbl">Capital Asset Base Monitored</div>
+      <div class="val">$2.4B</div>
+      <div class="delta flat">1,280 critical machines &middot; 6 plants</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">Asset / Capital Utilization (OEE)</div>
+      <div class="val" style="color:#34c759">84%</div>
+      <div class="delta up">&uarr; from 76% pre-agent baseline</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">Unplanned Downtime</div>
+      <div class="val" style="color:#34c759">-32%</div>
+      <div class="delta up">&darr; vs pre-agent baseline</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">Proactive Exceptions This Week</div>
+      <div class="val" style="color:#ff9f0a">47</div>
+      <div class="delta flat">12 flagged before failure</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">Capital at Risk / Recoverable</div>
+      <div class="val" style="color:#ff9f0a">$5.0M</div>
+      <div class="delta down">3 critical &middot; 3 watch signals open</div>
+    </div>
+  </div>
+  <!-- ROW 1: Fleet Health + Agenda -->
+  <div class="grid-2">
+    <div class="card">
+      <h3>&#128295; Fleet Health &amp; Capital Signals &mdash; Live Status</h3>
+      <div class="status-row"><div class="status-dot red"></div><div class="status-label">Rotating Equipment &mdash; Plant 2</div><div class="status-meta">Compressor C-4 seal signature repeating &middot; $820K at risk</div></div>
+      <div class="status-row"><div class="status-dot amber"></div><div class="status-label">Fluid Handling &mdash; Plant 4</div><div class="status-meta">Pump P-17 warranty lapses in 45d &middot; 2 open defects</div></div>
+      <div class="status-row"><div class="status-dot amber"></div><div class="status-label">Power Generation &mdash; Plant 1</div><div class="status-meta">Turbine T-2 bearing fault trending</div></div>
+      <div class="status-row"><div class="status-dot blue"></div><div class="status-label">Material Handling &mdash; Plant 3</div><div class="status-meta">Conveyor CV-9 running 41% below plan</div></div>
+      <div class="status-row"><div class="status-dot red"></div><div class="status-label">HVAC / Utilities &mdash; All Plants</div><div class="status-meta">Critical spare-parts stockout &middot; $1.1M exposure</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Milling Lines</div><div class="status-meta">Normal &middot; all within reliability targets</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Egg Services</div><div class="status-meta">Normal &middot; no active condition alarms</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Golden Peanut</div><div class="status-meta">Normal &middot; nightly CMMS sync complete</div></div>
+    </div>
+    <div class="card">
+      <h3>&#128197; Your Day &mdash; July 29</h3>
+      <div class="agenda-item">
+        <div class="agenda-time">8:00a</div>
+        <div class="agenda-detail">
+          <div class="agenda-title">Plant Reliability Stand-up</div>
+          <div class="agenda-meta">Milling, Egg Services &amp; Golden Peanut leads &middot; open exceptions</div>
+        </div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">9:00a</div>
+        <div class="agenda-detail">
+          <div class="agenda-title">Repair-vs-Replace Review</div>
+          <div class="agenda-meta">Compressor C-4 (Plant 2) &amp; Turbine T-2 (Plant 1)</div>
+        </div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">10:30a</div>
+        <div class="agenda-detail">
+          <div class="agenda-title">Maximo / CMMS Data Blueprint Sync</div>
+          <div class="agenda-meta">Glean SE team + Malik Patel &middot; connector scope &amp; ISO 14224</div>
+        </div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">1:00p</div>
+        <div class="agenda-detail">
+          <div class="agenda-title">FY27 Capital Portfolio Prioritization</div>
+          <div class="agenda-meta">Rank capex requests by downtime &amp; utilization exposure</div>
+        </div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">2:30p</div>
+        <div class="agenda-detail">
+          <div class="agenda-title">Warranty Recovery Review</div>
+          <div class="agenda-meta">Pump P-17 claim window closes in 45 days &middot; $310K recoverable</div>
+        </div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">4:00p</div>
+        <div class="agenda-detail">
+          <div class="agenda-title">Digital Transformation Steering</div>
+          <div class="agenda-meta">AI roadmap &amp; tech-stack review with Malik Patel</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ROW 2: Plant Performance -->
+  <div class="section">
+    <div class="section-hdr">&#127981; Asset Performance Across the Plant Network</div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>OEE Trend by Business Unit (last 7 days)</h3>
+        <div id="oeeChart" class="chart-box-sm"></div>
+      </div>
+      <div class="card">
+        <h3>Asset Utilization by Equipment Class</h3>
+        <div id="utilChart" class="chart-box-sm"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Reliability Summary by Business</h3>
+      <div class="region-grid">
+        <div class="region-card">
+          <div class="r-name">Milling</div>
+          <div class="r-val" style="color:#34c759">18/19</div>
+          <div class="r-sub">Critical assets within reliability target</div>
+        </div>
+        <div class="region-card">
+          <div class="r-name">Ag Services</div>
+          <div class="r-val" style="color:#ff9f0a">22/25</div>
+          <div class="r-sub">Rotating equipment running hot</div>
+        </div>
+        <div class="region-card">
+          <div class="r-name">Egg Services</div>
+          <div class="r-val" style="color:#34c759">9/9</div>
+          <div class="r-sub">No open condition alarms</div>
+        </div>
+        <div class="region-card">
+          <div class="r-name">Golden Peanut</div>
+          <div class="r-val" style="color:#34c759">7/7</div>
+          <div class="r-sub">Utilization stable across lines</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ROW 3: Program maturity + Systems -->
+  <div class="grid-2">
+    <div class="card">
+      <h3>&#128200; Reliability Program Maturity</h3>
+      <div id="maturityRadar" class="chart-box-sm"></div>
+    </div>
+    <div class="card">
+      <h3>&#9881;&#65039; Reliability Systems &amp; Data Health</h3>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Maximo (CMMS) &mdash; Work Orders</div><div class="status-meta">Normal &middot; synced 6 min ago</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Condition-Monitoring / Historian</div><div class="status-meta">Vibration &amp; ultrasonic feeds live</div></div>
+      <div class="status-row"><div class="status-dot amber"></div><div class="status-label">OEM Manuals &amp; Warranty Records</div><div class="status-meta">Plant 4 warranty index refreshing</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Financial / Capital Planning System</div><div class="status-meta">Normal &middot; FY27 capex figures current</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Spare-Parts &amp; Inventory (Infor)</div><div class="status-meta">Stock levels current &middot; 1 reorder flag</div></div>
+      <div class="status-row"><div class="status-dot blue"></div><div class="status-label">ISO 14224 Asset Hierarchy</div><div class="status-meta">Harmonizing across silos &middot; no pre-cleanse needed</div></div>
+    </div>
+  </div>
+  <!-- ROW 4: Exceptions chart + Capex pipeline -->
+  <div class="grid-2">
+    <div class="card">
+      <h3>&#9888;&#65039; Condition Alarms &amp; Exceptions &mdash; Last 24 Hours</h3>
+      <div id="alarmChart" class="chart-box-sm"></div>
+    </div>
+    <div class="card">
+      <h3>&#129302; CapEx &amp; Maintenance Intelligence Pipeline</h3>
+      <table>
+        <thead><tr><th>Signal / Initiative</th><th>Plant</th><th>Phase</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Compressor C-4 Seal Redesign</td><td>Plant 2</td><td>Diagnosis</td><td><span class="tag tag-red">Critical</span></td></tr>
+          <tr><td>Pump P-17 Warranty Claim</td><td>Plant 4</td><td>Action Drafted</td><td><span class="tag tag-blue">Active</span></td></tr>
+          <tr><td>Turbine T-2 Bearing Inspection</td><td>Plant 1</td><td>Watch</td><td><span class="tag tag-amber">Monitor</span></td></tr>
+          <tr><td>Conveyor CV-9 Utilization Study</td><td>Plant 3</td><td>Repair-vs-Replace</td><td><span class="tag tag-gray">Evaluating</span></td></tr>
+          <tr><td>HVAC Critical Spares Restock</td><td>All Plants</td><td>Procurement</td><td><span class="tag tag-amber">New</span></td></tr>
+          <tr><td>ISO 14224 Hierarchy Harmonization</td><td>Enterprise</td><td>Blueprint</td><td><span class="tag tag-blue">Active</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- ROW 5: Capital program tracker + downtime trend -->
+  <div class="grid-2">
+    <div class="card">
+      <h3>&#127959;&#65039; Proactive Reliability Program Tracker</h3>
+      <div style="display:flex;gap:24px;margin-bottom:16px">
+        <div style="text-align:center;flex:1">
+          <div style="font-size:28px;font-weight:700;color:#0071e3">1,280</div>
+          <div style="font-size:11px;color:#86868b;margin-top:2px">Critical Machines Monitored</div>
+        </div>
+        <div style="text-align:center;flex:1">
+          <div style="font-size:28px;font-weight:700;color:#34c759">6</div>
+          <div style="font-size:11px;color:#86868b;margin-top:2px">Plants in Wave 1</div>
+        </div>
+        <div style="text-align:center;flex:1">
+          <div style="font-size:28px;font-weight:700;color:#ff9f0a">Q2 '27</div>
+          <div style="font-size:11px;color:#86868b;margin-top:2px">Enterprise Target State</div>
+        </div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-label"><span>Condition-Monitoring Coverage</span><span>71%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:71%;background:#0071e3"></div></div>
+      </div>
+      <div class="prog-wrap" style="margin-top:10px">
+        <div class="prog-label"><span>Maximo / CMMS Integration Readiness</span><span>62%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:62%;background:#34c759"></div></div>
+      </div>
+      <div class="prog-wrap" style="margin-top:10px">
+        <div class="prog-label"><span>Warranty &amp; Claims Tracking</span><span>48%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:48%;background:#ff9f0a"></div></div>
+      </div>
+      <div class="prog-wrap" style="margin-top:10px">
+        <div class="prog-label"><span>Repair-vs-Replace Model Rollout</span><span>34%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:34%;background:#d2d2d7"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>&#128202; Unplanned Downtime Trend (hrs/qtr)</h3>
+      <div id="downtimeChart" class="chart-box-sm"></div>
+    </div>
+  </div>
+  <!-- ROW 6: AI-Surfaced Insights -->
+  <div class="section">
+    <div class="section-hdr">&#10022; AI-Surfaced Insights &mdash; Things You Should Know</div>
+    <div class="card">
+      <div class="insight">
+        <div class="ico" style="background:#fde8e8">&#128308;</div>
+        <div class="txt"><strong>Recurring seal-failure signature on Compressor C-4 (Plant 2)</strong> &mdash; the same failure pattern has repeated across recent work orders, with roughly $820K of downtime now at risk. <em>This should be the first decision point in your 9:00a repair-vs-replace review.</em></div>
+      </div>
+      <div class="insight">
+        <div class="ico" style="background:#fde8e8">&#128308;</div>
+        <div class="txt"><strong>Pump P-17 warranty lapses in 45 days (Plant 4)</strong> &mdash; two open defects sit inside the coverage window, making an estimated $310K claim recoverable if filed before it closes. <em>A draft claim is queued for your review.</em></div>
+      </div>
+      <div class="insight">
+        <div class="ico" style="background:#fff3e0">&#128993;</div>
+        <div class="txt"><strong>Critical HVAC units are exposed to a spare-parts stockout</strong> &mdash; current inventory won't cover a failure at peak load, creating up to $1.1M of outage exposure. <em>Worth expediting procurement today rather than absorbing it at failure.</em></div>
+      </div>
+      <div class="insight">
+        <div class="ico" style="background:#fff3e0">&#128993;</div>
+        <div class="txt"><strong>Bearing fault is trending on Turbine T-2 (Plant 1)</strong> &mdash; vibration signatures are drifting toward alarm. Scheduling an inspection now keeps it a planned event instead of an unplanned outage.</div>
+      </div>
+      <div class="insight">
+        <div class="ico" style="background:#e3f2fd">&#128202;</div>
+        <div class="txt"><strong>Conveyor CV-9 is running 41% below planned utilization (Plant 3)</strong> &mdash; idle capital that a repair-vs-replace study could redeploy, avoiding roughly $2.8M in re-buy cost.</div>
+      </div>
+      <div class="insight">
+        <div class="ico" style="background:#e8f5e9">&#9989;</div>
+        <div class="txt"><strong>The proactive shift is already paying off</strong> &mdash; OEE is up to 84% from 76% and unplanned downtime is down 32% versus the pre-agent baseline. <em>A clean proof point for the digital transformation steering discussion.</em></div>
+      </div>
+    </div>
+  </div>
+  <!-- ROW 7: Team Signals -->
+  <div class="section">
+    <div class="section-hdr">&#128101; Team &amp; Partner Signals</div>
+    <div class="card">
+      <table>
+        <thead><tr><th>Person</th><th>Role</th><th>Top Item Today</th><th>Needs You</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Omar Thorpe</strong></td><td>Ag Services Operations</td><td>Send maintenance &amp; capex use cases to Glean team</td><td><span class="tag tag-amber">Action</span></td></tr>
+          <tr><td><strong>Malik Patel</strong></td><td>Director, Digital Transformation</td><td>Align AI roadmap &amp; tech stack for reliability</td><td><span class="tag tag-blue">Collaborate</span></td></tr>
+          <tr><td><strong>Stacy Rudolph</strong></td><td>ADM</td><td>Schedule blueprint session &amp; pilot sandbox</td><td><span class="tag tag-blue">Review</span></td></tr>
+          <tr><td><strong>Plant 2 Reliability Engineer</strong></td><td>Rotating Equipment</td><td>Confirm C-4 seal-failure history for the review</td><td><span class="tag tag-amber">Monitor</span></td></tr>
+          <tr><td><strong>Plant 4 Maintenance Planner</strong></td><td>Fluid Handling</td><td>File Pump P-17 warranty claim before window closes</td><td><span class="tag tag-amber">Action</span></td></tr>
+          <tr><td><strong>Sourcing / Procurement Lead</strong></td><td>Spare Parts &amp; Supplier Qual</td><td>Expedite critical HVAC spares</td><td><span class="tag tag-green">FYI</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="footer-note">
+    This is a vision of what your morning could look like &mdash; every work order, every alarm, every warranty and every capital signal surfaced automatically by Glean's Work AI platform. No dashboards to build. No spreadsheets to reconcile. Just ask. &middot; Illustrative example built for ADM &middot; July 2026
+  </div>
+</div>
+<script>
+// OEE Trend by Business Unit
+var oeeChart = echarts.init(document.getElementById('oeeChart'),null,{renderer:'svg'});
+oeeChart.setOption({
+  tooltip:{trigger:'axis',formatter:function(p){return p.map(function(s){return s.seriesName+': '+s.value+'%'}).join('<br>')}},
+  legend:{bottom:0,textStyle:{fontSize:10,color:'#86868b'},itemWidth:12,itemHeight:8},
+  grid:{left:44,right:16,top:16,bottom:40},
+  xAxis:{type:'category',data:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],axisLabel:{fontSize:10,color:'#86868b'},axisLine:{lineStyle:{color:'#e8e8ed'}}},
+  yAxis:{type:'value',min:70,max:90,axisLabel:{formatter:'{value}%',fontSize:10,color:'#86868b'},splitLine:{lineStyle:{color:'#f0f0f2'}},axisLine:{show:false}},
+  series:[
+    {name:'Milling',type:'line',data:[82,83,84,85,84,85,86],smooth:true,lineStyle:{color:'#0071e3',width:2},itemStyle:{color:'#0071e3'},symbolSize:4},
+    {name:'Ag Services',type:'line',data:[79,78,80,79,81,80,82],smooth:true,lineStyle:{color:'#ff9f0a',width:2},itemStyle:{color:'#ff9f0a'},symbolSize:4},
+    {name:'Egg Services',type:'line',data:[85,86,85,87,86,87,88],smooth:true,lineStyle:{color:'#34c759',width:2},itemStyle:{color:'#34c759'},symbolSize:4},
+    {name:'Golden Peanut',type:'line',data:[83,84,83,84,85,84,85],smooth:true,lineStyle:{color:'#5856d6',width:2,type:'dashed'},itemStyle:{color:'#5856d6'},symbolSize:4}
+  ]
+});
+// Asset Utilization by Equipment Class
+var utilChart = echarts.init(document.getElementById('utilChart'),null,{renderer:'svg'});
+utilChart.setOption({
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+  grid:{left:120,right:24,top:10,bottom:10},
+  xAxis:{type:'value',max:100,axisLabel:{formatter:'{value}%',fontSize:10,color:'#86868b'},splitLine:{lineStyle:{color:'#f0f0f2'}},axisLine:{show:false}},
+  yAxis:{type:'category',data:['Material Handling','Fluid Handling','Power Generation','HVAC / Utilities','Milling Lines','Rotating Equip.'].reverse(),axisLabel:{fontSize:11,color:'#333'},axisLine:{lineStyle:{color:'#e8e8ed'}}},
+  series:[{
+    type:'bar',barWidth:18,
+    data:[
+      {value:59,itemStyle:{color:'#ff9f0a',borderRadius:[0,4,4,0]}},
+      {value:72,itemStyle:{color:'#0071e3',borderRadius:[0,4,4,0]}},
+      {value:78,itemStyle:{color:'#0071e3',borderRadius:[0,4,4,0]}},
+      {value:81,itemStyle:{color:'#34c759',borderRadius:[0,4,4,0]}},
+      {value:86,itemStyle:{color:'#34c759',borderRadius:[0,4,4,0]}},
+      {value:88,itemStyle:{color:'#34c759',borderRadius:[0,4,4,0]}}
+    ],
+    label:{show:true,position:'right',formatter:'{c}%',fontSize:11,fontWeight:600,color:'#1d1d1f'}
+  }]
+});
+// Reliability Program Maturity Radar
+var matRadar = echarts.init(document.getElementById('maturityRadar'),null,{renderer:'svg'});
+matRadar.setOption({
+  tooltip:{},
+  radar:{
+    indicator:[
+      {name:'PdM\nCoverage',max:10},
+      {name:'Data\nIntegration',max:10},
+      {name:'Spare Parts\nReadiness',max:10},
+      {name:'Warranty\nManagement',max:10},
+      {name:'Safety\nSignals',max:10},
+      {name:'ISO 14224\nAlignment',max:10}
+    ],
+    shape:'circle',
+    splitArea:{areaStyle:{color:['rgba(0,113,227,0.02)','rgba(0,113,227,0.04)']}},
+    axisLine:{lineStyle:{color:'#d2d2d7'}},
+    splitLine:{lineStyle:{color:'#e8e8ed'}}
+  },
+  series:[{
+    type:'radar',
+    data:[
+      {value:[8,7,6,5,8,6],name:'Current',
+       areaStyle:{color:'rgba(52,199,89,0.1)'},
+       lineStyle:{color:'#34c759',width:2},
+       itemStyle:{color:'#34c759'}},
+      {value:[10,10,10,10,10,10],name:'Target',
+       lineStyle:{color:'#d2d2d7',width:1,type:'dashed'},
+       itemStyle:{color:'#d2d2d7'},areaStyle:{opacity:0}}
+    ]
+  }]
+});
+// Condition Alarms & Exceptions
+var alarmChart = echarts.init(document.getElementById('alarmChart'),null,{renderer:'svg'});
+alarmChart.setOption({
+  tooltip:{trigger:'axis'},
+  legend:{bottom:0,textStyle:{fontSize:10,color:'#86868b'},itemWidth:12,itemHeight:8},
+  grid:{left:40,right:16,top:16,bottom:40},
+  xAxis:{type:'category',data:['12a','2a','4a','6a','8a','10a','12p','2p','4p','6p','8p','10p'],axisLabel:{fontSize:10,color:'#86868b'},axisLine:{lineStyle:{color:'#e8e8ed'}}},
+  yAxis:{type:'value',axisLabel:{fontSize:10,color:'#86868b'},splitLine:{lineStyle:{color:'#f0f0f2'}},axisLine:{show:false}},
+  series:[
+    {name:'Condition Alarms',type:'bar',stack:'total',barWidth:20,
+     data:[4,3,3,2,6,11,14,12,10,8,6,5],
+     itemStyle:{color:'#0071e3',borderRadius:[4,4,0,0]}},
+    {name:'Exceptions Flagged',type:'bar',stack:'total',barWidth:20,
+     data:[1,1,0,1,2,4,5,5,3,2,2,1],
+     itemStyle:{color:'#ff9f0a',borderRadius:[4,4,0,0]}},
+    {name:'Critical Signals',type:'bar',stack:'total',barWidth:20,
+     data:[0,0,0,0,0,1,1,1,0,0,0,0],
+     itemStyle:{color:'#ff3b30',borderRadius:[4,4,0,0]}}
+  ]
+});
+// Unplanned Downtime Trend
+var dtChart = echarts.init(document.getElementById('downtimeChart'),null,{renderer:'svg'});
+dtChart.setOption({
+  tooltip:{trigger:'axis',formatter:'{b}: {c} hrs'},
+  grid:{left:48,right:16,top:16,bottom:36},
+  xAxis:{type:'category',data:["Q1'25","Q2'25","Q3'25","Q4'25","Q1'26","Q2'26","Q3'26"],
+    axisLabel:{fontSize:10,color:'#86868b'},axisLine:{lineStyle:{color:'#e8e8ed'}}},
+  yAxis:{type:'value',axisLabel:{formatter:'{value}',fontSize:10,color:'#86868b'},splitLine:{lineStyle:{color:'#f0f0f2'}},axisLine:{show:false}},
+  series:[{
+    type:'bar',barWidth:24,
+    data:[
+      {value:1420,itemStyle:{color:'#d2d2d7',borderRadius:[4,4,0,0]}},
+      {value:1360,itemStyle:{color:'#d2d2d7',borderRadius:[4,4,0,0]}},
+      {value:1240,itemStyle:{color:'#d2d2d7',borderRadius:[4,4,0,0]}},
+      {value:1150,itemStyle:{color:'#d2d2d7',borderRadius:[4,4,0,0]}},
+      {value:1040,itemStyle:{color:'#d2d2d7',borderRadius:[4,4,0,0]}},
+      {value:965,itemStyle:{color:'#d2d2d7',borderRadius:[4,4,0,0]}},
+      {value:966,itemStyle:{color:'#34c759',borderRadius:[4,4,0,0]}}
+    ]
+  }]
+});
+window.addEventListener('resize',function(){
+  oeeChart.resize();utilChart.resize();matRadar.resize();alarmChart.resize();dtChart.resize();
+});
+</script>
+<script>
+if (window.GleanBridge && window.GleanBridge.postMessage) {
+window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
+window.GleanBridge.onMessage('action',function(data){if(data.actionId==='export-pdf'){window.print();}});
+}
+</script>
+<script>
+function prepareChartsForPrint(){
+  document.querySelectorAll('[_echarts_instance_]').forEach(function(el){
+    var chart=echarts.getInstanceByDom(el);if(!chart)return;
+    var img=new Image();img.src=chart.getDataURL({type:'png',pixelRatio:2});
+    img.className='print-chart-img';
+    img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';
+    el.dataset.prevPosition=el.style.position;el.style.position='relative';el.appendChild(img);
+  });
+}
+function restoreChartsAfterPrint(){
+  document.querySelectorAll('[_echarts_instance_]').forEach(function(el){
+    var img=el.querySelector('.print-chart-img');if(!img)return;
+    img.remove();el.style.position=el.dataset.prevPosition||'';delete el.dataset.prevPosition;
+  });
+}
+window.addEventListener('beforeprint',prepareChartsForPrint);
+window.addEventListener('afterprint',restoreChartsAfterPrint);
+</script>
+</body>
+</html>
