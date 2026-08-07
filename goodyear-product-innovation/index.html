@@ -471,50 +471,47 @@ footer b{color:var(--artifact-ink-soft)}
 
 <script>
 (function(){
-  var ink = getComputedStyle(document.documentElement).getPropertyValue('--artifact-ink-soft').trim() || '#4a5768';
-  var faint = getComputedStyle(document.documentElement).getPropertyValue('--artifact-ink-faint').trim() || '#7a8698';
-  var navy = '#0055B8', gold = '#b8930a', good='#1f8f5f';
-  var line = 'rgba(0,45,98,0.10)';
-  var base = {textStyle:{fontFamily:'Segoe UI, system-ui, sans-serif'},grid:{left:38,right:16,top:24,bottom:28}};
-
-  function mk(id){var el=document.getElementById(id); if(!el||!window.echarts) return null; return echarts.init(el,null,{renderer:'svg'});}
-
-  var a=mk('chartAdoption');
-  if(a){a.setOption(Object.assign({},base,{
-    tooltip:{trigger:'axis'},
-    xAxis:{type:'category',data:['Wk 1','Wk 2','Wk 4','Wk 6','Wk 8','Wk 10'],axisLine:{lineStyle:{color:line}},axisLabel:{color:faint}},
-    yAxis:{type:'value',max:100,axisLabel:{color:faint,formatter:'{value}%'},splitLine:{lineStyle:{color:line}}},
-    series:[{type:'line',smooth:true,data:[18,41,63,79,88,91],areaStyle:{color:'rgba(0,85,184,0.14)'},lineStyle:{color:navy,width:3},itemStyle:{color:navy},symbolSize:7}]
-  }));}
-
-  var c=mk('chartCost');
-  if(c){c.setOption(Object.assign({},base,{
-    tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
-    xAxis:{type:'category',data:['Direct LLM calls','With Glean context'],axisLine:{lineStyle:{color:line}},axisLabel:{color:faint}},
-    yAxis:{type:'value',axisLabel:{color:faint},splitLine:{lineStyle:{color:line}},name:'Relative cost',nameTextStyle:{color:faint}},
-    series:[{type:'bar',barWidth:'46%',data:[{value:100,itemStyle:{color:faint}},{value:71,itemStyle:{color:good}}],label:{show:true,position:'top',color:ink,formatter:function(p){return p.value+'%';}}]}]
-  }));}
-
-  var v=mk('chartValue');
-  if(v){v.setOption(Object.assign({},base,{
-    tooltip:{trigger:'axis'},legend:{data:['Time-to-answer reduction','Workflows under Glean'],textStyle:{color:faint},top:0,right:0},
-    grid:{left:40,right:44,top:34,bottom:28},
-    xAxis:{type:'category',data:['Build','Champions','User Eval','Readout'],axisLine:{lineStyle:{color:line}},axisLabel:{color:faint}},
-    yAxis:[{type:'value',max:100,axisLabel:{color:faint,formatter:'{value}%'},splitLine:{lineStyle:{color:line}}},
-           {type:'value',max:12,axisLabel:{color:faint},splitLine:{show:false}}],
-    series:[
-      {name:'Time-to-answer reduction',type:'line',smooth:true,data:[5,28,52,64],lineStyle:{color:navy,width:3},itemStyle:{color:navy},symbolSize:7},
-      {name:'Workflows under Glean',type:'bar',yAxisIndex:1,barWidth:'34%',data:[1,4,8,11],itemStyle:{color:'rgba(255,209,0,0.7)'}}
-    ]
-  }));}
-
-  window.addEventListener('resize',function(){[a,c,v].forEach(function(x){x&&x.resize();});});
+  function cssv(n,f){var v=getComputedStyle(document.documentElement).getPropertyValue(n).trim();return v||f;}
+  var ink=cssv('--artifact-ink-soft','#4a5768');
+  var faint=cssv('--artifact-ink-faint','#7a8698');
+  var navy='#0055B8', good='#1f8f5f';
+  var line='rgba(0,45,98,0.10)';
+  var base={textStyle:{fontFamily:'Segoe UI, system-ui, sans-serif'},grid:{left:38,right:16,top:24,bottom:28}};
+  var charts={};
+  var ids=['chartAdoption','chartCost','chartValue'];
+  function opt(id){
+    if(id==='chartAdoption') return Object.assign({},base,{tooltip:{trigger:'axis'},xAxis:{type:'category',data:['Wk 1','Wk 2','Wk 4','Wk 6','Wk 8','Wk 10'],axisLine:{lineStyle:{color:line}},axisLabel:{color:faint}},yAxis:{type:'value',max:100,axisLabel:{color:faint,formatter:'{value}%'},splitLine:{lineStyle:{color:line}}},series:[{type:'line',smooth:true,data:[18,41,63,79,88,91],areaStyle:{color:'rgba(0,85,184,0.14)'},lineStyle:{color:navy,width:3},itemStyle:{color:navy},symbolSize:7}]});
+    if(id==='chartCost') return Object.assign({},base,{tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},xAxis:{type:'category',data:['Direct LLM calls','With Glean context'],axisLine:{lineStyle:{color:line}},axisLabel:{color:faint}},yAxis:{type:'value',axisLabel:{color:faint},splitLine:{lineStyle:{color:line}},name:'Relative cost',nameTextStyle:{color:faint}},series:[{type:'bar',barWidth:'46%',data:[{value:100,itemStyle:{color:faint}},{value:71,itemStyle:{color:good}}],label:{show:true,position:'top',color:ink,formatter:function(p){return p.value+'%';}}]});
+    return Object.assign({},base,{tooltip:{trigger:'axis'},legend:{data:['Time-to-answer reduction','Workflows under Glean'],textStyle:{color:faint},top:0,right:0},grid:{left:40,right:44,top:34,bottom:28},xAxis:{type:'category',data:['Build','Champions','User Eval','Readout'],axisLine:{lineStyle:{color:line}},axisLabel:{color:faint}},yAxis:[{type:'value',max:100,axisLabel:{color:faint,formatter:'{value}%'},splitLine:{lineStyle:{color:line}}},{type:'value',max:12,axisLabel:{color:faint},splitLine:{show:false}}],series:[{name:'Time-to-answer reduction',type:'line',smooth:true,data:[5,28,52,64],lineStyle:{color:navy,width:3},itemStyle:{color:navy},symbolSize:7},{name:'Workflows under Glean',type:'bar',yAxisIndex:1,barWidth:'34%',data:[1,4,8,11],itemStyle:{color:'rgba(255,209,0,0.7)'}}]});
+  }
+  function render(){
+    if(!window.echarts){return setTimeout(render,120);}
+    var pending=false;
+    ids.forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el) return;
+      if(el.clientWidth===0){pending=true;return;}   // section not laid out yet — retry
+      if(!charts[id]){charts[id]=echarts.init(el,null,{renderer:'svg'});charts[id].setOption(opt(id));}
+      else{charts[id].resize();}
+    });
+    if(pending) setTimeout(render,160);
+  }
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',render);}else{render();}
+  window.addEventListener('load',render);
+  window.addEventListener('resize',function(){ids.forEach(function(id){charts[id]&&charts[id].resize();});});
+  if(window.ResizeObserver){
+    var ro=new ResizeObserver(function(){ids.forEach(function(id){charts[id]&&charts[id].resize();});});
+    ids.forEach(function(id){var el=document.getElementById(id);el&&ro.observe(el);});
+  }
+  window.addEventListener('hashchange',function(){setTimeout(render,80);});
 })();
 </script>
 
 <script>
-  window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
-  window.GleanBridge.onMessage('action',function(data){ if(data.actionId==='export-pdf') window.print(); });
+  if(window.GleanBridge){
+    window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
+    window.GleanBridge.onMessage('action',function(data){ if(data.actionId==='export-pdf') window.print(); });
+  }
   function prepareChartsForPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var chart=echarts.getInstanceByDom(el);if(!chart)return;var img=new Image();img.src=chart.getDataURL({type:'png',pixelRatio:2});img.className='print-chart-img';img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';el.dataset.prevPosition=el.style.position;el.style.position='relative';el.appendChild(img);});}
   function cleanUpAfterPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var img=el.querySelector('.print-chart-img');if(!img)return;img.remove();el.style.position=el.dataset.prevPosition||'';delete el.dataset.prevPosition;});}
   window.addEventListener('beforeprint',prepareChartsForPrint);
