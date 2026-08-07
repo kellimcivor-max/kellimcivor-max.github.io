@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goodyear Q2 2026 Earnings &mdash; Glean</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+
+:root{
+  --ink:#0a1628;--ink-soft:#3d4a5c;--muted:#6b7688;
+  --line:#e3e8ef;--line-soft:#eef1f6;
+  --paper:#ffffff;--wash:#f4f7fb;--wash-2:#eef3f9;
+  --brand:#005cde;--brand-deep:#003a8c;--brand-soft:#e7f0fd;
+  --accent:#00b2a9;--gold:#f2b70a;--gold-deep:#c98a12;--green:#1f9d55;--red:#d64545;
+  --radius:16px;--shadow:0 1px 2px rgba(10,22,40,.05),0 16px 40px rgba(10,22,40,.07);
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--ink);background:var(--wash);line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:0 26px}
+.eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--brand)}
+
+/* MASTHEAD */
+.masthead{background:radial-gradient(1100px 460px at 84% -20%,rgba(0,92,222,.20),transparent 60%),linear-gradient(155deg,#061225,#0a2148 60%,#0a1628);color:#fff;padding:44px 0 0}
+.mast-top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap}
+.mast-brand{font-size:13px;font-weight:700;letter-spacing:.04em;color:#9fb2cd}
+.mast-brand .chip{color:#fff}
+.mast-brand .x{opacity:.5;margin:0 8px}
+.quarter-badge{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#0a2148;background:var(--gold);padding:7px 14px;border-radius:100px}
+.mast-title{font-family:var(--serif);font-size:clamp(34px,5.4vw,54px);font-weight:700;letter-spacing:-.02em;line-height:1.05;margin:18px 0 6px}
+.mast-sub{font-size:16px;color:#cdd8ea;max-width:640px}
+.mast-meta{display:flex;gap:26px;flex-wrap:wrap;margin-top:22px;font-size:13px;color:#9fb2cd}
+.mast-meta b{color:#fff;font-weight:600}
+/* TABS */
+.tabs{display:flex;gap:4px;margin-top:34px}
+.tab-btn{appearance:none;border:none;cursor:pointer;background:transparent;color:#9fb2cd;font-family:var(--sans);font-size:14.5px;font-weight:600;letter-spacing:.01em;padding:15px 24px;border-radius:12px 12px 0 0;transition:all .18s ease;position:relative}
+.tab-btn:hover{color:#eaf1fb}
+.tab-btn.active{background:var(--wash);color:var(--brand-deep)}
+.tab-btn .tnum{font-size:11px;opacity:.6;margin-right:7px;font-variant-numeric:tabular-nums}
+
+/* PANELS */
+.panel{display:none;padding:44px 0 72px}
+.panel.active{display:block;animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* KPI */
+.kpi-strip{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:30px}
+.kpi{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px 18px;box-shadow:var(--shadow)}
+.kpi .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
+.kpi .val{font-size:23px;font-weight:800;letter-spacing:-.02em;margin-top:5px;font-family:var(--serif)}
+.kpi .delta{font-size:12px;margin-top:3px;font-weight:600}
+.up{color:var(--green)}.down{color:var(--red)}.flat{color:var(--muted)}
+
+.section-title{font-family:var(--serif);font-size:26px;font-weight:700;letter-spacing:-.01em;margin:38px 0 18px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px;box-shadow:var(--shadow);margin-bottom:16px}
+.card h3{font-size:15px;font-weight:800;letter-spacing:-.005em;display:flex;align-items:center;gap:8px}
+.card .caption{font-size:12.5px;color:var(--muted);margin-top:2px;margin-bottom:6px}
+.grid-2{display:grid;grid-template-columns:1.55fr 1fr;gap:16px}
+.grid-2b{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chart{height:280px;width:100%}
+.chart-sm{height:250px;width:100%}
+
+.guide-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.guide{background:linear-gradient(135deg,#0a2148,#153a72);color:#fff;border-radius:14px;padding:22px 24px;box-shadow:var(--shadow)}
+.guide .g-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8fb6f2;font-weight:700}
+.guide .g-val{font-family:var(--serif);font-size:28px;font-weight:700;margin-top:6px}
+.guide .g-sub{font-size:13px;color:#cdd8ea;margin-top:4px}
+
+/* SCRIPT TAB */
+.script-wrap{max-width:820px;margin:0 auto}
+.script-intro{background:var(--brand-soft);border-left:4px solid var(--brand);border-radius:0 12px 12px 0;padding:18px 22px;font-size:14.5px;color:var(--brand-deep);margin-bottom:30px}
+.beat{margin-bottom:30px;position:relative}
+.beat-head{display:flex;align-items:baseline;gap:12px;border-bottom:2px solid var(--line);padding-bottom:8px;margin-bottom:14px}
+.beat-num{font-family:var(--serif);font-size:24px;font-weight:700;color:var(--brand)}
+.beat-title{font-size:17px;font-weight:800;letter-spacing:-.01em}
+.beat-speaker{margin-left:auto;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#fff;background:var(--ink);padding:5px 11px;border-radius:100px}
+.beat-time{font-size:12px;color:var(--muted);font-weight:600}
+.beat p{font-size:15.5px;color:var(--ink-soft);margin-top:12px;line-height:1.75}
+.beat p:first-of-type{margin-top:0}
+.beat p .lead{color:var(--ink);font-weight:600}
+.pull{font-family:var(--serif);font-size:18px;font-style:italic;color:var(--brand-deep);border-left:3px solid var(--accent);padding:6px 0 6px 18px;margin:16px 0}
+.cue{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:8px}
+
+/* SUMMARY TAB */
+.sum-meta{display:flex;flex-wrap:wrap;gap:22px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px 24px;margin-bottom:24px;box-shadow:var(--shadow)}
+.sum-meta div .k{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
+.sum-meta div .v{font-size:14.5px;font-weight:700;margin-top:2px}
+.exec-sum{background:linear-gradient(135deg,#0a2148,#153a72);color:#fff;border-radius:var(--radius);padding:28px 30px;margin-bottom:24px;box-shadow:var(--shadow)}
+.exec-sum .eyebrow{color:#8fb6f2}
+.exec-sum h3{font-family:var(--serif);font-size:22px;font-weight:700;margin:8px 0 10px}
+.exec-sum p{font-size:15.5px;color:#dbe4f1;line-height:1.7}
+.takeaways{list-style:none;display:grid;gap:12px}
+.takeaways li{display:flex;gap:12px;font-size:15px;color:var(--ink-soft)}
+.takeaways li .n{flex-shrink:0;width:24px;height:24px;border-radius:7px;background:var(--brand-soft);color:var(--brand-deep);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.takeaways li strong{color:var(--ink);font-weight:700}
+.spk{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line-soft)}
+.spk:last-child{border-bottom:none}
+.spk .av{flex-shrink:0;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--glean,#4b3bd6));color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center}
+.spk .sp-name{font-size:15px;font-weight:800}
+.spk .sp-role{font-size:12.5px;color:var(--muted);font-weight:600}
+.spk .sp-say{font-size:14.5px;color:var(--ink-soft);margin-top:6px;line-height:1.65}
+.qa{border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:12px;background:var(--paper)}
+.qa .q{font-size:14.5px;font-weight:700;color:var(--ink);display:flex;gap:10px}
+.qa .q .badge{flex-shrink:0;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#0a2148;background:var(--gold);padding:4px 9px;border-radius:6px;height:fit-content}
+.qa .analyst{font-size:12px;color:var(--muted);font-weight:600;margin:2px 0 10px 46px}
+.qa .a{font-size:14.5px;color:var(--ink-soft);line-height:1.65;padding-left:46px;border-left:2px solid var(--brand-soft);margin-left:14px}
+.qa .a b{color:var(--brand-deep)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip-tag{font-size:12px;font-weight:600;padding:6px 12px;border-radius:100px;background:var(--wash-2);border:1px solid var(--line);color:var(--ink-soft)}
+.chip-tag.pos{background:#e8f6ee;border-color:#bfe6cd;color:#1f7a45}
+.chip-tag.watch{background:#fef3e2;border-color:#f6d9a8;color:#8a5a12}
+
+.disc{font-size:11.5px;color:var(--muted);text-align:center;padding:26px 0 40px;max-width:760px;margin:0 auto;line-height:1.6}
+
+@media (max-width:920px){.kpi-strip{grid-template-columns:repeat(3,1fr)}.grid-2,.grid-2b,.guide-grid{grid-template-columns:1fr}.tabs{overflow-x:auto}.tab-btn{white-space:nowrap}}
+@media (max-width:560px){.kpi-strip{grid-template-columns:repeat(2,1fr)}}
+
+@media print{
+  @page{margin:.4in}
+  body{background:#fff}
+  .tabs,.tab-btn{display:none!important}
+  .panel{display:block!important;padding:20px 0;break-before:page}
+  .panel:first-of-type{break-before:auto}
+  .masthead{background:#0a2148!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .card,.kpi,.qa,.beat,.spk{break-inside:avoid}
+  .exec-sum,.guide,.mast-title{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  *,*::before,*::after{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="mast-top">
+      <div class="mast-brand"><span class="chip">Goodyear</span><span class="x">&times;</span><span class="chip">Glean</span></div>
+      <span class="quarter-badge">Q2 2026 &middot; Earnings</span>
+    </div>
+    <div class="mast-title">Second Quarter 2026 Earnings Call</div>
+    <div class="mast-sub">A single, eloquent view of the quarter &mdash; the numbers, the narrative, and what the Street heard &mdash; assembled by Glean.</div>
+    <div class="mast-meta">
+      <span><b>Thursday, August 6, 2026</b> &middot; 8:30 AM ET</span>
+      <span>NASDAQ: <b>GT</b></span>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="summary"><span class="tnum">01</span>Post-Call Summary</button>
+      <button class="tab-btn" data-tab="transcript"><span class="tnum">02</span>Highlighted Post-Call Transcript</button>
+      <button class="tab-btn" data-tab="dash"><span class="tnum">03</span>Earnings Dashboard</button>
+      <button class="tab-btn" data-tab="script"><span class="tnum">04</span>Call Script</button>
+    </div>
+  </div>
+</header>
+
+<section class="panel active" id="summary">
+  <div class="wrap">
+    <div class="sum-meta">
+      <div><div class="k">Call</div><div class="v">Q2 2026 Earnings</div></div>
+      <div><div class="k">Date</div><div class="v">Aug 6, 2026 &middot; 8:30 AM ET</div></div>
+      <div><div class="k">Duration</div><div class="v">~60 minutes</div></div>
+      <div><div class="k">Prepared remarks</div><div class="v">~28 min</div></div>
+      <div><div class="k">Q&amp;A</div><div class="v">Analyst queue</div></div>
+      <div><div class="k">Summarized by</div><div class="v">Glean Work AI</div></div>
+    </div>
+
+    <div class="exec-sum">
+      <div class="eyebrow">Executive Summary</div>
+      <h3>A stabilizing quarter carried by premium mix and share gains.</h3>
+      <p>Goodyear reported Q2 net sales of $4.25B (-4.8% YoY; just -1.4% organic after the Chemical and Dunlop divestitures), ahead of consensus, with an adjusted loss of $(0.61) per share and total segment operating income of $36M. Tire volume of 36.5M units fell just 4.0% &mdash; a marked improvement from the 12% decline in Q1 as destocking moderated. Premium &ge;18-inch tires reached 43% of the consumer portfolio and OE volume and share grew in every region. Analysts pressed on the path back to profitability, the Fayetteville footprint action, and the inflation and Middle East raw-material outlook. Tone was cautiously constructive; the volume-moderation and premium-mix narrative was the most-discussed theme of the call.</p>
+    </div>
+
+    <div class="grid-2b">
+      <div class="card">
+        <h3>&#127919; How the Quarter Landed vs. the Street</h3>
+        <div class="caption">Q2 2026 results relative to consensus (% surprise)</div>
+        <div id="beatChart" class="chart-sm"></div>
+      </div>
+      <div class="card">
+        <h3>&#128202; Premium Mix Shift</h3>
+        <div class="caption">Share of the consumer portfolio by rim size</div>
+        <div id="premiumChart" class="chart-sm"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>&#128204; Key Takeaways</h3>
+      <ul class="takeaways" style="margin-top:14px">
+        <li><span class="n">1</span><span><strong>Sequential stabilization.</strong> Volume fell 4.0% versus a 12% decline in Q1; management sees Q3 volumes roughly flat year over year.</span></li>
+        <li><span class="n">2</span><span><strong>Premium mix is the engine.</strong> &ge;18-inch tires now 43% of the consumer portfolio, with 1,600+ new Goodyear and Cooper SKUs launching in 2026.</span></li>
+        <li><span class="n">3</span><span><strong>OE share gains in every region;</strong> EMEA marked its tenth consecutive quarter of consumer OE share gains.</span></li>
+        <li><span class="n">4</span><span><strong>Goodyear Forward is delivering</strong> &mdash; $95M in-quarter benefit and ~$325M guided for FY2026; the Fayetteville closure targets ~$270M of annual segment-income improvement from 2028.</span></li>
+        <li><span class="n">5</span><span><strong>Balance sheet strengthening</strong> &mdash; free cash flow improved $318M YoY to $(69)M and net debt fell $722M YoY to $6.3B; Asia Pacific led operations at $63M SOI / 12.7% margin.</span></li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>&#127908; Speakers &amp; Key Points</h3>
+      <div class="spk">
+        <div class="av">MS</div>
+        <div><div class="sp-name">Mark Stewart</div><div class="sp-role">Chief Executive Officer &amp; President &middot; Opening &amp; closing remarks</div><div class="sp-say">Framed the quarter as "in line with expectations," with continued improvement in Asia Pacific and EMEA. On the footprint, the Fayetteville decision is "very much about balancing supply and demand in the areas of the market we want and need to participate in, versus trying to be everything to everyone."</div></div>
+      </div>
+      <div class="spk">
+        <div class="av">SD</div>
+        <div><div class="sp-name">Scott Deakin</div><div class="sp-role">Interim EVP &amp; Chief Financial Officer &middot; Financial review &amp; outlook</div><div class="sp-say">Walked the segment operating-income bridge, free cash flow, and net-debt reduction, and set Q3 assumptions &mdash; including ~$95M of higher inflation and other costs (~$60M core) and a ~$20M raw-material headwind as Middle East commodity costs flow through on the typical four-to-six-month lag.</div></div>
+      </div>
+      <div class="spk">
+        <div class="av">IR</div>
+        <div><div class="sp-name">Investor Relations Host</div><div class="sp-role">Moderator</div><div class="sp-say">Opened with safe-harbor language, introduced management, and moderated the analyst Q&amp;A queue.</div></div>
+      </div>
+    </div>
+
+    <div class="section-title">Analyst Q&amp;A</div>
+
+    <div class="qa">
+      <div class="q"><span class="badge">Q1</span><span>How should we think about the payoff from the footprint actions and the Fayetteville closure?</span></div>
+      <div class="analyst">Deutsche Bank</div>
+      <div class="a"><b>Stewart:</b> The decision is "very much about balancing supply and demand in the areas of the market we want and need to participate in, versus trying to be everything to everyone." Fayetteville closes by the end of 2027, with roughly $270 million of annual segment-income improvement expected from 2028.</div>
+    </div>
+    <div class="qa">
+      <div class="q"><span class="badge">Q2</span><span>What are you assuming for inflation and cost into the third quarter?</span></div>
+      <div class="analyst">Morgan Stanley</div>
+      <div class="a"><b>Deakin:</b> About $95 million of higher inflation and other costs in Q3, including roughly $60 million of core inflation based on a general inflation figure of about 3%, plus transitory manufacturing and other items.</div>
+    </div>
+    <div class="qa">
+      <div class="q"><span class="badge">Q3</span><span>How is the conflict in the Middle East affecting raw materials?</span></div>
+      <div class="analyst">Wells Fargo</div>
+      <div class="a"><b>Deakin:</b> "Raw material costs are expected to increase by approximately $20 million as higher commodity costs associated with the conflict in the Middle East begin flowing through our P&amp;L, consistent with our typical four-to-six month lag."</div>
+    </div>
+    <div class="qa">
+      <div class="q"><span class="badge">Q4</span><span>Volume fell 4% after a 12% Q1 decline &mdash; what underpins the trajectory from here?</span></div>
+      <div class="analyst">Barclays</div>
+      <div class="a"><b>Deakin:</b> Consumer replacement destocking moderated as industry sell-out aligned more closely with sell-in; we expect Q3 global volumes roughly flat year over year, improving from the first half on new-assortment wins and channel-inventory normalization.</div>
+    </div>
+    <div class="qa">
+      <div class="q"><span class="badge">Q5</span><span>Where does the path back to stronger profitability come from?</span></div>
+      <div class="analyst">RBC Capital Markets</div>
+      <div class="a"><b>Stewart:</b> Premium &ge;18-inch mix at 43% of the consumer portfolio, OE share gains in every region, ~$325 million of full-year Goodyear Forward benefits, and the footprint actions &mdash; all designed to strengthen our competitive position and deliver stronger profitability over time.</div>
+    </div>
+
+    <div class="section-title">Objectives for Next Quarter &mdash; Q3 2026</div>
+    <div class="exec-sum" style="margin-bottom:20px">
+      <div class="eyebrow">The mandate from here</div>
+      <h3>Convert stabilization into a repeatable path to profitability.</h3>
+      <p>Management set a clear bar for Q3: sustain the volume recovery, keep premium mix and OE share climbing, and compound Goodyear Forward benefits against inflation, tariffs, and Middle East raw-material costs. The through-line &mdash; turn a stabilizing quarter into durable, profitable growth.</p>
+    </div>
+
+    <div class="guide-grid" style="margin-bottom:16px">
+      <div class="guide"><div class="g-lbl">Q3 Volume</div><div class="g-val">~Flat</div><div class="g-sub">Year over year &middot; improving from 1H</div></div>
+      <div class="guide"><div class="g-lbl">Q3 Price / Mix</div><div class="g-val">+$110M</div><div class="g-sub">Favorable price/mix benefit</div></div>
+      <div class="guide"><div class="g-lbl">FY Goodyear Forward</div><div class="g-val">~$325M</div><div class="g-sub">Full-year cost &amp; margin benefit</div></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>&#128736;&#65039; Strategic Objectives &mdash; Progress Markers</h3>
+        <div class="caption">Indicative progress on each Q3 priority</div>
+        <div id="objTrajChart" class="chart"></div>
+      </div>
+      <div class="card">
+        <h3>&#128203; What "Done" Looks Like in Q3</h3>
+        <ul class="takeaways" style="margin-top:14px">
+          <li><span class="n">1</span><span><strong>Sustain volume near flat</strong> year over year &mdash; up from -4% in Q2. <span class="chip-tag pos" style="margin-left:4px">-4% &rarr; ~flat</span></span></li>
+          <li><span class="n">2</span><span><strong>Push premium &ge;18-inch mix higher</strong> across all regions. <span class="chip-tag" style="margin-left:4px">43%+</span></span></li>
+          <li><span class="n">3</span><span><strong>Advance the 1,600+ SKU launch year</strong> on schedule across Goodyear and Cooper. <span class="chip-tag" style="margin-left:4px">1,600+ SKUs</span></span></li>
+          <li><span class="n">4</span><span><strong>Progress the Fayetteville footprint plan</strong> (close by end of 2027). <span class="chip-tag watch" style="margin-left:4px">~$270M from 2028</span></span></li>
+          <li><span class="n">5</span><span><strong>Compound Goodyear Forward</strong> toward the full-year benefit. <span class="chip-tag pos" style="margin-left:4px">$95M &rarr; ~$325M FY</span></span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>&#128200; Sentiment &amp; Analyst Reaction</h3>
+      <div class="chips" style="margin-top:12px">
+        <span class="chip-tag pos">Overall tone: Cautiously constructive</span>
+        <span class="chip-tag pos">Sales beat consensus</span>
+        <span class="chip-tag pos">Volume moderation well received</span>
+        <span class="chip-tag pos">Premium-mix story credible</span>
+        <span class="chip-tag watch">Watch: tariffs &amp; Middle East input costs</span>
+        <span class="chip-tag watch">Watch: Americas replacement demand</span>
+      </div>
+      <div class="section-title" style="font-size:17px;margin:22px 0 8px">Follow-Ups &amp; Owners</div>
+      <ul class="takeaways">
+        <li><span class="n">&#8594;</span><span><strong>Track Q3 volume trajectory</strong> against the "roughly flat" guide. <em>Owner: IR + Commercial.</em></span></li>
+        <li><span class="n">&#8594;</span><span><strong>Package the Fayetteville footprint economics</strong> (~$270M from 2028) for investors. <em>Owner: Operations + IR.</em></span></li>
+        <li><span class="n">&#8594;</span><span><strong>Monitor Middle East raw-material pass-through</strong> on the four-to-six-month lag. <em>Owner: Procurement.</em></span></li>
+        <li><span class="n">&#8594;</span><span><strong>Report Goodyear Forward progress</strong> toward the ~$325M full-year benefit. <em>Owner: Finance + Transformation.</em></span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+.tx-wrap{max-width:840px;margin:0 auto}
+.tx-highlights{background:linear-gradient(135deg,#0a2148,#153a72);color:#fff;border-radius:var(--radius);padding:28px 30px;margin-bottom:30px;box-shadow:var(--shadow)}
+.tx-highlights .eyebrow{color:#8fb6f2}
+.tx-highlights h3{font-family:var(--serif);font-size:22px;font-weight:700;margin:8px 0 14px}
+.tx-highlights ul{list-style:none;display:grid;gap:10px}
+.tx-highlights li{display:flex;gap:11px;font-size:15px;color:#dbe4f1;line-height:1.6}
+.tx-highlights li .b{color:var(--gold);font-weight:800;flex-shrink:0}
+.tx-highlights li i,.tx-highlights li b{color:#fff}
+.tx-highlights li b{font-style:italic;font-weight:800}
+.tx{padding:16px 2px;border-bottom:1px solid var(--line-soft)}
+.tx:last-child{border-bottom:none}
+.tx-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.tx-name{font-size:14.5px;font-weight:800;color:var(--ink)}
+.tx-role{font-size:12px;font-weight:600;color:var(--muted)}
+.tx-time{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
+.tx p{font-size:15px;color:var(--ink-soft);line-height:1.74;margin-top:8px}
+.tx p+p{margin-top:10px}
+.fig{font-weight:800;font-style:italic;color:var(--brand-deep)}
+.call{font-style:italic;font-weight:600;color:var(--ink)}
+.tx.tx-q{border-left:3px solid var(--gold);padding-left:16px;background:linear-gradient(90deg,rgba(242,183,10,.10),transparent);border-radius:0 8px 8px 0;border-bottom:none;margin-top:6px}
+.tx.tx-q .tx-name{color:#8a5a12}
+</style>
+<section class="panel" id="transcript">
+  <div class="wrap">
+    <div class="tx-wrap">
+      <div class="tx-highlights">
+        <div class="eyebrow">Call Highlights</div>
+        <h3>The five minutes that mattered.</h3>
+        <ul>
+          <li><span class="b">&#9733;</span><span>Net sales of <b>$4.25B</b>, down <b>4.8%</b> (-1.4% organic) &mdash; <i>ahead of consensus.</i></span></li>
+          <li><span class="b">&#9733;</span><span>Total segment operating income of <b>$36M</b> at a <b>0.8% margin</b>; <i>Asia Pacific led at $63M / 12.7%.</i></span></li>
+          <li><span class="b">&#9733;</span><span>Tire volume of <b>36.5M units</b> &mdash; <i>decline eased to -4.0% from -12% in Q1.</i></span></li>
+          <li><span class="b">&#9733;</span><span>Premium <b>&ge;18-inch</b> tires now <b>43%</b> of the consumer portfolio.</span></li>
+          <li><span class="b">&#9733;</span><span>Free cash flow <b>+$318M YoY</b> to $(69)M; net debt <i>down</i> <b>$722M YoY</b> to $6.3B.</span></li>
+          <li><span class="b">&#9733;</span><span>Q3 volumes guided <b>roughly flat</b> YoY; full-year Goodyear Forward benefit <b>~$325M</b>.</span></li>
+        </ul>
+      </div>
+
+      <div class="section-title" style="margin-top:0">Prepared Remarks</div>
+
+      <div class="tx">
+        <div class="tx-head"><span class="tx-name">Investor Relations Host</span><span class="tx-role">Moderator</span><span class="tx-time">[00:00]</span></div>
+        <p>Good morning, and welcome to Goodyear's <span class="fig">second-quarter 2026</span> earnings conference call. Joining me today are our Chief Executive Officer and President, Mark Stewart, and our interim Chief Financial Officer, Scott Deakin. Today's remarks include forward-looking statements subject to risks and uncertainties, and reconciliations of non-GAAP measures are available in our earnings release and presentation. With that, I'll turn the call over to Mark.</p>
+      </div>
+
+      <div class="tx">
+        <div class="tx-head"><span class="tx-name">Mark Stewart</span><span class="tx-role">Chief Executive Officer &amp; President</span><span class="tx-time">[00:03]</span></div>
+        <p>Thank you, and good morning, everyone. I want to thank our associates around the world. This was a quarter of <span class="call">results in line with our expectations,</span> with continued improvement in Asia Pacific and EMEA. Net sales were <span class="fig">$4.25 billion</span> and tire unit volume was <span class="fig">36.5 million units</span> &mdash; a 4% decline, but a marked improvement from the <span class="fig">12% decline</span> in the first quarter as destocking moderated.</p>
+        <p>We grew original-equipment volume and market share in every region, and our premium 18-inch-and-above business now represents <span class="fig">43% of our consumer portfolio.</span> We're strengthening our product lineup with more than <span class="fig">1,600 new SKUs</span> this year across Goodyear and Cooper, and <span class="call">aligning our manufacturing footprint with the portfolio we're building.</span></p>
+      </div>
+
+      <div class="tx">
+        <div class="tx-head"><span class="tx-name">Scott Deakin</span><span class="tx-role">Interim EVP &amp; Chief Financial Officer &middot; Financial review</span><span class="tx-time">[00:10]</span></div>
+        <p>Thank you, Mark. Second-quarter net sales of <span class="fig">$4.25 billion</span> decreased <span class="fig">4.8%</span>, or just <span class="fig">1.4% organically</span> after the Chemical and Dunlop divestitures. Total segment operating income was <span class="fig">$36 million</span>, a <span class="fig">0.8% margin.</span></p>
+        <p>Lower volume was a <span class="fig">$132 million</span> headwind, tariffs and other costs <span class="fig">$100 million</span>, and inflation <span class="fig">$53 million</span> &mdash; partially offset by <span class="fig">$123 million</span> of favorable price/mix versus raw materials and <span class="fig">$95 million</span> of Goodyear Forward benefits. <span class="call">Free cash flow improved $318 million year over year</span> to negative $69 million, and we reduced net debt by <span class="fig">$722 million</span> to <span class="fig">$6.3 billion.</span></p>
+      </div>
+
+      <div class="tx">
+        <div class="tx-head"><span class="tx-name">Scott Deakin</span><span class="tx-role">Interim EVP &amp; Chief Financial Officer &middot; Regional review</span><span class="tx-time">[00:16]</span></div>
+        <p>By region, the Americas posted a <span class="fig">$10 million</span> segment operating loss as replacement volume fell 13% &mdash; better than the 23% decline in Q1 &mdash; while EMEA improved its loss to <span class="fig">$17 million</span> and marked its <span class="call">tenth consecutive quarter of consumer OE share gains.</span> Asia Pacific was the standout, with <span class="fig">$63 million</span> of segment operating income at a <span class="fig">12.7% margin</span>, driven by premium &ge;18-inch growth and China OE.</p>
+      </div>
+
+      <div class="tx">
+        <div class="tx-head"><span class="tx-name">Scott Deakin</span><span class="tx-role">Interim EVP &amp; Chief Financial Officer &middot; Guidance</span><span class="tx-time">[00:22]</span></div>
+        <p>For the third quarter, we expect global unit volumes <span class="call">roughly flat year over year,</span> improving from the first half. We anticipate about <span class="fig">$110 million</span> of price/mix benefit and roughly <span class="fig">$70 million</span> from Goodyear Forward, with full-year Goodyear Forward benefits of approximately <span class="fig">$325 million.</span></p>
+        <p>Offsetting these, about <span class="fig">$95 million</span> of higher inflation and other costs &mdash; including roughly $60 million of core inflation &mdash; a <span class="fig">$20 million</span> raw-material headwind as Middle East commodity costs flow through on our typical four-to-six-month lag, and about $10 million of tariffs.</p>
+      </div>
+
+      <div class="tx">
+        <div class="tx-head"><span class="tx-name">Mark Stewart</span><span class="tx-role">Closing</span><span class="tx-time">[00:27]</span></div>
+        <p>To summarize: <span class="call">results in line with expectations, sequential volume improvement, premium and OE share gains,</span> and disciplined actions on our footprint and cost structure. These actions are designed to strengthen our competitive position and deliver stronger profitability over time. Operator, we're ready to open the line for questions.</p>
+      </div>
+
+      <div class="section-title">Question &amp; Answer</div>
+
+      <div class="tx tx-q">
+        <div class="tx-head"><span class="tx-name">Analyst &mdash; Deutsche Bank</span><span class="tx-time">[00:31]</span></div>
+        <p>How should we think about the payoff from the footprint actions and the Fayetteville closure?</p>
+      </div>
+      <div class="tx">
+        <div class="tx-head"><span class="tx-name">Mark Stewart</span><span class="tx-role">Chief Executive Officer &amp; President</span></div>
+        <p>The decision is <span class="call">very much about balancing supply and demand in the areas of the market we want and need to participate in, versus trying to be everything to everyone.</span> Fayetteville closes by the end of 2027, with roughly <span class="fig">$270 million</span> of annual segment-income improvement expected from 2028.</p>
+      </div>
+
+      <div class="tx tx-q">
+        <div class="tx-head"><span class="tx-name">Analyst &mdash; Wells Fargo</span><span class="tx-time">[00:37]</span></div>
+        <p>What is the conflict in the Middle East doing to raw-material costs?</p>
+      </div>
+      <div class="tx">
+        <div class="tx-head"><span class="tx-name">Scott Deakin</span><span class="tx-role">Interim EVP &amp; Chief Financial Officer</span></div>
+        <p><span class="call">Raw material costs are expected to increase by approximately $20 million</span> as higher commodity costs associated with the conflict in the Middle East begin flowing through our P&amp;L, consistent with our typical <span class="fig">four-to-six-month lag.</span></p>
+      </div>
+
+      <div class="tx tx-q">
+        <div class="tx-head"><span class="tx-name">Analyst &mdash; Barclays</span><span class="tx-time">[00:43]</span></div>
+        <p>Volume fell 4% after a 12% Q1 decline &mdash; what underpins the trajectory from here?</p>
+      </div>
+      <div class="tx">
+        <div class="tx-head"><span class="tx-name">Scott Deakin</span><span class="tx-role">Interim EVP &amp; Chief Financial Officer</span></div>
+        <p>Consumer replacement destocking moderated as industry sell-out aligned more closely with sell-in; we expect <span class="fig">Q3 volumes roughly flat</span> year over year, improving from the first half on new-assortment wins and channel-inventory normalization.</p>
+      </div>
+
+      <div class="tx tx-q">
+        <div class="tx-head"><span class="tx-name">Analyst &mdash; RBC Capital Markets</span><span class="tx-time">[00:49]</span></div>
+        <p>Where does the path back to stronger profitability come from?</p>
+      </div>
+      <div class="tx">
+        <div class="tx-head"><span class="tx-name">Mark Stewart</span><span class="tx-role">Chief Executive Officer &amp; President</span></div>
+        <p>Premium &ge;18-inch mix at <span class="fig">43%</span> of the consumer portfolio, OE share gains in every region, <span class="fig">~$325 million</span> of full-year Goodyear Forward benefits, and the footprint actions &mdash; <span class="call">all designed to deliver stronger profitability over time.</span></p>
+      </div>
+
+      <div class="tx">
+        <div class="tx-head"><span class="tx-name">Investor Relations Host</span><span class="tx-role">Closing</span><span class="tx-time">[00:54]</span></div>
+        <p>That concludes today's question-and-answer session. Thank you for joining Goodyear's second-quarter 2026 earnings call. A replay will be available on our investor relations site.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="dash">
+  <div class="wrap">
+    <div class="kpi-strip">
+      <div class="kpi"><div class="lbl">Total Net Sales</div><div class="val">$4.25B</div><div class="delta down">&darr; 4.8% YoY</div></div>
+      <div class="kpi"><div class="lbl">Adjusted EPS</div><div class="val">$(0.61)</div><div class="delta down">vs $(0.17)</div></div>
+      <div class="kpi"><div class="lbl">Segment Op. Income</div><div class="val">$36M</div><div class="delta flat">0.8% margin</div></div>
+      <div class="kpi"><div class="lbl">Tire Unit Volume</div><div class="val">36.5M</div><div class="delta flat">-4.0% YoY</div></div>
+      <div class="kpi"><div class="lbl">Free Cash Flow</div><div class="val">$(69)M</div><div class="delta up">&uarr; +$318M YoY</div></div>
+      <div class="kpi"><div class="lbl">Net Debt</div><div class="val">$6.33B</div><div class="delta up">&darr; $722M YoY</div></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>Revenue Trajectory</h3>
+        <div class="caption">Total company net sales by quarter ($B) &middot; eight-quarter view</div>
+        <div id="revChart" class="chart"></div>
+      </div>
+      <div class="card">
+        <h3>Revenue Mix</h3>
+        <div class="caption">Q2 2026 net sales by region</div>
+        <div id="mixChart" class="chart"></div>
+      </div>
+    </div>
+
+    <div class="grid-2b">
+      <div class="card">
+        <h3>Profitability &mdash; Income &amp; Margin</h3>
+        <div class="caption">Total segment operating income ($M) and margin (%) by quarter</div>
+        <div id="marginChart" class="chart-sm"></div>
+      </div>
+      <div class="card">
+        <h3>Net Debt &mdash; Deleveraging</h3>
+        <div class="caption">Total net debt ($B) &mdash; down $722M year over year</div>
+        <div id="backlogChart" class="chart-sm"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>What Moved Segment Operating Income</h3>
+      <div class="caption">Year-over-year drivers ($M) &mdash; headwinds versus offsets</div>
+      <div id="aiChart" class="chart-sm"></div>
+    </div>
+
+    <div class="section-title">Guidance &mdash; Full Year 2026</div>
+    <div class="guide-grid">
+      <div class="guide"><div class="g-lbl">FY Goodyear Forward</div><div class="g-val">~$325M</div><div class="g-sub">Cost &amp; margin benefit</div></div>
+      <div class="guide"><div class="g-lbl">FY Interest Expense</div><div class="g-val">~$425M</div><div class="g-sub">Full-year 2026</div></div>
+      <div class="guide"><div class="g-lbl">FY Capital Spend</div><div class="g-val">~$725M</div><div class="g-sub">Full-year 2026</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="script">
+  <div class="wrap">
+    <div class="script-wrap">
+      <div class="script-intro">
+        <strong>Speaking notes &mdash; prepared remarks.</strong> The throughline: a stabilizing quarter becoming durable, profitable growth through premium mix, OE share, footprint discipline, and Goodyear Forward. Deliver with measured confidence; keep the message that <em>results are in line with expectations and the actions underway are designed to strengthen the competitive position over time</em>.
+      </div>
+
+      <div class="beat">
+        <div class="beat-head"><span class="beat-num">01</span><span class="beat-title">Operator &amp; Safe Harbor</span><span class="beat-speaker">IR Host</span></div>
+        <div class="beat-time">~2 min</div>
+        <p>Good morning, and welcome to Goodyear's second-quarter 2026 earnings conference call. Joining today are our Chief Executive Officer and President, Mark Stewart, and our interim Chief Financial Officer, Scott Deakin.</p>
+        <p>Before we begin, a reminder that today's remarks include forward-looking statements subject to risks and uncertainties. Reconciliations of non-GAAP measures are available in today's earnings release and presentation on our investor site. With that, I'll turn the call over to Mark.</p>
+      </div>
+
+      <div class="beat">
+        <div class="beat-head"><span class="beat-num">02</span><span class="beat-title">CEO Opening Remarks</span><span class="beat-speaker">Mark Stewart</span></div>
+        <div class="beat-time">~6 min</div>
+        <p><span class="lead">Thank you, and good morning, everyone.</span> I want to thank our associates around the world. This was a quarter of results in line with our expectations, with continued improvement in Asia Pacific and EMEA. Net sales were $4.25 billion, tire volume 36.5 million units &mdash; a 4% decline, moderating from the 12% decline in the first quarter as destocking eased.</p>
+        <p>We grew original-equipment volume and share in every region, and our premium 18-inch-and-above business now represents 43% of our consumer portfolio. We're launching more than 1,600 new SKUs this year across Goodyear and Cooper.</p>
+        <div class="pull">"We're aligning our manufacturing footprint with our product strategy &mdash; balancing supply and demand versus trying to be everything to everyone."</div>
+        <p>I'll let Scott take you through the financials, and then we'll speak to the regions and our outlook.</p>
+      </div>
+
+      <div class="beat">
+        <div class="beat-head"><span class="beat-num">03</span><span class="beat-title">CFO Financial Review</span><span class="beat-speaker">Scott Deakin</span></div>
+        <div class="beat-time">~8 min</div>
+        <p><span class="lead">Thank you.</span> Second-quarter net sales of $4.25 billion decreased 4.8%, or just 1.4% organically after the Chemical and Dunlop divestitures. Total segment operating income was $36 million, a 0.8% margin.</p>
+        <p>Walking the bridge: lower volume was a $132 million headwind, tariffs and other costs $100 million, and inflation $53 million &mdash; partially offset by $123 million of favorable price/mix versus raw materials and $95 million of Goodyear Forward benefits. Free cash flow improved $318 million year over year to negative $69 million, and we reduced net debt by $722 million to $6.3 billion.</p>
+      </div>
+
+      <div class="beat">
+        <div class="beat-head"><span class="beat-num">04</span><span class="beat-title">Regional / SBU Review</span><span class="beat-speaker">Scott Deakin</span></div>
+        <div class="beat-time">~5 min</div>
+        <p><span class="lead">By region.</span> Americas posted a $10 million segment operating loss as replacement volume fell 13% &mdash; better than the 23% decline in Q1 &mdash; with OE volume up 8.7%.</p>
+        <p>EMEA improved its loss to $17 million and marked its tenth consecutive quarter of consumer OE share gains. Asia Pacific was the standout, with $63 million of segment operating income at a 12.7% margin, driven by premium &ge;18-inch growth and China OE.</p>
+        <p class="cue">Cue: pause before transitioning to the outlook.</p>
+      </div>
+
+      <div class="beat">
+        <div class="beat-head"><span class="beat-num">05</span><span class="beat-title">Guidance &amp; Outlook</span><span class="beat-speaker">Scott Deakin</span></div>
+        <div class="beat-time">~4 min</div>
+        <p>For the third quarter, we expect global unit volumes roughly flat year over year, improving from the first half. We anticipate about $110 million of price/mix benefit and roughly $70 million from Goodyear Forward, with full-year Goodyear Forward benefits of approximately $325 million.</p>
+        <p>Offsetting these: about $95 million of higher inflation and other costs, a $20 million raw-material headwind tied to the conflict in the Middle East on our typical four-to-six-month lag, and about $10 million of tariffs. For the full year, interest expense of approximately $425 million and capital expenditures of approximately $725 million.</p>
+      </div>
+
+      <div class="beat">
+        <div class="beat-head"><span class="beat-num">06</span><span class="beat-title">Closing &amp; Transition to Q&amp;A</span><span class="beat-speaker">Mark Stewart</span></div>
+        <div class="beat-time">~2 min</div>
+        <p>To summarize: results in line with expectations, sequential volume improvement, premium and OE share gains, and disciplined actions on our footprint and cost structure &mdash; all designed to strengthen our competitive position and deliver stronger profitability over time.</p>
+        <p>With that, operator, we're ready to open the line for questions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="disc">Assembled by Glean for the office of the Chief Executive, The Goodyear Tire &amp; Rubber Company. Financial figures and quotes are drawn from Goodyear's publicly reported Q2 2026 earnings release and earnings presentation (August 5&ndash;6, 2026) and management's public commentary; analyst exchanges and prepared-remarks and call-script passages are representative examples assembled by Glean to demonstrate how it assembles an earnings dashboard, prepared script, post-call summary, and transcript. NASDAQ: GT.</div>
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var t=btn.getAttribute('data-tab');
+    document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
+    document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active')});
+    btn.classList.add('active');
+    document.getElementById(t).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+    if(t==='dash'||t==='summary'){setTimeout(function(){Object.values(CHARTS).forEach(function(c){c.resize()})},60);}
+  });
+});
+var CHARTS={};
+var C={blue:'#005cde',deep:'#003a8c',teal:'#00b2a9',gold:'#f2b70a',gray:'#c3ccd8',ink:'#0a1628',muted:'#6b7688',line:'#eef1f6',green:'#1f9d55',red:'#d64545'};
+var qtrs=["Q3'24","Q4'24","Q1'25","Q2'25","Q3'25","Q4'25","Q1'26","Q2'26"];
+
+CHARTS.rev=echarts.init(document.getElementById('revChart'),null,{renderer:'svg'});
+CHARTS.rev.setOption({
+  tooltip:{trigger:'axis',formatter:'{b}: ${c}B'},
+  grid:{left:48,right:16,top:18,bottom:34},
+  xAxis:{type:'category',data:qtrs,axisLabel:{fontSize:10,color:C.muted},axisLine:{lineStyle:{color:'#e3e8ef'}}},
+  yAxis:{type:'value',min:3.5,max:5.1,axisLabel:{formatter:'${value}B',fontSize:10,color:C.muted},splitLine:{lineStyle:{color:C.line}},axisLine:{show:false}},
+  series:[{type:'bar',barWidth:26,data:[
+    {value:4.82,itemStyle:{color:C.gray,borderRadius:[4,4,0,0]}},
+    {value:4.95,itemStyle:{color:C.gray,borderRadius:[4,4,0,0]}},
+    {value:4.25,itemStyle:{color:C.gray,borderRadius:[4,4,0,0]}},
+    {value:4.47,itemStyle:{color:C.gray,borderRadius:[4,4,0,0]}},
+    {value:4.65,itemStyle:{color:C.gray,borderRadius:[4,4,0,0]}},
+    {value:4.92,itemStyle:{color:C.gray,borderRadius:[4,4,0,0]}},
+    {value:3.88,itemStyle:{color:C.gray,borderRadius:[4,4,0,0]}},
+    {value:4.25,itemStyle:{color:C.blue,borderRadius:[4,4,0,0]}}
+  ],label:{show:true,position:'top',formatter:'{c}',fontSize:10,color:C.muted}}]
+});
+
+CHARTS.mix=echarts.init(document.getElementById('mixChart'),null,{renderer:'svg'});
+CHARTS.mix.setOption({
+  tooltip:{trigger:'item',formatter:'{b}: ${c}M ({d}%)'},
+  legend:{bottom:0,textStyle:{fontSize:11,color:C.muted}},
+  series:[{type:'pie',radius:['52%','76%'],center:['50%','44%'],avoidLabelOverlap:true,
+    itemStyle:{borderColor:'#fff',borderWidth:3},
+    label:{show:true,position:'center',formatter:'$4.25B\nNet sales',fontSize:13,fontWeight:700,color:C.ink},
+    data:[
+      {value:2382,name:'Americas',itemStyle:{color:C.deep}},
+      {value:1372,name:'EMEA',itemStyle:{color:C.blue}},
+      {value:496,name:'Asia Pacific',itemStyle:{color:C.teal}}
+    ]}]
+});
+
+CHARTS.margin=echarts.init(document.getElementById('marginChart'),null,{renderer:'svg'});
+CHARTS.margin.setOption({
+  tooltip:{trigger:'axis'},
+  legend:{bottom:0,textStyle:{fontSize:10,color:C.muted},itemWidth:12,itemHeight:8},
+  grid:{left:44,right:46,top:18,bottom:38},
+  xAxis:{type:'category',data:qtrs,axisLabel:{fontSize:10,color:C.muted},axisLine:{lineStyle:{color:'#e3e8ef'}}},
+  yAxis:[
+    {type:'value',min:0,max:10,axisLabel:{formatter:'{value}%',fontSize:10,color:C.muted},splitLine:{lineStyle:{color:C.line}},axisLine:{show:false}},
+    {type:'value',min:0,max:450,axisLabel:{formatter:'${value}',fontSize:10,color:C.muted},splitLine:{show:false},axisLine:{show:false}}
+  ],
+  series:[
+    {name:'Segment operating margin',type:'bar',barWidth:20,yAxisIndex:0,data:[7.2,7.7,4.6,3.6,6.2,8.5,2.4,0.8],itemStyle:{color:'#d7e3f7',borderRadius:[4,4,0,0]}},
+    {name:'Segment operating income',type:'line',yAxisIndex:1,smooth:true,data:[346,382,195,159,287,416,95,36],lineStyle:{color:C.blue,width:3},itemStyle:{color:C.blue},symbolSize:6}
+  ]
+});
+
+CHARTS.backlog=echarts.init(document.getElementById('backlogChart'),null,{renderer:'svg'});
+CHARTS.backlog.setOption({
+  tooltip:{trigger:'axis',formatter:'{b}: ${c}B net debt'},
+  grid:{left:46,right:16,top:18,bottom:34},
+  xAxis:{type:'category',data:qtrs,axisLabel:{fontSize:10,color:C.muted},axisLine:{lineStyle:{color:'#e3e8ef'}}},
+  yAxis:{type:'value',min:5,max:8.5,axisLabel:{formatter:'${value}B',fontSize:10,color:C.muted},splitLine:{lineStyle:{color:C.line}},axisLine:{show:false}},
+  series:[{type:'line',smooth:true,data:[8.12,6.97,7.14,7.05,7.25,5.40,6.26,6.33],
+    areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(0,178,169,0.28)'},{offset:1,color:'rgba(0,178,169,0.02)'}])},
+    lineStyle:{color:C.teal,width:3},itemStyle:{color:C.teal},symbolSize:6}]
+});
+
+CHARTS.ai=echarts.init(document.getElementById('aiChart'),null,{renderer:'svg'});
+CHARTS.ai.setOption({
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:function(p){var v=p[0].value;return p[0].name+': '+(v>0?'+$':'-$')+Math.abs(v)+'M';}},
+  grid:{left:8,right:60,top:12,bottom:20,containLabel:true},
+  xAxis:{type:'value',axisLabel:{formatter:'${value}M',fontSize:10,color:C.muted},splitLine:{lineStyle:{color:C.line}},axisLine:{show:false}},
+  yAxis:{type:'category',data:['Lower volume','Tariffs & other costs','Inflation','Price / mix vs. raws','Goodyear Forward'],axisLabel:{fontSize:11,color:C.ink},axisLine:{lineStyle:{color:'#e3e8ef'}}},
+  series:[{type:'bar',barWidth:16,data:[
+    {value:-132,itemStyle:{color:C.red,borderRadius:[4,0,0,4]}},
+    {value:-100,itemStyle:{color:C.red,borderRadius:[4,0,0,4]}},
+    {value:-53,itemStyle:{color:C.red,borderRadius:[4,0,0,4]}},
+    {value:123,itemStyle:{color:C.green,borderRadius:[0,4,4,0]}},
+    {value:95,itemStyle:{color:C.green,borderRadius:[0,4,4,0]}}
+  ],label:{show:true,position:'right',formatter:function(p){return (p.value>0?'+$':'-$')+Math.abs(p.value)+'M';},fontSize:10,fontWeight:700,color:C.ink}}]
+});
+
+CHARTS.beat=echarts.init(document.getElementById('beatChart'),null,{renderer:'svg'});
+CHARTS.beat.setOption({
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:'{b}: +{c}% vs consensus'},
+  grid:{left:8,right:56,top:10,bottom:22,containLabel:true},
+  xAxis:{type:'value',max:3.5,axisLabel:{formatter:'+{value}%',fontSize:10,color:C.muted},splitLine:{lineStyle:{color:C.line}},axisLine:{show:false}},
+  yAxis:{type:'category',data:['Net sales','Adjusted EPS'],axisLabel:{fontSize:11,color:C.ink},axisLine:{lineStyle:{color:'#e3e8ef'}}},
+  series:[{type:'bar',barWidth:20,data:[
+    {value:0.9,itemStyle:{color:C.blue,borderRadius:[0,4,4,0]}},
+    {value:2.8,itemStyle:{color:C.teal,borderRadius:[0,4,4,0]}}
+  ],label:{show:true,position:'right',formatter:'+{c}%',fontSize:11,fontWeight:700,color:C.ink}}]
+});
+
+CHARTS.premium=echarts.init(document.getElementById('premiumChart'),null,{renderer:'svg'});
+CHARTS.premium.setOption({
+  tooltip:{trigger:'item',formatter:'{b}: {c}%'},
+  legend:{bottom:0,textStyle:{fontSize:11,color:C.muted}},
+  series:[{type:'pie',radius:['52%','76%'],center:['50%','44%'],itemStyle:{borderColor:'#fff',borderWidth:3},
+    label:{show:true,position:'center',formatter:'43%\nPremium',fontSize:14,fontWeight:700,color:C.ink},
+    data:[
+      {value:43,name:'\u226518-inch',itemStyle:{color:C.gold}},
+      {value:57,name:'Other consumer',itemStyle:{color:C.gray}}
+    ]}]
+});
+
+CHARTS.objTraj=echarts.init(document.getElementById('objTrajChart'),null,{renderer:'svg'});
+CHARTS.objTraj.setOption({
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:'{b}: {c}%'},
+  grid:{left:8,right:52,top:10,bottom:20,containLabel:true},
+  xAxis:{type:'value',max:100,axisLabel:{formatter:'{value}%',fontSize:10,color:C.muted},splitLine:{lineStyle:{color:C.line}},axisLine:{show:false}},
+  yAxis:{type:'category',data:['Compound Goodyear Forward','Advance 1,600+ SKUs','Realign footprint','Grow OE share','Grow premium \u226518-inch mix'],axisLabel:{fontSize:11,color:C.ink},axisLine:{lineStyle:{color:'#e3e8ef'}}},
+  series:[{type:'bar',barWidth:15,data:[
+    {value:45,itemStyle:{color:C.gold,borderRadius:[0,4,4,0]}},
+    {value:50,itemStyle:{color:C.gold,borderRadius:[0,4,4,0]}},
+    {value:30,itemStyle:{color:C.blue,borderRadius:[0,4,4,0]}},
+    {value:85,itemStyle:{color:C.blue,borderRadius:[0,4,4,0]}},
+    {value:43,itemStyle:{color:C.teal,borderRadius:[0,4,4,0]}}
+  ],label:{show:true,position:'right',formatter:'{c}%',fontSize:10,fontWeight:700,color:C.muted}}]
+});
+
+window.addEventListener('resize',function(){Object.values(CHARTS).forEach(function(c){c.resize()})});
+</script>
+<script>
+if (window.GleanBridge && typeof window.GleanBridge.postMessage === 'function') {
+  window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
+  window.GleanBridge.onMessage('action',function(data){if(data.actionId==='export-pdf'){
+    document.querySelectorAll('.panel').forEach(function(p){p.classList.add('active')});
+    setTimeout(function(){Object.values(CHARTS).forEach(function(c){c.resize()});window.print();},120);
+  }});
+}
+</script>
+<script>
+function prepChartsPrint(){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.add('active')});
+  Object.values(CHARTS).forEach(function(c){c.resize()});
+  document.querySelectorAll('[_echarts_instance_]').forEach(function(el){
+    var chart=echarts.getInstanceByDom(el);if(!chart)return;
+    var img=new Image();img.src=chart.getDataURL({type:'png',pixelRatio:2});
+    img.className='print-chart-img';img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';
+    el.dataset.pp=el.style.position;el.style.position='relative';el.appendChild(img);
+  });
+}
+function restoreChartsPrint(){
+  document.querySelectorAll('.print-chart-img').forEach(function(i){i.remove();});
+}
+window.addEventListener('beforeprint',prepChartsPrint);
+window.addEventListener('afterprint',restoreChartsPrint);
+</script>
+
+</body>
+</html>
