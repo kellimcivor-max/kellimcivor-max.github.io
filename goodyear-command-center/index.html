@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Good Morning, Natalia — Command Center</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --gy-blue:#0033a0;        /* Goodyear Blue */
+  --gy-navy:#001e62;        /* Deep navy */
+  --gy-blue-soft:#e7edf9;   /* Tinted blue surface */
+  --gy-yellow:#ffc72c;      /* Winged-foot Yellow */
+  --gy-yellow-soft:#fff6e0;
+  --ink:#14213d;
+  --muted:#6b7488;
+  --line:#e9ecf3;
+  --surface:#ffffff;
+  --canvas:#f6f8fc;
+  --green:#1a9e5f;--amber:#e08a00;--red:#d23b3b;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--canvas);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.shell{max-width:1180px;margin:0 auto;padding:0 24px 72px}
+/* HERO */
+.hero{margin:0 -24px 40px;padding:64px 56px 56px;background:linear-gradient(122deg,var(--gy-navy) 0%,var(--gy-blue) 66%,#0a44c0 100%);color:#fff;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-90px;top:-70px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(255,199,44,0.16),rgba(255,199,44,0) 70%)}
+.hero .eyebrow{font-size:11px;font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:var(--gy-yellow);margin-bottom:20px;display:flex;align-items:center;gap:14px}
+.hero .eyebrow::after{content:"";flex:0 0 46px;height:1px;background:rgba(255,199,44,0.5)}
+.hero .hello{font-family:var(--serif);font-size:50px;font-weight:600;letter-spacing:-.01em;line-height:1.06}
+.hero .hello .accent{position:relative;font-style:italic}
+.hero .hello .accent::after{content:"";position:absolute;left:0;bottom:-8px;width:100%;height:3px;background:var(--gy-yellow);border-radius:2px}
+.hero .sub{font-size:17px;color:#d3ddf3;margin-top:22px;max-width:660px;font-weight:400;line-height:1.65}
+.hero .meta{font-size:12.5px;color:#9fb2e0;margin-top:18px;letter-spacing:.03em;text-transform:uppercase;font-weight:500}
+.hero .powered{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.12);backdrop-filter:blur(4px);color:#fff;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:6px 15px;border-radius:20px;margin-top:20px;border:1px solid rgba(255,199,44,0.35)}
+.hero .powered .dot{width:6px;height:6px;border-radius:50%;background:var(--gy-yellow);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+/* ASK BAR */
+.ask-bar{background:var(--surface);border-radius:16px;padding:22px 28px;box-shadow:0 1px 1px rgba(0,30,98,0.03),0 12px 32px rgba(0,30,98,0.05);display:flex;align-items:center;gap:18px;margin-bottom:38px;cursor:pointer;transition:box-shadow .25s ease,transform .25s ease;border:1px solid #eef1f7}
+.ask-bar:hover{box-shadow:0 2px 8px rgba(0,30,98,0.09),0 20px 44px rgba(0,30,98,0.1);transform:translateY(-1px)}
+.ask-icon{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--gy-blue),var(--gy-yellow));display:flex;align-items:center;justify-content:center;font-size:21px;color:#fff;flex-shrink:0}
+.ask-text{flex:1}
+.ask-text .prompt{font-size:15px;color:var(--ink);font-weight:500}
+.ask-text .hint{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.6}
+/* KPI */
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:34px}
+.kpi-card{background:var(--surface);border-radius:16px;padding:24px 22px 22px;box-shadow:0 1px 1px rgba(0,30,98,0.03),0 10px 28px rgba(0,30,98,0.04);transition:transform .25s ease,box-shadow .25s ease;border:1px solid #eef1f7;position:relative;overflow:hidden}
+.kpi-card::before{content:"";position:absolute;top:0;left:0;width:100%;height:2px;background:var(--gy-blue);opacity:.85}
+.kpi-card:nth-child(3)::before{background:var(--gy-yellow)}
+.kpi-card:hover{transform:translateY(-3px);box-shadow:0 2px 8px rgba(0,30,98,0.08),0 18px 40px rgba(0,30,98,0.09)}
+.kpi-card .lbl{font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);font-weight:600}
+.kpi-card .val{font-family:var(--serif);font-size:32px;font-weight:600;margin-top:8px;letter-spacing:-.01em;color:var(--gy-navy);font-variant-numeric:tabular-nums}
+.kpi-card .delta{font-size:12px;margin-top:4px;font-weight:500}
+.up{color:var(--green)}.down{color:var(--red)}.flat{color:var(--muted)}
+/* SECTIONS */
+.section{margin-top:46px}
+.section-hdr{font-family:var(--serif);font-size:25px;font-weight:600;margin-bottom:20px;letter-spacing:-.01em;display:flex;align-items:center;gap:13px;color:var(--gy-navy)}
+.section-hdr::before{content:"";width:4px;height:26px;border-radius:3px;background:linear-gradient(var(--gy-blue),var(--gy-yellow))}
+.card{background:var(--surface);border-radius:18px;padding:30px;box-shadow:0 1px 1px rgba(0,30,98,0.03),0 10px 30px rgba(0,30,98,0.045);margin-bottom:20px;border:1px solid #eef1f7}
+.card h3{font-family:var(--serif);font-size:18px;font-weight:600;margin-bottom:18px;color:var(--gy-navy);letter-spacing:-.005em}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.status-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+.status-row:last-child{border-bottom:none}
+.status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.status-dot.green{background:var(--green)}.status-dot.amber{background:var(--amber)}.status-dot.red{background:var(--red)}.status-dot.blue{background:var(--gy-blue)}
+.status-label{font-size:14px;font-weight:500;flex:1;color:var(--ink)}
+.status-meta{font-size:12px;color:var(--muted);text-align:right}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:3px 11px;border-radius:20px;letter-spacing:.04em}
+.tag-green{background:#e4f4ea;color:#157a49}.tag-amber{background:var(--gy-yellow-soft);color:#a86b00}.tag-red{background:#fbe7e7;color:var(--red)}.tag-blue{background:var(--gy-blue-soft);color:var(--gy-blue)}.tag-gray{background:#eef0f5;color:var(--muted)}
+.chart-box{height:280px;width:100%}
+.chart-box-sm{height:240px;width:100%}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:700;padding:11px 12px;border-bottom:2px solid var(--line);color:var(--gy-navy);font-size:11px;text-transform:uppercase;letter-spacing:.07em}
+td{padding:11px 12px;border-bottom:1px solid var(--line);color:#3a4257}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--gy-blue-soft)}
+.agenda-item{display:flex;align-items:flex-start;gap:15px;padding:14px 0;border-bottom:1px solid var(--line)}
+.agenda-item:last-child{border-bottom:none}
+.agenda-time{font-size:13px;font-weight:700;color:var(--gy-blue);white-space:nowrap;min-width:66px;padding-top:1px}
+.agenda-detail .agenda-title{font-size:14px;font-weight:600;color:var(--ink)}
+.agenda-detail .agenda-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.insight{display:flex;gap:13px;padding:14px 0;border-bottom:1px solid var(--line)}
+.insight:last-child{border-bottom:none}
+.insight .ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.insight .txt{font-size:13.5px;color:#3a4257;line-height:1.6}
+.insight .txt strong{color:var(--gy-navy)}
+.prog-wrap{margin-top:10px}
+.prog-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500}
+.prog-bar{height:7px;border-radius:4px;background:#eef0f5;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.region-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.region-card{background:var(--gy-blue-soft);border-radius:12px;padding:16px;text-align:center;transition:transform .2s ease}
+.region-card:hover{transform:translateY(-2px)}
+.region-card .r-name{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--gy-blue);font-weight:700}
+.region-card .r-val{font-family:var(--serif);font-size:22px;font-weight:600;margin-top:6px;letter-spacing:-.01em;color:var(--gy-navy)}
+.region-card .r-sub{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
+.stat-hero{display:flex;gap:24px;margin-bottom:18px}
+.stat-hero .s-item{text-align:center;flex:1}
+.stat-hero .s-val{font-family:var(--serif);font-size:28px;font-weight:600;letter-spacing:-.01em}
+.stat-hero .s-lbl{font-size:11px;color:var(--muted);margin-top:3px}
+.footer-note{text-align:center;font-size:12px;color:var(--muted);margin-top:54px;padding-top:26px;border-top:1px solid var(--line);line-height:1.8}
+.footer-note .brand{color:var(--gy-blue);font-weight:700}
+@media screen and (max-width:900px){.kpi-strip{grid-template-columns:repeat(2,1fr)}.grid-2,.grid-3{grid-template-columns:1fr}.region-grid{grid-template-columns:repeat(2,1fr)}.hero{padding:40px 28px}}
+@media screen and (max-width:600px){.kpi-strip{grid-template-columns:1fr}.hero .hello{font-size:30px}}
+@media print{
+  @page{margin:0;size:8.5in 999in}
+  body{margin:0;padding:.4in .6in;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .shell{max-width:100%!important;width:100%!important;padding:0!important}
+  .hero{margin:0 0 24px!important;border-radius:12px}
+  .ask-bar{display:none!important}
+  [class*="card"]{padding:18px!important;box-shadow:none!important;border:1px solid rgba(0,0,0,.08)}
+  [class*="grid"],[class*="row"]{gap:10px!important;margin-bottom:20px!important}
+  [class*="chart"]{height:240px!important}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  button,[role="button"]{display:none!important}
+}
+
+.standalone-export{position:fixed;right:22px;bottom:22px;z-index:999;display:inline-flex;align-items:center;gap:8px;background:var(--gy-blue);color:#fff;border:none;border-radius:30px;padding:12px 20px;font-size:13px;font-weight:600;letter-spacing:.02em;cursor:pointer;box-shadow:0 6px 20px rgba(0,51,160,0.35);transition:transform .2s ease,box-shadow .2s ease;font-family:inherit}
+.standalone-export:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,51,160,0.42)}
+@media print{.standalone-export{display:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- HERO -->
+  <div class="hero" data-glean-id="greeting">
+    <div class="eyebrow">Goodyear · Product Center of Excellence for AI</div>
+    <div class="hello">Good morning, <span class="accent">Natalia</span>.</div>
+    <div class="sub">Every project, system, and signal that shapes your day — the tire-development knowledge, the agile transformation, and the pilot decisions ahead — brought together in one intelligent view.</div>
+    <div class="meta">Monday, August 10 2026 · Akron, OH · 74°F partly cloudy</div>
+    <div class="powered"><span class="dot"></span> Powered by Glean Work AI</div>
+  </div>
+  <!-- AI ASK BAR -->
+  <div class="ask-bar" data-glean-id="ask-bar">
+    <div class="ask-icon">✦</div>
+    <div class="ask-text">
+      <div class="prompt">Ask anything across Goodyear's enterprise…</div>
+      <div class="hint">"Where does tire-development knowledge live across ChatO0 and SharePoint?" · "Summarize AI adoption by business line since the Product COE pilot began" · "Draft a build-vs-buy brief for the executive review"</div>
+    </div>
+  </div>
+  <!-- KPI STRIP -->
+  <div class="kpi-strip">
+    <div class="kpi-card" data-glean-id="kpi-adoption">
+      <div class="lbl">AI Adoption Across Business Lines</div>
+      <div class="val">91%</div>
+      <div class="delta up">↑ typical within weeks of enterprise rollout</div>
+    </div>
+    <div class="kpi-card" data-glean-id="kpi-agents">
+      <div class="lbl">Custom Agents Built by Employees</div>
+      <div class="val">128</div>
+      <div class="delta up">↑ built in natural language · no engineering</div>
+    </div>
+    <div class="kpi-card" data-glean-id="kpi-cost-savings">
+      <div class="lbl">AI Consumption Cost Reduction</div>
+      <div class="val">25–30%</div>
+      <div class="delta up">Enterprise context served before external LLMs</div>
+    </div>
+    <div class="kpi-card" data-glean-id="kpi-data-sources">
+      <div class="lbl">Connected Data Sources</div>
+      <div class="val">150</div>
+      <div class="delta flat">— Workday · ServiceNow · GitHub · M365 · Jira</div>
+    </div>
+    <div class="kpi-card" data-glean-id="kpi-accuracy">
+      <div class="lbl">Answer Accuracy · Permission-Aware</div>
+      <div class="val">98%</div>
+      <div class="delta up">Native security respected for every user</div>
+    </div>
+  </div>
+  <!-- ROW 1: Enterprise Intelligence Health + Agenda -->
+  <div class="grid-2">
+    <div class="card" data-glean-id="card-intelligence-health">
+      <h3>🌐 Goodyear Enterprise Intelligence — Live Status</h3>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Product Development Knowledge</div><div class="status-meta">Connected · tire R&amp;D corpus indexed</div></div>
+      <div class="status-row"><div class="status-dot amber"></div><div class="status-label">ChatO0 — Tire Development Tool</div><div class="status-meta">Evaluating consolidation into Glean layer</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Workday · People &amp; HR</div><div class="status-meta">Normal · permission-aware sync</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">ServiceNow · IT &amp; Service</div><div class="status-meta">Normal · cases routing cleanly</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">GitHub + Jira · Engineering</div><div class="status-meta">Connected · agile boards linked</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Microsoft 365 / SharePoint</div><div class="status-meta">Normal · documents searchable in context</div></div>
+      <div class="status-row"><div class="status-dot blue"></div><div class="status-label">Supply Chain &amp; Sourcing Systems</div><div class="status-meta">Onboarding · Wave 2 candidate</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Glean Protect · Governance</div><div class="status-meta">Native permissions enforced · 0 exceptions</div></div>
+    </div>
+    <div class="card" data-glean-id="card-agenda">
+      <h3>📅 Your Day — August 10</h3>
+      <div class="agenda-item">
+        <div class="agenda-time">8:30a</div>
+        <div class="agenda-detail">
+          <div class="agenda-title">Product COE AI Stand-up</div>
+          <div class="agenda-meta">Discovery, research, and customer-value priorities</div>
+        </div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">9:30a</div>
+        <div class="agenda-detail">
+          <div class="agenda-title">Sync with Persona</div>
+          <div class="agenda-meta">Align Glean capabilities to current project requirements</div>
+        </div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">11:00a</div>
+        <div class="agenda-detail">
+          <div class="agenda-title">Agile Transformation Working Session</div>
+          <div class="agenda-meta">Moving away from 18-month waterfall cycles</div>
+        </div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">1:00p</div>
+        <div class="agenda-detail">
+          <div class="agenda-title">ChatO0 — Build vs. Buy Review</div>
+          <div class="agenda-meta">Internal model vs. enterprise intelligence layer</div>
+        </div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">2:30p</div>
+        <div class="agenda-detail">
+          <div class="agenda-title">Pilot Scope Design — Beyond IT &amp; Security</div>
+          <div class="agenda-meta">Product, creative, and supply chain business lines</div>
+        </div>
+      </div>
+      <div class="agenda-item">
+        <div class="agenda-time">4:00p</div>
+        <div class="agenda-detail">
+          <div class="agenda-title">Follow-up with Kelli McIvor · Glean</div>
+          <div class="agenda-meta">Review comparison deck + product video, plan next steps</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ROW 2: Adoption + Coverage -->
+  <div class="section">
+    <div class="section-hdr">AI Adoption &amp; Agent Coverage</div>
+    <div class="grid-2">
+      <div class="card" data-glean-id="card-adoption-trend">
+        <h3>AI-Native Adoption Trend by Function (%)</h3>
+        <div id="adoptionChart" class="chart-box-sm"></div>
+      </div>
+      <div class="card" data-glean-id="card-agent-coverage">
+        <h3>Agent Workflow Coverage — Top Functions</h3>
+        <div id="coverageChart" class="chart-box-sm"></div>
+      </div>
+    </div>
+    <div class="card" data-glean-id="card-business-line-summary">
+      <h3>Pilot Readiness by Business Line</h3>
+      <div class="region-grid">
+        <div class="region-card">
+          <div class="r-name">Product Development</div>
+          <div class="r-val">Ready</div>
+          <div class="r-sub">Tire R&amp;D knowledge is highest-value corpus</div>
+        </div>
+        <div class="region-card">
+          <div class="r-name">Creative &amp; Design</div>
+          <div class="r-val">Ready</div>
+          <div class="r-sub">Rich unstructured content for AI training</div>
+        </div>
+        <div class="region-card">
+          <div class="r-name">Supply Chain</div>
+          <div class="r-val" style="color:var(--amber)">Wave 2</div>
+          <div class="r-sub">Sourcing systems onboarding next</div>
+        </div>
+        <div class="region-card">
+          <div class="r-name">IT &amp; Security</div>
+          <div class="r-val">Ready</div>
+          <div class="r-sub">Foundation — not the whole pilot</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ROW 3: Governance + Platform Health -->
+  <div class="grid-2">
+    <div class="card" data-glean-id="card-governance">
+      <h3>🔒 Security &amp; Governance Posture</h3>
+      <div id="governanceRadar" class="chart-box-sm"></div>
+    </div>
+    <div class="card" data-glean-id="card-platform-health">
+      <h3>☁️ Platform &amp; Automation Health</h3>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Enterprise Context Graph</div><div class="status-meta">People, content &amp; systems connected</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Agent Builder · No-Code</div><div class="status-meta">Natural-language agents · no engineering</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Model Hub / LLM Gateway</div><div class="status-meta">No lock-in · intelligent routing active</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Connector Maintenance</div><div class="status-meta">Managed by Glean · low internal effort</div></div>
+      <div class="status-row"><div class="status-dot blue"></div><div class="status-label">Continual Learning / Memory</div><div class="status-meta">Learns from meetings, email &amp; notes</div></div>
+      <div class="status-row"><div class="status-dot green"></div><div class="status-label">Audit &amp; Observability</div><div class="status-meta">Full regulatory compliance trail</div></div>
+    </div>
+  </div>
+  <!-- ROW 4: Cost trend + Transformation pipeline -->
+  <div class="grid-2">
+    <div class="card" data-glean-id="card-cost-trend">
+      <h3>💰 AI Consumption Cost — Context Layer Impact</h3>
+      <div id="costChart" class="chart-box-sm"></div>
+    </div>
+    <div class="card" data-glean-id="card-transformation-pipeline">
+      <h3>🤖 Product AI &amp; Transformation Pipeline</h3>
+      <table>
+        <thead><tr><th>Initiative</th><th>Owner</th><th>Phase</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Enterprise Intelligence Pilot</td><td>Natalia Walicki</td><td>Scoping</td><td><span class="tag tag-blue">Active</span></td></tr>
+          <tr><td>ChatO0 Consolidation Review</td><td>Tire Development</td><td>Evaluation</td><td><span class="tag tag-amber">Deciding</span></td></tr>
+          <tr><td>Agile Ways of Working</td><td>Product COE</td><td>In Flight</td><td><span class="tag tag-blue">On Track</span></td></tr>
+          <tr><td>Discovery &amp; Research Assistant</td><td>Product COE</td><td>Design</td><td><span class="tag tag-blue">On Track</span></td></tr>
+          <tr><td>Supply Chain Knowledge Agent</td><td>Sourcing</td><td>Discovery</td><td><span class="tag tag-gray">Wave 2</span></td></tr>
+          <tr><td>Executive Alignment · Build vs. Buy</td><td>Leadership</td><td>Pending</td><td><span class="tag tag-amber">Needs Sign-off</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- ROW 5: Transformation tracker + Proven at scale -->
+  <div class="grid-2">
+    <div class="card" data-glean-id="card-transformation-tracker">
+      <h3>🔧 Waterfall → Agile Transformation Tracker</h3>
+      <div class="stat-hero">
+        <div class="s-item"><div class="s-val" style="color:var(--gy-blue)">18mo→wks</div><div class="s-lbl">Cycle-Time Ambition</div></div>
+        <div class="s-item"><div class="s-val" style="color:var(--green)">4</div><div class="s-lbl">Business Lines in Wave 1</div></div>
+        <div class="s-item"><div class="s-val" style="color:var(--amber)">Q4 '26</div><div class="s-lbl">Pilot → Scale Target</div></div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-label"><span>Knowledge Corpus Readiness</span><span>66%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:66%;background:var(--gy-blue)"></div></div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-label"><span>Discovery &amp; Research Enablement</span><span>52%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:52%;background:var(--green)"></div></div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-label"><span>Pilot Scope Expansion · beyond IT</span><span>45%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:45%;background:var(--gy-yellow)"></div></div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-label"><span>Executive Alignment · Build vs. Buy</span><span>30%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:30%;background:#c7cede"></div></div>
+      </div>
+    </div>
+    <div class="card" data-glean-id="card-proven-scale">
+      <h3>🏭 Proven at Enterprise Scale — Automotive &amp; Manufacturing</h3>
+      <table>
+        <thead><tr><th>Company</th><th>Scale</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td><strong>General Motors</strong></td><td>140K users</td><td>~$900M identified savings · 15.8x 3-yr ROI · pilot→enterprise in 90 days</td></tr>
+          <tr><td><strong>Nationwide</strong></td><td>25K users</td><td>50-person pilot → 25K in 8 weeks</td></tr>
+          <tr><td><strong>Dell</strong></td><td>6-wk pilot</td><td>Moved to all internal users in 6 weeks</td></tr>
+          <tr><td><strong>Rivian</strong></td><td>EV automotive</td><td>Innovator accelerating AI adoption</td></tr>
+        </tbody>
+      </table>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.6">Rivian and GM show Glean scales in complex, manufacturing-driven enterprises — the same environment that surrounds tire development at Goodyear.</div>
+    </div>
+  </div>
+  <!-- ROW 6: AI-Surfaced Insights -->
+  <div class="section">
+    <div class="section-hdr">Intelligent Insights — What Deserves Your Attention</div>
+    <div class="card" data-glean-id="card-insights">
+      <div class="insight">
+        <div class="ico" style="background:var(--gy-blue-soft)">💡</div>
+        <div class="txt"><strong>Extend the pilot beyond IT and security.</strong> Confining scope to IT leaves the majority of Goodyear's enterprise data untapped. Bringing in product development, creative teams, and supply chain drives stronger outcomes and richer AI training. <em>Let this anchor your 2:30p scope session.</em></div>
+      </div>
+      <div class="insight">
+        <div class="ico" style="background:var(--gy-yellow-soft)">🟡</div>
+        <div class="txt"><strong>ChatO0 is a build-vs-buy decision, not merely a tooling one.</strong> The tire-development team's proprietary, source-reviewed knowledge could live in a governed enterprise layer rather than a custom-built model that carries heavy maintenance and technical complexity. <em>Carry this into your 1:00p review.</em></div>
+      </div>
+      <div class="insight">
+        <div class="ico" style="background:#e4f4ea">✅</div>
+        <div class="txt"><strong>Cost is a leadership narrative.</strong> Serving enterprise context before external LLM calls reduces AI consumption cost by 25–30%. Paired with GM's ~$900M in identified savings, it sharpens the executive case for a governed intelligence layer.</div>
+      </div>
+      <div class="insight">
+        <div class="ico" style="background:var(--gy-blue-soft)">📊</div>
+        <div class="txt"><strong>Persona alignment is the near-term gate.</strong> Mapping Glean's capabilities to current project requirements with Persona keeps the pilot advancing toward executive sign-off. <em>Your 9:30a sync sets the tone for the week.</em></div>
+      </div>
+      <div class="insight">
+        <div class="ico" style="background:#e4f4ea">💡</div>
+        <div class="txt"><strong>Adoption compounds once live.</strong> Glean typically reaches 90%+ adoption with 98% accuracy, and employees build their own agents in natural language — a direct enabler of your discovery, research, and customer-value goals.</div>
+      </div>
+      <div class="insight">
+        <div class="ico" style="background:var(--gy-blue-soft)">🔧</div>
+        <div class="txt"><strong>Connector upkeep shifts off your team.</strong> Glean manages connector updates and maintenance across 150 data sources — 200 by year-end — reducing long-term resource investment as Goodyear moves from waterfall to agile.</div>
+      </div>
+    </div>
+  </div>
+  <!-- ROW 7: Team & Peer Signals -->
+  <div class="section">
+    <div class="section-hdr">Team &amp; Peer Signals</div>
+    <div class="card" data-glean-id="card-team-signals">
+      <table>
+        <thead><tr><th>Person / Team</th><th>Role</th><th>Top Item This Week</th><th>Needs You</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Persona</strong></td><td>Project Alignment Partner</td><td>Map Glean capabilities to current project requirements</td><td><span class="tag tag-amber">Action</span></td></tr>
+          <tr><td><strong>Tire Development Team</strong></td><td>ChatO0 Owners</td><td>Decide consolidation path for proprietary knowledge</td><td><span class="tag tag-amber">Decision</span></td></tr>
+          <tr><td><strong>Product COE AI</strong></td><td>Your Team</td><td>Advance discovery &amp; research enablement</td><td><span class="tag tag-blue">Collaborate</span></td></tr>
+          <tr><td><strong>Executive Leadership</strong></td><td>Sponsor</td><td>Build-vs-buy alignment &amp; pilot sign-off</td><td><span class="tag tag-blue">Review</span></td></tr>
+          <tr><td><strong>Supply Chain</strong></td><td>Wave 2 Candidate</td><td>Confirm sourcing-system onboarding scope</td><td><span class="tag tag-green">FYI</span></td></tr>
+          <tr><td><strong>Kelli McIvor</strong></td><td>Glean · Strategic AE</td><td>Comparison deck + product video shared; follow-up set</td><td><span class="tag tag-green">FYI</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="footer-note">
+    A glimpse of what every morning could look like — each project, system, and workflow surfaced automatically by Glean's Work AI platform. No dashboards to build. No tabs to open. Simply ask.<br>
+    Prepared for <span class="brand">Natalia Walicki</span> · Head of Product COE AI, Goodyear · August 2026
+  </div>
+</div>
+<script>
+var GY_BLUE='#0033a0',GY_NAVY='#001e62',GY_YELLOW='#ffc72c',GY_GREEN='#1a9e5f',GY_VIOLET='#5b6fd6',GY_GREY='#c7cede';
+// Adoption Trend Chart
+var adoptChart = echarts.init(document.getElementById('adoptionChart'),null,{renderer:'svg'});
+adoptChart.setOption({
+  tooltip:{trigger:'axis',formatter:function(p){return p.map(function(s){return s.seriesName+': '+s.value+'%'}).join('<br>')}},
+  legend:{bottom:0,textStyle:{fontSize:10,color:'#6b7488'},itemWidth:12,itemHeight:8},
+  grid:{left:44,right:16,top:16,bottom:40},
+  xAxis:{type:'category',data:['Wk 1','Wk 2','Wk 3','Wk 4','Wk 6','Wk 8'],axisLabel:{fontSize:10,color:'#6b7488'},axisLine:{lineStyle:{color:'#e9ecf3'}}},
+  yAxis:{type:'value',min:0,max:100,axisLabel:{formatter:'{value}%',fontSize:10,color:'#6b7488'},splitLine:{lineStyle:{color:'#eef0f5'}},axisLine:{show:false}},
+  series:[
+    {name:'Product Dev',type:'line',data:[24,41,58,72,84,91],smooth:true,lineStyle:{color:GY_BLUE,width:2.4},itemStyle:{color:GY_BLUE},symbolSize:4},
+    {name:'Creative',type:'line',data:[18,33,49,63,77,86],smooth:true,lineStyle:{color:GY_GREEN,width:2.4},itemStyle:{color:GY_GREEN},symbolSize:4},
+    {name:'Engineering',type:'line',data:[30,48,64,78,88,93],smooth:true,lineStyle:{color:GY_YELLOW,width:2.4},itemStyle:{color:GY_YELLOW},symbolSize:4},
+    {name:'Supply Chain',type:'line',data:[10,19,31,44,58,70],smooth:true,lineStyle:{color:GY_VIOLET,width:2,type:'dashed'},itemStyle:{color:GY_VIOLET},symbolSize:4}
+  ]
+});
+// Coverage Chart
+var covChart = echarts.init(document.getElementById('coverageChart'),null,{renderer:'svg'});
+covChart.setOption({
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+  grid:{left:120,right:26,top:10,bottom:10},
+  xAxis:{type:'value',max:100,axisLabel:{formatter:'{value}%',fontSize:10,color:'#6b7488'},splitLine:{lineStyle:{color:'#eef0f5'}},axisLine:{show:false}},
+  yAxis:{type:'category',data:['Supply Chain','Sales & Marketing','HR & People','Creative & Design','Engineering','Product Development'],axisLabel:{fontSize:11,color:'#3a4257'},axisLine:{lineStyle:{color:'#e9ecf3'}}},
+  series:[{
+    type:'bar',barWidth:18,
+    data:[
+      {value:46,itemStyle:{color:GY_GREY,borderRadius:[0,4,4,0]}},
+      {value:58,itemStyle:{color:GY_GREY,borderRadius:[0,4,4,0]}},
+      {value:64,itemStyle:{color:GY_BLUE,borderRadius:[0,4,4,0]}},
+      {value:72,itemStyle:{color:GY_BLUE,borderRadius:[0,4,4,0]}},
+      {value:81,itemStyle:{color:GY_YELLOW,borderRadius:[0,4,4,0]}},
+      {value:88,itemStyle:{color:GY_YELLOW,borderRadius:[0,4,4,0]}}
+    ],
+    label:{show:true,position:'right',formatter:'{c}%',fontSize:11,fontWeight:600,color:'#001e62'}
+  }]
+});
+// Governance Radar
+var govRadar = echarts.init(document.getElementById('governanceRadar'),null,{renderer:'svg'});
+govRadar.setOption({
+  tooltip:{},
+  radar:{
+    indicator:[
+      {name:'Permission\nAwareness',max:10},
+      {name:'Data\nPrivacy',max:10},
+      {name:'Audit\nReadiness',max:10},
+      {name:'Access\nControls',max:10},
+      {name:'Agent\nGuardrails',max:10},
+      {name:'Regulatory\nCompliance',max:10}
+    ],
+    shape:'circle',
+    splitArea:{areaStyle:{color:['rgba(0,51,160,0.03)','rgba(0,51,160,0.06)']}},
+    axisLine:{lineStyle:{color:'#c7cede'}},
+    splitLine:{lineStyle:{color:'#e9ecf3'}},
+    name:{textStyle:{fontSize:10,color:'#6b7488'}}
+  },
+  series:[{
+    type:'radar',
+    data:[
+      {value:[9,9,8,9,8,9],name:'Current',
+       areaStyle:{color:'rgba(0,51,160,0.12)'},
+       lineStyle:{color:GY_BLUE,width:2.4},
+       itemStyle:{color:GY_BLUE}},
+      {value:[10,10,10,10,10,10],name:'Target',
+       lineStyle:{color:GY_YELLOW,width:1.5,type:'dashed'},
+       itemStyle:{color:GY_YELLOW},areaStyle:{opacity:0}}
+    ]
+  }]
+});
+// Cost Chart
+var costChart = echarts.init(document.getElementById('costChart'),null,{renderer:'svg'});
+costChart.setOption({
+  tooltip:{trigger:'axis',formatter:'{b}: {c} index'},
+  grid:{left:44,right:16,top:16,bottom:36},
+  xAxis:{type:'category',data:['Baseline','Month 1','Month 2','Month 3','Month 4','Month 5'],
+    axisLabel:{fontSize:10,color:'#6b7488'},axisLine:{lineStyle:{color:'#e9ecf3'}}},
+  yAxis:{type:'value',min:60,max:105,axisLabel:{formatter:'{value}',fontSize:10,color:'#6b7488'},splitLine:{lineStyle:{color:'#eef0f5'}},axisLine:{show:false}},
+  series:[{
+    type:'bar',barWidth:26,
+    data:[
+      {value:100,itemStyle:{color:GY_GREY,borderRadius:[4,4,0,0]}},
+      {value:94,itemStyle:{color:GY_GREY,borderRadius:[4,4,0,0]}},
+      {value:87,itemStyle:{color:GY_GREY,borderRadius:[4,4,0,0]}},
+      {value:81,itemStyle:{color:GY_BLUE,borderRadius:[4,4,0,0]}},
+      {value:76,itemStyle:{color:GY_BLUE,borderRadius:[4,4,0,0]}},
+      {value:72,itemStyle:{color:GY_GREEN,borderRadius:[4,4,0,0]}}
+    ]
+  }]
+});
+window.addEventListener('resize',function(){
+  adoptChart.resize();covChart.resize();govRadar.resize();costChart.resize();
+});
+</script>
+<script>
+if (window.GleanBridge && window.GleanBridge.postMessage) {
+window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
+window.GleanBridge.onMessage('action',function(data){if(data.actionId==='export-pdf'){window.print();}});
+}
+</script>
+<script>
+function prepareChartsForPrint(){
+  document.querySelectorAll('[_echarts_instance_]').forEach(function(el){
+    var chart=echarts.getInstanceByDom(el);if(!chart)return;
+    var img=new Image();img.src=chart.getDataURL({type:'png',pixelRatio:2});
+    img.className='print-chart-img';
+    img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';
+    el.dataset.prevPosition=el.style.position;el.style.position='relative';el.appendChild(img);
+  });
+}
+function restoreChartsAfterPrint(){
+  document.querySelectorAll('[_echarts_instance_]').forEach(function(el){
+    var img=el.querySelector('.print-chart-img');if(!img)return;
+    img.remove();el.style.position=el.dataset.prevPosition||'';delete el.dataset.prevPosition;
+  });
+}
+window.addEventListener('beforeprint',prepareChartsForPrint);
+window.addEventListener('afterprint',restoreChartsAfterPrint);
+</script>
+<button class="standalone-export" onclick="window.print()" aria-label="Save as PDF">⤓ Save as PDF</button>
+</body>
+</html>
