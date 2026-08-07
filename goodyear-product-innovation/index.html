@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glean × Goodyear — Innovation Product Center of Excellence</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{
+  --artifact-background: var(--theme-background, #f7f6f3);
+  --artifact-surface: var(--theme-background-light, #ffffff);
+  --artifact-surface-2: #f1efe9;
+  --artifact-ink: var(--theme-text-primary, #16202e);
+  --artifact-ink-soft: #4a5768;
+  --artifact-ink-faint: #7a8698;
+  --artifact-navy: #002D62;
+  --artifact-blue: #0055B8;
+  --artifact-blue-soft: rgba(0,85,184,0.10);
+  --artifact-gold: #FFD100;
+  --artifact-gold-deep: #b8930a;
+  --artifact-line: rgba(0,45,98,0.12);
+  --artifact-line-soft: rgba(0,45,98,0.07);
+  --artifact-good: #1f8f5f;
+  --artifact-warn: #c98a12;
+  --artifact-shadow: 0 1px 2px rgba(16,32,46,0.05), 0 8px 24px rgba(16,32,46,0.06);
+  --artifact-shadow-sm: 0 1px 2px rgba(16,32,46,0.06);
+}
+html[data-theme='dark']{
+  --artifact-background:#0d1420;
+  --artifact-surface:#141d2b;
+  --artifact-surface-2:#1a2534;
+  --artifact-ink:#eef2f7;
+  --artifact-ink-soft:#b4c0d0;
+  --artifact-ink-faint:#8290a3;
+  --artifact-navy:#7fa8e0;
+  --artifact-blue:#5b9bf0;
+  --artifact-blue-soft:rgba(91,155,240,0.14);
+  --artifact-gold:#FFD100;
+  --artifact-gold-deep:#FFD100;
+  --artifact-line:rgba(255,255,255,0.12);
+  --artifact-line-soft:rgba(255,255,255,0.07);
+  --artifact-shadow:0 1px 2px rgba(0,0,0,0.4),0 10px 30px rgba(0,0,0,0.45);
+  --artifact-shadow-sm:0 1px 2px rgba(0,0,0,0.4);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+  background:var(--artifact-background);color:var(--artifact-ink);
+  line-height:1.55;font-size:16px;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1280px;margin:0 auto;padding:0 40px}
+h1,h2,h3,h4{line-height:1.15;margin:0;font-weight:700;letter-spacing:-0.01em}
+p{margin:0 0 14px}
+a{color:var(--artifact-blue);text-decoration:none}
+.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+
+/* ---- tab bar (under header boxes) ---- */
+.tabsbar{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--artifact-background) 90%,transparent);
+  backdrop-filter:blur(10px);border-top:1px solid var(--artifact-line);border-bottom:1px solid var(--artifact-line);
+  margin-top:22px;}
+.tabsbar .wrap{display:flex;align-items:center}
+.tabsbar nav{display:flex;gap:2px;flex-wrap:wrap;width:100%;padding:8px 0}
+.tabsbar nav a{font-size:13px;color:var(--artifact-ink-soft);padding:7px 13px;border-radius:7px;font-weight:600;
+  letter-spacing:-0.005em;white-space:nowrap;flex:1 1 auto;text-align:center}
+.tabsbar nav a:hover{background:var(--artifact-blue-soft);color:var(--artifact-blue)}
+@media(max-width:820px){.tabsbar nav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tabsbar nav a{flex:0 0 auto}}
+
+/* ---- hero ---- */
+.hero{position:relative;overflow:hidden;background:
+   radial-gradient(1200px 480px at 82% -10%, rgba(0,85,184,0.20), transparent 60%),
+   linear-gradient(160deg,var(--artifact-navy) 0%, #01234c 55%, #01152f 100%);
+  color:#fff;padding:66px 0 58px;border-bottom:3px solid var(--artifact-gold)}
+.hero .wrap{position:relative;z-index:2}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--artifact-gold);margin-bottom:16px}
+.hero h1{font-size:clamp(30px,4.6vw,50px);color:#fff;max-width:26ch}
+.hero .lede{font-size:clamp(16px,2vw,19px);color:rgba(255,255,255,0.86);max-width:92ch;margin-top:18px}
+.hero .lede b{color:#fff}
+.meta-row{display:flex;flex-wrap:wrap;gap:26px;margin-top:30px;padding-top:22px;border-top:1px solid rgba(255,255,255,0.16)}
+.meta-row .m{min-width:120px}
+.meta-row .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,0.55)}
+.meta-row .v{font-size:15px;font-weight:600;color:#fff;margin-top:3px}
+.hero-orbit{position:absolute;right:-120px;top:-40px;width:520px;height:520px;border-radius:50%;
+  border:1px solid rgba(255,255,255,0.10);z-index:1}
+.hero-orbit::after{content:"";position:absolute;inset:70px;border-radius:50%;border:1px solid rgba(255,209,0,0.14)}
+
+/* ---- metric strip ---- */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:var(--artifact-surface);
+  border:1px solid var(--artifact-line);border-radius:14px;overflow:hidden;box-shadow:var(--artifact-shadow);
+  margin-top:-34px;position:relative;z-index:5}
+.metrics .cell{padding:22px 20px;border-right:1px solid var(--artifact-line-soft)}
+.metrics .cell:last-child{border-right:0}
+.metrics .big{font-size:30px;font-weight:800;letter-spacing:-0.02em;color:var(--artifact-navy)}
+.metrics .lbl{font-size:12.5px;color:var(--artifact-ink-soft);margin-top:4px;line-height:1.35}
+@media(max-width:760px){.metrics{grid-template-columns:repeat(2,1fr)}.metrics .cell:nth-child(2){border-right:0}}
+
+/* ---- section frame ---- */
+section{padding:56px 0}
+.sec-tag{font-family:"SF Mono",ui-monospace,monospace;font-size:12px;letter-spacing:.05em;color:var(--artifact-blue);
+  font-weight:600;margin-bottom:12px}
+.sec-h{font-size:clamp(22px,3vw,32px);max-width:38ch;margin-bottom:14px}
+.sec-sub{font-size:16.5px;color:var(--artifact-ink-soft);max-width:100ch;margin-bottom:8px}
+.divide{height:1px;background:var(--artifact-line);border:0;margin:0}
+
+/* ---- cards ---- */
+.grid{display:grid;gap:18px}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:860px){.g3,.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.card{background:var(--artifact-surface);border:1px solid var(--artifact-line);border-radius:14px;padding:24px;
+  box-shadow:var(--artifact-shadow-sm)}
+.card .num{font-family:"SF Mono",monospace;font-size:12px;color:var(--artifact-gold-deep);font-weight:700;letter-spacing:.08em}
+.card h3{font-size:18px;margin:10px 0 8px}
+.card h4{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--artifact-blue);font-weight:700;margin-bottom:9px}
+.card p{font-size:14.5px;color:var(--artifact-ink-soft);margin:0}
+.pillcard{border-top:3px solid var(--artifact-navy)}
+.pillcard:nth-child(2){border-top-color:var(--artifact-blue)}
+.pillcard:nth-child(3){border-top-color:var(--artifact-gold)}
+
+/* ---- comparison table ---- */
+.tbl-wrap{border:1px solid var(--artifact-line);border-radius:14px;overflow:hidden;box-shadow:var(--artifact-shadow-sm);background:var(--artifact-surface)}
+table.cmp{width:100%;border-collapse:collapse;font-size:14px}
+table.cmp th,table.cmp td{padding:13px 14px;text-align:left;border-bottom:1px solid var(--artifact-line-soft)}
+table.cmp thead th{background:var(--artifact-navy);color:#fff;font-size:12.5px;font-weight:600;letter-spacing:.01em}
+table.cmp thead th.glean{background:#01152f;border-bottom:3px solid var(--artifact-gold)}
+table.cmp td:first-child{font-weight:600;color:var(--artifact-ink)}
+table.cmp td.c{text-align:center;font-size:16px}
+.dot-full{color:var(--artifact-good);font-weight:800}
+.dot-part{color:var(--artifact-warn)}
+.dot-no{color:var(--artifact-ink-faint)}
+table.cmp tbody tr:last-child td{border-bottom:0}
+table.cmp td.gcol{background:var(--artifact-blue-soft)}
+.legend{font-size:12.5px;color:var(--artifact-ink-faint);margin-top:12px}
+.legend b{color:var(--artifact-ink-soft)}
+
+/* ---- maturity ---- */
+.mat{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--artifact-line);border-radius:14px;overflow:hidden;background:var(--artifact-surface)}
+.mat .step{padding:24px;border-right:1px solid var(--artifact-line-soft);position:relative}
+.mat .step:last-child{border-right:0}
+.mat .step .stage{font-family:"SF Mono",monospace;font-size:11.5px;letter-spacing:.06em;color:var(--artifact-ink-faint);text-transform:uppercase}
+.mat .step h3{font-size:17px;margin:8px 0 6px;color:var(--artifact-navy)}
+.mat .step p{font-size:13.5px;color:var(--artifact-ink-soft);margin:0}
+.mat .step.now{background:linear-gradient(180deg,var(--artifact-blue-soft),transparent)}
+.mat .step.now .stage{color:var(--artifact-blue)}
+@media(max-width:760px){.mat{grid-template-columns:1fr}.mat .step{border-right:0;border-bottom:1px solid var(--artifact-line-soft)}}
+
+/* ---- architecture ---- */
+.arch{background:var(--artifact-surface);border:1px solid var(--artifact-line);border-radius:16px;padding:26px;box-shadow:var(--artifact-shadow-sm)}
+.arch .layer{border:1px dashed var(--artifact-line);border-radius:11px;padding:16px;margin-bottom:14px}
+.arch .layer.core{border:1px solid var(--artifact-blue);background:var(--artifact-blue-soft);border-style:solid}
+.arch .layer .caption{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--artifact-ink-faint);margin-bottom:11px}
+.arch .layer.core .caption{color:var(--artifact-blue)}
+.chips{display:flex;flex-wrap:wrap;gap:9px}
+.chip{background:var(--artifact-surface-2);border:1px solid var(--artifact-line-soft);border-radius:8px;
+  padding:8px 12px;font-size:13px;font-weight:500;color:var(--artifact-ink)}
+.chip.k{background:var(--artifact-navy);color:#fff;border-color:var(--artifact-navy)}
+.chip.g{background:var(--artifact-gold);color:#3a2f00;border-color:var(--artifact-gold);font-weight:700}
+.arrow{text-align:center;color:var(--artifact-ink-faint);font-size:13px;margin:2px 0 12px;letter-spacing:.04em}
+
+/* ---- use case list ---- */
+.uc{display:flex;gap:16px;align-items:flex-start;padding:20px 0;border-bottom:1px solid var(--artifact-line-soft)}
+.uc:last-child{border-bottom:0}
+.uc .idx{flex:none;width:38px;height:38px;border-radius:9px;background:var(--artifact-navy);color:var(--artifact-gold);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+.uc .body h3{font-size:16.5px;margin-bottom:4px}
+.uc .body .why{font-size:13px;color:var(--artifact-blue);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.uc .body p{font-size:14.5px;color:var(--artifact-ink-soft);margin:0}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.tags span{font-size:11.5px;color:var(--artifact-ink-faint);background:var(--artifact-surface-2);border-radius:6px;padding:3px 8px}
+
+/* ---- chart card ---- */
+.chartcard{background:var(--artifact-surface);border:1px solid var(--artifact-line);border-radius:14px;padding:20px 20px 8px;box-shadow:var(--artifact-shadow-sm)}
+.chartcard h4{font-size:14px;color:var(--artifact-ink);margin-bottom:2px}
+.chartcard .cs{font-size:12.5px;color:var(--artifact-ink-faint);margin-bottom:6px}
+.chart{width:100%;height:260px}
+
+/* ---- timeline ---- */
+.tl{position:relative;padding-left:6px}
+.tl .row{display:grid;grid-template-columns:120px 1fr;gap:18px;padding:15px 0;border-bottom:1px solid var(--artifact-line-soft)}
+.tl .row:last-child{border-bottom:0}
+.tl .wk{font-family:"SF Mono",monospace;font-size:12.5px;color:var(--artifact-ink-faint)}
+.tl .wk b{display:block;color:var(--artifact-navy);font-size:13px}
+.phase-pill{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  padding:3px 9px;border-radius:20px;margin-bottom:7px}
+.p-build{background:var(--artifact-blue-soft);color:var(--artifact-blue)}
+.p-champ{background:rgba(255,209,0,0.20);color:var(--artifact-gold-deep)}
+.p-eval{background:rgba(31,143,95,0.14);color:var(--artifact-good)}
+.tl .row p{font-size:14px;color:var(--artifact-ink-soft);margin:0}
+@media(max-width:560px){.tl .row{grid-template-columns:1fr;gap:6px}}
+
+/* ---- proof logos ---- */
+.proof{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+@media(max-width:760px){.proof{grid-template-columns:repeat(2,1fr)}}
+.proof .p{background:var(--artifact-surface);border:1px solid var(--artifact-line);border-radius:12px;padding:18px 16px;text-align:center;box-shadow:var(--artifact-shadow-sm)}
+.proof .p .co{font-weight:800;font-size:15px;color:var(--artifact-navy);letter-spacing:-0.01em}
+.proof .p .st{font-size:12px;color:var(--artifact-ink-faint);margin:6px 0 8px}
+.proof .p .rz{font-size:12.5px;color:var(--artifact-ink-soft);line-height:1.4}
+
+/* ---- objection ---- */
+.obj{border-left:3px solid var(--artifact-gold);padding:16px 20px;background:var(--artifact-surface);
+  border-radius:0 12px 12px 0;border-top:1px solid var(--artifact-line);border-right:1px solid var(--artifact-line);
+  border-bottom:1px solid var(--artifact-line);margin-bottom:14px}
+.obj .q{font-weight:700;font-size:15px;color:var(--artifact-navy);margin-bottom:6px}
+.obj .a{font-size:14.5px;color:var(--artifact-ink-soft);margin:0}
+
+/* ---- next steps ---- */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:760px){.steps{grid-template-columns:repeat(2,1fr)}}
+.step-c{background:var(--artifact-surface);border:1px solid var(--artifact-line);border-radius:13px;padding:22px;box-shadow:var(--artifact-shadow-sm);position:relative}
+.step-c .n{font-family:"SF Mono",monospace;font-size:12px;color:var(--artifact-gold-deep);font-weight:700}
+.step-c h3{font-size:16px;margin:9px 0 5px;color:var(--artifact-navy)}
+.step-c .when{font-size:12px;color:var(--artifact-blue);font-weight:600;margin-bottom:7px}
+.step-c p{font-size:13.5px;color:var(--artifact-ink-soft);margin:0}
+
+.cta{background:linear-gradient(160deg,var(--artifact-navy),#01152f);color:#fff;border-radius:16px;padding:38px 34px;
+  border:1px solid var(--artifact-line);box-shadow:var(--artifact-shadow);position:relative;overflow:hidden}
+.cta h2{color:#fff;font-size:26px;max-width:22ch}
+.cta p{color:rgba(255,255,255,0.85);max-width:60ch;margin-top:12px;font-size:15.5px}
+.cta .badge{position:absolute;right:26px;top:26px;background:var(--artifact-gold);color:#3a2f00;font-weight:800;
+  font-size:12px;padding:6px 12px;border-radius:20px;letter-spacing:.03em}
+
+footer{padding:34px 0 48px;border-top:1px solid var(--artifact-line);color:var(--artifact-ink-faint);font-size:12.5px}
+footer b{color:var(--artifact-ink-soft)}
+.fade{opacity:0;transform:translateY(16px);animation:rise .7s ease forwards}
+.d1{animation-delay:.05s}.d2{animation-delay:.12s}.d3{animation-delay:.19s}
+@keyframes rise{to{opacity:1;transform:none}}
+
+@media print{
+  body{margin:0;padding:0.4in 0.55in;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .tabsbar{display:none!important}
+  .wrap{max-width:100%!important;padding:0}
+  section{padding:22px 0;break-inside:avoid}
+  .hero{padding:34px 0 30px}
+  .metrics{margin-top:18px}
+  .card,.chartcard,.step-c,.proof .p,.obj,.arch{break-inside:avoid;box-shadow:none!important}
+  .chart{height:240px!important}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .fade{opacity:1!important;transform:none!important}
+  button,[role=button]{display:none!important}
+}
+</style>
+</head>
+<body>
+
+<header class="hero" data-glean-id="hero">
+  <div class="hero-orbit" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="eyebrow fade">Prepared for the Goodyear Innovation Product Center of Excellence</div>
+    <h1 class="fade d1">The enterprise intelligence layer for product discovery, research &amp; tire innovation</h1>
+    <p class="lede fade d2">The Product COE doesn't need another siloed tool — it needs a governed foundation that unifies Goodyear's engineering, research, and product knowledge, so teams can <b>discover, research, and prove customer value</b> instead of hunting for it. <b>Glean is that layer</b>, sitting beneath the tools your teams already use and turning scattered tire-development knowledge into grounded, permission-aware answers.</p>
+    <div class="meta-row fade d3">
+      <div class="m"><div class="k">Prepared for</div><div class="v">Product COE AI · Akron, OH</div></div>
+      <div class="m"><div class="k">Solution</div><div class="v">Work AI Intelligence Layer</div></div>
+      <div class="m"><div class="k">Motion</div><div class="v">Blueprint → Demo → Pilot</div></div>
+      <div class="m"><div class="k">Pilot window</div><div class="v">10 weeks · Aug–Oct 2026</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="metrics" data-glean-id="hero-metrics">
+    <div class="cell" data-glean-id="m-adoption"><div class="big">90%+</div><div class="lbl">Typical AI adoption within weeks of enterprise rollout</div></div>
+    <div class="cell" data-glean-id="m-tokens"><div class="big">25–30%</div><div class="lbl">Lower AI consumption cost — context served before external LLM calls</div></div>
+    <div class="cell" data-glean-id="m-accuracy"><div class="big">98%</div><div class="lbl">Permission-aware answer accuracy — native security for every user</div></div>
+    <div class="cell" data-glean-id="m-connectors"><div class="big">250+</div><div class="lbl">Productized connectors across M365, Snowflake, GitHub &amp; more</div></div>
+  </div>
+</div>
+
+<div class="tabsbar" data-glean-id="tabsbar">
+  <div class="wrap">
+    <nav>
+      <a href="#summary">Summary</a>
+      <a href="#why">Why Glean</a>
+      <a href="#understanding">Understanding</a>
+      <a href="#solution">Solution</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#usecases">Use Cases</a>
+      <a href="#value">Value &amp; Proof</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#concerns">Concerns</a>
+      <a href="#next">Next Steps</a>
+    </nav>
+  </div>
+</div>
+
+<!-- EXEC SUMMARY -->
+<section id="summary" data-glean-id="sec-summary"><div class="wrap">
+  <div class="sec-tag">01 · Executive Summary</div>
+  <h2 class="sec-h">Turn AI momentum into product-innovation leverage.</h2>
+  <p class="sec-sub">Our recommendation: adopt Glean as the horizontal intelligence layer for the Innovation Product Center of Excellence — connecting tire-development knowledge, engineering repositories, research, and customer signals under one governed, permission-aware foundation — while your teams keep the tools and front ends they already use.</p>
+  <div class="grid g3" style="margin-top:26px">
+    <div class="card" data-glean-id="sum-1"><h4>Enable real discovery &amp; research</h4><p>Give product, research, and engineering teams one governed front door to institutional knowledge — so they stop re-finding what Goodyear already knows and start doing the discovery, research, and customer-value work the COE was built for.</p></div>
+    <div class="card" data-glean-id="sum-2"><h4>Complements, never replaces</h4><p>Glean sits beneath your existing tools — including ChatO0, Microsoft Copilot, and SharePoint — as the shared context and retrieval layer, so nothing your teams rely on gets ripped out.</p></div>
+    <div class="card" data-glean-id="sum-3"><h4>Proven in manufacturing at scale</h4><p>The same pattern is live at automotive and manufacturing leaders — General Motors, Rivian, Nationwide, and Dell — where Glean moved from pilot to enterprise in weeks with measurable ROI.</p></div>
+  </div>
+</div></section>
+<hr class="divide"/>
+
+<!-- WHY GLEAN -->
+<section id="why" data-glean-id="sec-why"><div class="wrap">
+  <div class="sec-tag">02 · Why Glean vs. the Alternatives</div>
+  <h2 class="sec-h">One horizontal layer beats another point tool — or a custom build.</h2>
+  <p class="sec-sub">The Product COE's decision isn't which chatbot to buy. It's whether Goodyear keeps building and maintaining isolated tools like ChatO0 in-house, or stands up one governed layer that serves every product and research workflow. Only Glean is horizontal, model-agnostic, and permission-aware across the whole estate.</p>
+  <div class="tbl-wrap" style="margin-top:24px" data-glean-id="cmp-table">
+    <table class="cmp">
+      <thead><tr>
+        <th>Capability the Product COE needs</th>
+        <th class="glean">Glean</th>
+        <th>Build ChatO0 in-house</th>
+        <th>Microsoft Copilot</th>
+        <th>Point AI tools</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>Permission-aware knowledge across 250+ sources</td><td class="c gcol dot-full">●</td><td class="c dot-no">—</td><td class="c dot-part">◐</td><td class="c dot-no">—</td></tr>
+        <tr><td>Tire R&amp;D + engineering knowledge unified, not siloed</td><td class="c gcol dot-full">●</td><td class="c dot-part">◐</td><td class="c dot-no">—</td><td class="c dot-no">—</td></tr>
+        <tr><td>Model-agnostic — no single-LLM lock-in</td><td class="c gcol dot-full">●</td><td class="c dot-part">◐</td><td class="c dot-no">—</td><td class="c dot-part">◐</td></tr>
+        <tr><td>No-code agents built by employees</td><td class="c gcol dot-full">●</td><td class="c dot-no">—</td><td class="c dot-part">◐</td><td class="c dot-part">◐</td></tr>
+        <tr><td>Sits beneath / coexists with existing tools</td><td class="c gcol dot-full">●</td><td class="c dot-part">◐</td><td class="c dot-part">◐</td><td class="c dot-no">—</td></tr>
+        <tr><td>Managed platform — low internal maintenance</td><td class="c gcol dot-full">●</td><td class="c dot-no">—</td><td class="c dot-full">●</td><td class="c dot-part">◐</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="legend"><b>●</b> Full &nbsp; <b>◐</b> Partial / ecosystem-bound &nbsp; <b>—</b> Not designed for this. A custom-built ChatO0 solves one team's tire-development problem but carries high maintenance and technical complexity, and its knowledge stays trapped. Glean turns that same proprietary corpus into a governed enterprise asset — reusable across product, engineering, and research.</div>
+</div></section>
+<hr class="divide"/>
+
+<!-- UNDERSTANDING -->
+<section id="understanding" data-glean-id="sec-understanding"><div class="wrap">
+  <div class="sec-tag">03 · Our Understanding</div>
+  <h2 class="sec-h">From siloed tools to an enterprise product-intelligence layer.</h2>
+  <p class="sec-sub">The Product COE sits at the intersection of AI and product — driving discovery, research, customer value, and OKRs while moving teams off 18-month waterfall cycles. Today, the knowledge that fuels that work is scattered across ChatO0, SharePoint, engineering systems, and disconnected AI tools. Here's the maturity path Glean enables.</p>
+  <div class="mat" style="margin-top:24px" data-glean-id="maturity">
+    <div class="step"><div class="stage">Today — Fragmentation</div><h3>Siloed tools &amp; scattered knowledge</h3><p>Tire-development knowledge lives across ChatO0, SharePoint, and engineering repositories. Teams use ChatGPT, Claude, Copilot, and others in disconnected workflows — nobody has one place to discover and research.</p></div>
+    <div class="step now"><div class="stage">Now — Foundation</div><h3>Governed context layer</h3><p>Glean connects those sources into one permission-aware assistant and search platform — a governed front door to knowledge that proves value fast across a focused set of product &amp; engineering workflows.</p></div>
+    <div class="step"><div class="stage">Next — Product intelligence</div><h3>Agents &amp; repeatable workflows</h3><p>Teams build no-code agents for discovery briefs, research synthesis, and customer-value tracking — repeatable workflows that run on their own and compound as more systems connect.</p></div>
+  </div>
+</div></section>
+<hr class="divide"/>
+
+<!-- SOLUTION -->
+<section id="solution" data-glean-id="sec-solution"><div class="wrap">
+  <div class="sec-tag">04 · The Solution</div>
+  <h2 class="sec-h">Three foundations, one governed platform.</h2>
+  <p class="sec-sub">Glean delivers exactly what the Product COE needs — connected context, orchestration without lock-in, and enterprise-grade governance — through three integrated pillars.</p>
+  <div class="grid g3" style="margin-top:24px">
+    <div class="card pillcard" data-glean-id="pillar-context"><div class="num">01</div><h3>Enterprise Context</h3><p>The Enterprise Graph + Personal Graph build a permission-aware understanding of Goodyear's people, content, and systems — and how product and engineering teams actually work. That grounding makes retrieval precise and answers trustworthy.</p></div>
+    <div class="card pillcard" data-glean-id="pillar-intel"><div class="num">02</div><h3>Glean Intelligence</h3><p>Intelligent routing across ~30 models, a no-code agent builder, and continual learning. Retrieval runs against Glean's index before inference — cutting AI consumption cost 25–30% while improving answer quality.</p></div>
+    <div class="card pillcard" data-glean-id="pillar-protect"><div class="num">03</div><h3>Glean Protect</h3><p>AI-powered access controls, native permission mirroring, full auditability, and agent guardrails. Every retrieval respects each user's identity — so Glean never surfaces what a user isn't authorized to see.</p></div>
+  </div>
+</div></section>
+<hr class="divide"/>
+
+<!-- ARCHITECTURE -->
+<section id="architecture" data-glean-id="sec-arch"><div class="wrap">
+  <div class="sec-tag">05 · Reference Architecture</div>
+  <h2 class="sec-h">Glean sits beneath your tools — not in front of them.</h2>
+  <p class="sec-sub">ChatO0, Copilot, and your product front ends keep their interfaces. Glean provides the enterprise intelligence layer beneath them — context, retrieval, orchestration, and governance — accessible by everything above it.</p>
+  <div class="arch" style="margin-top:24px" data-glean-id="arch-diagram">
+    <div class="layer"><div class="caption">Experience Layer — preserved &amp; unchanged</div>
+      <div class="chips"><span class="chip">ChatO0 · tire development</span><span class="chip">Microsoft Copilot / M365</span><span class="chip">Product &amp; research front ends</span><span class="chip">Glean Assistant</span></div>
+    </div>
+    <div class="arrow">▲ &nbsp; API · SDK · MCP &nbsp; ▲</div>
+    <div class="layer core"><div class="caption">Glean Enterprise Intelligence Layer — the foundation</div>
+      <div class="chips"><span class="chip k">Enterprise + Personal Graph</span><span class="chip k">Model Router · ~30 models</span><span class="chip k">No-code Agent Builder</span><span class="chip k">Continual learning &amp; memory</span><span class="chip g">Glean Protect · governance</span></div>
+    </div>
+    <div class="arrow">▼ &nbsp; Permission-aware, productized connectors &nbsp; ▼</div>
+    <div class="layer"><div class="caption">Enterprise Data — connected, not moved</div>
+      <div class="chips"><span class="chip">SharePoint / M365</span><span class="chip">Teams &amp; Outlook</span><span class="chip">Snowflake</span><span class="chip">GitHub · Jira</span><span class="chip">ServiceNow</span><span class="chip">Engineering repositories</span><span class="chip">Workday</span></div>
+    </div>
+  </div>
+</div></section>
+<hr class="divide"/>
+
+<!-- USE CASES -->
+<section id="usecases" data-glean-id="sec-usecases"><div class="wrap">
+  <div class="sec-tag">06 · Use Cases for the Product COE</div>
+  <h2 class="sec-h">Where Glean earns its place in product innovation.</h2>
+  <p class="sec-sub">Real workflows tied to the COE's mandate — discovery, research, customer value, and moving faster than an 18-month cycle allows.</p>
+  <div style="margin-top:12px" data-glean-id="uc-list">
+    <div class="uc"><div class="idx">1</div><div class="body"><div class="why">Discovery &amp; research</div><h3>Product discovery &amp; research assistant</h3><p>Ask across research, prior product decisions, customer feedback, and market context in one place — so teams start every initiative from what Goodyear already knows instead of a blank page.<div class="tags"><span>SharePoint</span><span>Snowflake</span><span>Teams</span><span>Outlook</span><span>Research repositories</span></div></p></div></div>
+    <div class="uc"><div class="idx">2</div><div class="body"><div class="why">Tire R&amp;D knowledge</div><h3>Unify scattered tire-development knowledge</h3><p>Index the proprietary, source-reviewed tire-development corpus that lives across ChatO0 and SharePoint into one governed, permission-aware layer — turning a maintenance burden into a reusable enterprise asset.<div class="tags"><span>ChatO0 corpus</span><span>Engineering docs</span><span>SharePoint</span></div></p></div></div>
+    <div class="uc"><div class="idx">3</div><div class="body"><div class="why">Customer value &amp; OKRs</div><h3>Customer-value &amp; OKR synthesis</h3><p>Aggregate customer feedback and signals by product line, connect them to OKRs, and surface where value is and isn't landing — the "understand the customer value" gap the COE is chartered to close.<div class="tags"><span>Snowflake</span><span>Feedback sources</span><span>Product analytics</span></div></p></div></div>
+    <div class="uc"><div class="idx">4</div><div class="body"><div class="why">Engineering productivity</div><h3>Legacy &amp; engineering knowledge retrieval</h3><p>Help engineers find prior knowledge, technical documentation, and expertise faster — less duplicated work, faster decisions, higher reuse across the product organization.<div class="tags"><span>GitHub</span><span>Jira</span><span>Engineering repositories</span></div></p></div></div>
+    <div class="uc"><div class="idx">5</div><div class="body"><div class="why">Agile ways of working</div><h3>Plan-my-day &amp; agile workflow agents</h3><p>No-code agents that plan the day across meetings and open work, prep for meetings, and run a weekly project tracker for Goodyear innovation — habits that help teams move off long waterfall cycles.<div class="tags"><span>Calendar</span><span>Teams</span><span>Jira</span><span>Email</span></div></p></div></div>
+  </div>
+</div></section>
+<hr class="divide"/>
+
+<!-- VALUE & PROOF -->
+<section id="value" data-glean-id="sec-value"><div class="wrap">
+  <div class="sec-tag">07 · Value &amp; Proof</div>
+  <h2 class="sec-h">Proven where manufacturing complexity is highest.</h2>
+  <p class="sec-sub">Glean is deployed as the enterprise foundation at automotive and manufacturing leaders with the same scale, engineering depth, and knowledge-fragmentation challenges Goodyear faces.</p>
+  <div class="grid g2" style="margin-top:24px;align-items:start">
+    <div class="chartcard" data-glean-id="chart-adoption-card"><h4>AI-native adoption after enterprise rollout</h4><div class="cs">Illustrative adoption curve observed across enterprise deployments</div><div class="chart" id="chartAdoption" data-glean-id="chart-adoption"></div></div>
+    <div class="chartcard" data-glean-id="chart-cost-card"><h4>AI consumption cost — context-layer impact</h4><div class="cs">Retrieval against Glean's index before external LLM calls</div><div class="chart" id="chartCost" data-glean-id="chart-cost"></div></div>
+  </div>
+  <div class="proof" style="margin-top:22px" data-glean-id="proof-logos">
+    <div class="p"><div class="co">General Motors</div><div class="st">140K users</div><div class="rz">~$900M identified savings · 15.8× 3-yr ROI · pilot→enterprise in 90 days</div></div>
+    <div class="p"><div class="co">Rivian</div><div class="st">EV automotive</div><div class="rz">Innovator accelerating enterprise AI adoption</div></div>
+    <div class="p"><div class="co">Nationwide</div><div class="st">25K users</div><div class="rz">50-person pilot → 25K users in 8 weeks</div></div>
+    <div class="p"><div class="co">Dell</div><div class="st">6-week pilot</div><div class="rz">Expanded to all internal users in 6 weeks</div></div>
+    <div class="p"><div class="co">Coinbase</div><div class="st">Regulated scale</div><div class="rz">Enterprise foundation under high governance scrutiny</div></div>
+  </div>
+  <p class="sec-sub" style="margin-top:20px;font-size:15px">General Motors is the closest proof point for enterprise-wide AI transformation in a complex, manufacturing-driven environment — spanning engineering, plant, quality, and executive use cases — the same context that surrounds tire development at Goodyear.</p>
+</div></section>
+<hr class="divide"/>
+
+<!-- ROADMAP -->
+<section id="roadmap" data-glean-id="sec-roadmap"><div class="wrap">
+  <div class="sec-tag">08 · Delivery Roadmap</div>
+  <h2 class="sec-h">A focused pilot that proves value in weeks, not years.</h2>
+  <p class="sec-sub">Start with a champion cohort of ~50–75 users across 2–3 high-value use cases, then expand into a broader user evaluation once prompts, permissions, and success criteria are validated. The structure sequences secure activation before broad exposure.</p>
+  <div class="grid g2" style="margin-top:20px;align-items:start">
+    <div class="chartcard" data-glean-id="chart-value-card"><h4>Value realization across the pilot</h4><div class="cs">Indicative time-to-answer reduction &amp; workflows under Glean</div><div class="chart" id="chartValue" data-glean-id="chart-value"></div></div>
+    <div class="card" data-glean-id="roadmap-gates"><h4>Control points built into the plan</h4>
+      <p style="margin-bottom:12px"><b style="color:var(--artifact-navy)">Security &amp; access first.</b> SSO and CMEK/BYOK on GCP established before scale; permissions validated before wider rollout.</p>
+      <p style="margin-bottom:12px"><b style="color:var(--artifact-navy)">Connector readiness.</b> Microsoft and product systems activated early; crawls and freshness checked before user evaluation.</p>
+      <p style="margin:0"><b style="color:var(--artifact-navy)">Business proof.</b> Champions and weekly scoring create a feedback loop; the final readout ties any launch decision to measured outcomes.</p>
+    </div>
+  </div>
+  <div class="card" style="margin-top:20px" data-glean-id="timeline-card">
+    <div class="tl">
+      <div class="row"><div class="wk">Weeks 1–2<b>Aug 3–14</b></div><div><span class="phase-pill p-build">Build &amp; Setup</span><p>Stand up the environment with Goodyear-controlled keys, configure SSO, load people data, and activate first-wave connectors — SharePoint, Teams, Outlook, GitHub, Snowflake.</p></div></div>
+      <div class="row"><div class="wk">Weeks 3–6<b>Aug 17–Sep 11</b></div><div><span class="phase-pill p-champ">Champions / UAT</span><p>Champion kickoff and Glean 101, use-case deep dives, permission verification, prompt &amp; agent refinement, and weekly scoring against a fixed question set — with a mid-point go/no-go gate.</p></div></div>
+      <div class="row"><div class="wk">Weeks 7–9<b>Sep 14–Oct 2</b></div><div><span class="phase-pill p-eval">User Evaluation</span><p>Roll out to the broader pilot cohort, run department enablement and office hours, and track adoption and usage while the post-pilot survey opens.</p></div></div>
+      <div class="row"><div class="wk">Week 10<b>Oct 5–9</b></div><div><span class="phase-pill p-eval">Readout &amp; Launch</span><p>Results analysis vs. success criteria, executive wrap-up on outcomes and path forward, launch plan finalized, and a joint go-forward decision.</p></div></div>
+    </div>
+  </div>
+</div></section>
+<hr class="divide"/>
+
+<!-- CONCERNS -->
+<section id="concerns" data-glean-id="sec-concerns"><div class="wrap">
+  <div class="sec-tag">09 · Addressing Your Concerns</div>
+  <h2 class="sec-h">We've heard the questions. Here's how we answer them.</h2>
+  <div style="margin-top:22px" data-glean-id="obj-list">
+    <div class="obj"><div class="q">"We're already building ChatO0 in-house — why buy?"</div><p class="a">A custom build solves one team's tire-development problem but carries ongoing maintenance and technical complexity, and its knowledge stays trapped. Glean turns that proprietary corpus into a governed enterprise asset — maintained as a product — so your team builds differentiated product agents instead of re-engineering foundation.</p></div>
+    <div class="obj"><div class="q">"We don't want to duplicate our Microsoft Copilot investment."</div><p class="a">You won't. Glean sits underneath as the shared context layer and reduces AI consumption cost ~25–30% by serving enterprise context before external LLM calls. Copilot stays your M365 productivity surface; Glean makes retrieval enterprise-wide across every system Copilot can't reach.</p></div>
+    <div class="obj"><div class="q">"Will security and permissions hold across product and engineering data?"</div><p class="a">Permission-aware by default: every retrieval respects each user's identity and entitlements, with native permission mirroring, full auditability, and Goodyear-controlled encryption keys (CMEK/BYOK) on GCP. Glean never surfaces what a user isn't authorized to see.</p></div>
+    <div class="obj"><div class="q">"How fast will teams actually adopt it?"</div><p class="a">Glean typically reaches 90%+ adoption with ~98% answer accuracy, and employees build their own agents in natural language — a direct enabler of the discovery, research, and customer-value goals the COE is driving. Connector maintenance shifts off your team, managed by Glean across 150+ sources.</p></div>
+  </div>
+</div></section>
+<hr class="divide"/>
+
+<!-- NEXT STEPS -->
+<section id="next" data-glean-id="sec-next"><div class="wrap">
+  <div class="sec-tag">10 · Next Steps</div>
+  <h2 class="sec-h">A clear path from vision to a governed pilot.</h2>
+  <p class="sec-sub">Measurable ROI in weeks, not years — sequenced so the Product COE proves value on real Goodyear content with the right users.</p>
+  <div class="steps" style="margin-top:24px" data-glean-id="next-steps">
+    <div class="step-c" data-glean-id="ns-1"><div class="n">STEP 1</div><h3>Blueprint Session</h3><div class="when">30 min</div><p>Align on the COE's vision, priority use cases, and success criteria for discovery, research, and tire R&amp;D knowledge.</p></div>
+    <div class="step-c" data-glean-id="ns-2"><div class="n">STEP 2</div><h3>Tailored Demo</h3><div class="when">Live</div><p>Walk the Product COE team through the priority workflows — grounded in the use cases your team cares about.</p></div>
+    <div class="step-c" data-glean-id="ns-3"><div class="n">STEP 3</div><h3>Pilot Scoping</h3><div class="when">50–75 users</div><p>Confirm 2–3 use cases and teams, data sources, security model, timeline, and success criteria.</p></div>
+    <div class="step-c" data-glean-id="ns-4"><div class="n">STEP 4</div><h3>Scale &amp; Rollout</h3><div class="when">Post-pilot</div><p>Expand horizontally on one platform once the pilot demonstrates value against the agreed measures.</p></div>
+  </div>
+  <div class="cta" style="margin-top:28px" data-glean-id="cta">
+    <span class="badge">Glean:GO · Aug 26–27</span>
+    <h2>Let's scope the Product COE pilot together.</h2>
+    <p>We're ready to move into joint solution design — a focused first pilot connecting your highest-value product and engineering knowledge for a defined champion group, the fastest way to prove the foundation with real Goodyear content. Join us at Glean:GO to see the platform live and network with peers already running it.</p>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  Prepared by Glean for the Goodyear Innovation Product Center of Excellence · <b>Work AI Intelligence Layer</b> · 2026.<br/>
+  Together, excellence runs deeper — one governed layer for discovery, research, and product innovation.
+</div></footer>
+
+<script>
+(function(){
+  var ink = getComputedStyle(document.documentElement).getPropertyValue('--artifact-ink-soft').trim() || '#4a5768';
+  var faint = getComputedStyle(document.documentElement).getPropertyValue('--artifact-ink-faint').trim() || '#7a8698';
+  var navy = '#0055B8', gold = '#b8930a', good='#1f8f5f';
+  var line = 'rgba(0,45,98,0.10)';
+  var base = {textStyle:{fontFamily:'Segoe UI, system-ui, sans-serif'},grid:{left:38,right:16,top:24,bottom:28}};
+
+  function mk(id){var el=document.getElementById(id); if(!el||!window.echarts) return null; return echarts.init(el,null,{renderer:'svg'});}
+
+  var a=mk('chartAdoption');
+  if(a){a.setOption(Object.assign({},base,{
+    tooltip:{trigger:'axis'},
+    xAxis:{type:'category',data:['Wk 1','Wk 2','Wk 4','Wk 6','Wk 8','Wk 10'],axisLine:{lineStyle:{color:line}},axisLabel:{color:faint}},
+    yAxis:{type:'value',max:100,axisLabel:{color:faint,formatter:'{value}%'},splitLine:{lineStyle:{color:line}}},
+    series:[{type:'line',smooth:true,data:[18,41,63,79,88,91],areaStyle:{color:'rgba(0,85,184,0.14)'},lineStyle:{color:navy,width:3},itemStyle:{color:navy},symbolSize:7}]
+  }));}
+
+  var c=mk('chartCost');
+  if(c){c.setOption(Object.assign({},base,{
+    tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+    xAxis:{type:'category',data:['Direct LLM calls','With Glean context'],axisLine:{lineStyle:{color:line}},axisLabel:{color:faint}},
+    yAxis:{type:'value',axisLabel:{color:faint},splitLine:{lineStyle:{color:line}},name:'Relative cost',nameTextStyle:{color:faint}},
+    series:[{type:'bar',barWidth:'46%',data:[{value:100,itemStyle:{color:faint}},{value:71,itemStyle:{color:good}}],label:{show:true,position:'top',color:ink,formatter:function(p){return p.value+'%';}}]}]
+  }));}
+
+  var v=mk('chartValue');
+  if(v){v.setOption(Object.assign({},base,{
+    tooltip:{trigger:'axis'},legend:{data:['Time-to-answer reduction','Workflows under Glean'],textStyle:{color:faint},top:0,right:0},
+    grid:{left:40,right:44,top:34,bottom:28},
+    xAxis:{type:'category',data:['Build','Champions','User Eval','Readout'],axisLine:{lineStyle:{color:line}},axisLabel:{color:faint}},
+    yAxis:[{type:'value',max:100,axisLabel:{color:faint,formatter:'{value}%'},splitLine:{lineStyle:{color:line}}},
+           {type:'value',max:12,axisLabel:{color:faint},splitLine:{show:false}}],
+    series:[
+      {name:'Time-to-answer reduction',type:'line',smooth:true,data:[5,28,52,64],lineStyle:{color:navy,width:3},itemStyle:{color:navy},symbolSize:7},
+      {name:'Workflows under Glean',type:'bar',yAxisIndex:1,barWidth:'34%',data:[1,4,8,11],itemStyle:{color:'rgba(255,209,0,0.7)'}}
+    ]
+  }));}
+
+  window.addEventListener('resize',function(){[a,c,v].forEach(function(x){x&&x.resize();});});
+})();
+</script>
+
+<script>
+  window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
+  window.GleanBridge.onMessage('action',function(data){ if(data.actionId==='export-pdf') window.print(); });
+  function prepareChartsForPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var chart=echarts.getInstanceByDom(el);if(!chart)return;var img=new Image();img.src=chart.getDataURL({type:'png',pixelRatio:2});img.className='print-chart-img';img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';el.dataset.prevPosition=el.style.position;el.style.position='relative';el.appendChild(img);});}
+  function cleanUpAfterPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var img=el.querySelector('.print-chart-img');if(!img)return;img.remove();el.style.position=el.dataset.prevPosition||'';delete el.dataset.prevPosition;});}
+  window.addEventListener('beforeprint',prepareChartsForPrint);
+  window.addEventListener('afterprint',cleanUpAfterPrint);
+</script>
+</body>
+</html>
