@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What If? Motorola Solutions Earnings Intel Packet &mdash; Glean</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+
+:root{
+  --ink:#0a1628;--ink-soft:#3d4a5c;--muted:#6b7688;
+  --line:#e3e8ef;--line-soft:#eef1f6;
+  --paper:#ffffff;--wash:#f4f7fb;--wash-2:#eef3f9;
+  --brand:#005cde;--brand-deep:#003a8c;--brand-soft:#e7f0fd;
+  --accent:#00b2a9;--gold:#c98a12;--green:#1f9d55;--red:#d64545;--purple:#4b3bd6;
+  --radius:18px;--shadow:0 1px 2px rgba(10,22,40,.05),0 18px 44px rgba(10,22,40,.08);
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--ink);background:var(--wash);line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:0 26px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.17em;text-transform:uppercase;color:var(--brand)}
+section{padding:84px 0}
+.sec-head{max-width:800px;margin-bottom:50px}
+.sec-head h2{font-family:var(--serif);font-size:clamp(30px,4.6vw,44px);font-weight:700;letter-spacing:-.02em;line-height:1.08;margin-top:12px}
+.sec-head p{font-size:17px;color:var(--ink-soft);margin-top:14px}
+.alt{background:linear-gradient(180deg,var(--wash-2),var(--wash))}
+
+/* HERO */
+.hero{position:relative;overflow:hidden;color:#fff;padding:100px 0 110px;background:
+  radial-gradient(1200px 520px at 84% -14%,rgba(0,92,222,.20),transparent 60%),
+  radial-gradient(900px 520px at 6% 6%,rgba(0,178,169,.12),transparent 60%),
+  linear-gradient(158deg,#061225 0%,#0a2148 54%,#0a1628 100%)}
+.hero .eyebrow{color:#7fb3ff}
+.hero h1{font-size:clamp(52px,10vw,120px);font-weight:800;letter-spacing:-.04em;line-height:.94;margin:18px 0 0}
+.hero h1 .q{color:#5aa2ff}
+.hero .lede{font-size:clamp(18px,2.2vw,22px);max-width:820px;margin:26px 0 0;color:#cdd8ea}
+.hero .lede strong{color:#fff;font-weight:600}
+.hero-tags{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+.hero-tag{display:inline-flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;color:#eaf1fb;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);padding:9px 16px;border-radius:100px}
+.hero-tag .d{width:7px;height:7px;border-radius:50%;background:#5aa2ff}
+.brandbar{display:flex;align-items:center;gap:14px;margin-top:44px;font-size:13px;color:#9fb2cd;font-weight:600}
+.brandbar .chip{color:#fff;font-weight:700}.brandbar .x{opacity:.5}
+
+/* WORKFLOW PIPELINE */
+.pipe{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;position:relative}
+.stage{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px 18px;box-shadow:var(--shadow);position:relative}
+.stage .snum{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--brand);font-variant-numeric:tabular-nums}
+.stage .sico{width:44px;height:44px;border-radius:12px;background:var(--brand-soft);display:flex;align-items:center;justify-content:center;font-size:22px;margin:10px 0 12px}
+.stage h4{font-size:15px;font-weight:800;letter-spacing:-.01em}
+.stage p{font-size:12.5px;color:var(--ink-soft);margin-top:7px;line-height:1.55}
+.stage .arrow{position:absolute;right:-11px;top:44px;font-size:18px;color:var(--brand);z-index:3}
+.stage:last-child .arrow{display:none}
+
+/* BEST-PRACTICE STRUCTURE STRIP */
+.struct{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.struct-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px 24px;box-shadow:var(--shadow);border-left:4px solid var(--brand)}
+.struct-card .st-step{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.struct-card h4{font-size:16px;font-weight:800;margin-top:4px}
+.struct-card p{font-size:13.5px;color:var(--ink-soft);margin-top:8px}
+.struct-card p b{color:var(--brand-deep)}
+
+/* PANEL / CARD */
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow);margin-bottom:16px}
+.card h3{font-size:16px;font-weight:800;display:flex;align-items:center;gap:9px}
+.card .cap{font-size:12.5px;color:var(--muted);margin-top:3px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-2w{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+.chart{height:300px;width:100%}
+.chart-sm{height:260px;width:100%}
+
+/* INTEL PACKET */
+.packet{background:linear-gradient(158deg,#081a35,#0a2148 60%,#0a1628);border-radius:22px;padding:30px;box-shadow:0 30px 70px rgba(10,33,72,.28)}
+.packet-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:22px}
+.packet-title{color:#fff}
+.packet-title .eyebrow{color:#8fb6f2}
+.packet-title h3{font-family:var(--serif);font-size:24px;font-weight:700;margin-top:4px}
+.live{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#062;background:#8ef0b0;padding:7px 14px;border-radius:100px}
+.live .dot{width:8px;height:8px;border-radius:50%;background:#0a7d3a;animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.live-time{font-size:11.5px;color:#9fb2cd;margin-top:6px;text-align:right}
+.pkpi{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.pkpi .k{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px 16px}
+.pkpi .k .l{font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;color:#8fb6f2;font-weight:700}
+.pkpi .k .v{font-size:21px;font-weight:800;color:#fff;font-family:var(--serif);margin-top:4px}
+.pkpi .k .d{font-size:11px;margin-top:2px;font-weight:600;color:#8ef0b0}
+.pcard{background:#fff;border-radius:14px;padding:20px 22px}
+.pcard h4{font-size:14px;font-weight:800}
+.pcard .cap{font-size:12px;color:var(--muted);margin-top:2px;margin-bottom:4px}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pgrid-3{display:grid;grid-template-columns:1.3fr 1fr;gap:14px}
+.status-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-soft);font-size:13px}
+.status-row:last-child{border-bottom:none}
+.sdot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.sdot.g{background:var(--green)}.sdot.a{background:var(--gold)}.sdot.r{background:var(--red)}.sdot.b{background:var(--brand)}
+.status-row .lab{flex:1;font-weight:500}
+.status-row .meta{color:var(--muted);font-size:12px}
+
+/* VISIBILITY BOARD */
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.col{background:var(--wash-2);border:1px solid var(--line);border-radius:14px;padding:14px}
+.col .col-h{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.col .col-h .cnt{background:#fff;border:1px solid var(--line);border-radius:100px;font-size:11px;padding:2px 9px;color:var(--muted)}
+.tk{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 13px;margin-bottom:9px;box-shadow:0 1px 2px rgba(10,22,40,.04)}
+.tk .tk-t{font-size:13px;font-weight:700}
+.tk .tk-m{font-size:11.5px;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:6px}
+.tk .pin{width:7px;height:7px;border-radius:50%}
+.col-draft .col-h{color:var(--muted)}.col-rev .col-h{color:var(--gold)}.col-app .col-h{color:var(--brand)}.col-live .col-h{color:var(--green)}
+
+/* PRINCIPLES */
+.principles{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.principle{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
+.principle .p-ico{width:44px;height:44px;border-radius:12px;background:var(--brand-soft);display:flex;align-items:center;justify-content:center;font-size:22px}
+.principle h4{font-size:16px;font-weight:800;margin-top:15px}
+.principle p{font-size:13.5px;color:var(--ink-soft);margin-top:7px}
+
+/* CLOSING */
+.closing{color:#fff;text-align:center;padding:104px 0;background:linear-gradient(158deg,#061225,#0a2148 60%,#0a1628)}
+.closing .eyebrow{color:#7fb3ff}
+.closing h2{font-family:var(--serif);font-size:clamp(30px,5vw,50px);font-weight:700;letter-spacing:-.02em;line-height:1.12;max-width:900px;margin:16px auto 0}
+.closing h2 .hl{color:#5aa2ff}
+.closing p{font-size:18px;color:#cdd8ea;max-width:720px;margin:24px auto 0}
+.closing .signoff{margin-top:38px;font-size:13px;color:#8ea3c2;letter-spacing:.04em}
+.foot{text-align:center;font-size:11.5px;color:var(--muted);padding:28px 20px 44px;background:var(--wash);line-height:1.6;max-width:820px;margin:0 auto}
+
+@media (max-width:1000px){.pipe{grid-template-columns:repeat(2,1fr)}.stage .arrow{display:none}.struct,.principles{grid-template-columns:1fr}.grid-2,.grid-2w,.pgrid,.pgrid-3{grid-template-columns:1fr}.pkpi{grid-template-columns:repeat(2,1fr)}.board{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.board{grid-template-columns:1fr}.pkpi{grid-template-columns:1fr}}
+@media print{
+  @page{margin:.4in}
+  body{background:#fff}
+  section{padding:30px 0;break-inside:avoid}
+  .hero,.closing,.packet{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .stage,.card,.struct-card,.principle,.col,.pcard{break-inside:avoid}
+  *,*::before,*::after{-webkit-print-color-adjust:exact;print-color-adjust:exact;animation:none!important}
+}
+
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">A vision for Motorola Solutions &middot; Investor Reporting</div>
+    <h1>What if<span class="q">?</span></h1>
+    <p class="lede">What if <strong>Glean ran your entire earnings motion</strong> &mdash; driving the research, confirming every number and projection, aligning your teams for forecast and budget approvals, giving everyone real-time visibility into where each division stands, and delivering it all as a living <strong>Intel Packet</strong> that updates in real time by division, brand, product, and the supply chains behind them?</p>
+    <div class="hero-tags">
+      <span class="hero-tag"><span class="d"></span> Grounded &amp; cited &mdash; numbers you can defend</span>
+      <span class="hero-tag"><span class="d"></span> Forecast &amp; budget approvals, orchestrated</span>
+      <span class="hero-tag"><span class="d"></span> One living packet, updated in real time</span>
+    </div>
+    <div class="brandbar"><span class="chip">Motorola Solutions</span><span class="x">&times;</span><span class="chip">Glean</span><span style="margin-left:6px">&middot; The intelligent earnings-reporting motion</span></div>
+  </div>
+</header>
+
+<!-- WORKFLOW PIPELINE -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">The Earnings Motion, Reimagined</div>
+      <h2>Six stages. One governed workflow. Zero fire drills.</h2>
+      <p>Every earnings cycle today is a scramble across divisions, spreadsheets, and inboxes. Glean turns it into a repeatable, auditable process where each stage flows into the next &mdash; and everyone can see exactly where things stand.</p>
+    </div>
+    <div class="pipe">
+      <div class="stage">
+        <div class="snum">STAGE 01</div><div class="sico">&#128269;</div>
+        <h4>Research</h4>
+        <p>Glean scans every system, division, brand, and prior filing to assemble the full picture &mdash; automatically.</p>
+        <div class="arrow">&#10142;</div>
+      </div>
+      <div class="stage">
+        <div class="snum">STAGE 02</div><div class="sico">&#9989;</div>
+        <h4>Confirm</h4>
+        <p>Reconciles numbers and projections against source of record, flags variances, and cites every figure.</p>
+        <div class="arrow">&#10142;</div>
+      </div>
+      <div class="stage">
+        <div class="snum">STAGE 03</div><div class="sico">&#129309;</div>
+        <h4>Align &amp; Approve</h4>
+        <p>Routes forecasts and budgets to the right owners with a tracked approval trail across Finance, IR, and the business.</p>
+        <div class="arrow">&#10142;</div>
+      </div>
+      <div class="stage">
+        <div class="snum">STAGE 04</div><div class="sico">&#128065;&#65039;</div>
+        <h4>Visibility</h4>
+        <p>Everyone on the team sees each project's stage, owner, and status live &mdash; no status meetings required.</p>
+        <div class="arrow">&#10142;</div>
+      </div>
+      <div class="stage">
+        <div class="snum">STAGE 05</div><div class="sico">&#128202;</div>
+        <h4>Measure</h4>
+        <p>Auto-compares results against the prior quarter and the same quarter last year, by objective.</p>
+        <div class="arrow">&#10142;</div>
+      </div>
+      <div class="stage">
+        <div class="snum">STAGE 06</div><div class="sico">&#128228;</div>
+        <h4>Deliver</h4>
+        <p>Assembles the Intel Packet &mdash; stunning visuals that update live by division, brand, product, and supply chain.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BEST-PRACTICE STRUCTURE -->
+<section class="alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Built on How Earnings Calls Should Be Structured</div>
+      <h2>The proven report structure &mdash; each part sourced and pre-assembled.</h2>
+      <p>Glean maps the workflow to the way a best-in-class earnings call actually runs, so the packet mirrors the call and the call writes itself from the packet.</p>
+    </div>
+    <div class="struct">
+      <div class="struct-card"><div class="st-step">Part 1</div><h4>Safe Harbor &amp; Setup</h4><p>Standardized forward-looking language and non-GAAP reconciliations, <b>pre-populated and version-controlled.</b></p></div>
+      <div class="struct-card"><div class="st-step">Part 2</div><h4>CEO Overview</h4><p>Headline results and the strategic narrative, <b>drafted from confirmed figures</b> and the quarter's key themes.</p></div>
+      <div class="struct-card"><div class="st-step">Part 3</div><h4>CFO Financial Review</h4><p>Revenue, margin, EPS, and cash flow &mdash; <b>reconciled to source and cited</b> line by line.</p></div>
+      <div class="struct-card"><div class="st-step">Part 4</div><h4>Segment &amp; Division Deep-Dive</h4><p>Performance by segment, brand, and product, <b>with QoQ and YoY comparisons</b> built in.</p></div>
+      <div class="struct-card"><div class="st-step">Part 5</div><h4>Guidance &amp; Outlook</h4><p>Forward guidance tied to the <b>approved forecast and budget</b> &mdash; every number owned and signed off.</p></div>
+      <div class="struct-card"><div class="st-step">Part 6</div><h4>Analyst Q&amp;A</h4><p>Anticipated questions and grounded answers, <b>with the supporting data one click away</b> during the call.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- APPROVAL WORKFLOW + VISIBILITY -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Alignment, Approvals &amp; Visibility</div>
+      <h2>Everyone sees the same truth, at the same time.</h2>
+      <p>Forecasts and budgets move through a clear approval path, and the whole team watches progress on a live board &mdash; from first draft to published packet.</p>
+    </div>
+    <div class="grid-2w">
+      <div class="card">
+        <h3>&#128260; Forecast &amp; Budget Approval Flow</h3>
+        <div class="cap">Where each division stands in the current cycle</div>
+        <div id="approvalChart" class="chart-sm"></div>
+      </div>
+      <div class="card">
+        <h3>&#9202;&#65039; Cycle Health</h3>
+        <div class="status-row"><span class="sdot g"></span><span class="lab">Numbers confirmed &amp; cited</span><span class="meta">92%</span></div>
+        <div class="status-row"><span class="sdot g"></span><span class="lab">Forecasts submitted</span><span class="meta">6 of 6 divisions</span></div>
+        <div class="status-row"><span class="sdot a"></span><span class="lab">Budgets awaiting sign-off</span><span class="meta">2 pending</span></div>
+        <div class="status-row"><span class="sdot b"></span><span class="lab">Packet sections assembled</span><span class="meta">18 of 22</span></div>
+        <div class="status-row"><span class="sdot g"></span><span class="lab">Days to earnings call</span><span class="meta">On schedule</span></div>
+        <div class="status-row"><span class="sdot g"></span><span class="lab">Audit trail complete</span><span class="meta">Every figure sourced</span></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:4px">
+      <h3>&#128203; Live Visibility Board &mdash; This Quarter's Reporting</h3>
+      <div class="cap">Every component, its owner, and its stage &mdash; visible to the whole team in real time</div>
+      <div class="board" style="margin-top:16px">
+        <div class="col col-draft">
+          <div class="col-h">Draft <span class="cnt">2</span></div>
+          <div class="tk"><div class="tk-t">Supply chain &amp; ops narrative</div><div class="tk-m"><span class="pin" style="background:#c98a12"></span> Operations &middot; drafting</div></div>
+          <div class="tk"><div class="tk-t">Video Security outlook</div><div class="tk-m"><span class="pin" style="background:#c98a12"></span> Avigilon BU &middot; drafting</div></div>
+        </div>
+        <div class="col col-rev">
+          <div class="col-h">In Review <span class="cnt">3</span></div>
+          <div class="tk"><div class="tk-t">Command Center software results</div><div class="tk-m"><span class="pin" style="background:#005cde"></span> S&amp;S Finance &middot; review</div></div>
+          <div class="tk"><div class="tk-t">Q3 revenue forecast</div><div class="tk-m"><span class="pin" style="background:#005cde"></span> FP&amp;A &middot; review</div></div>
+          <div class="tk"><div class="tk-t">Component cost / margin bridge</div><div class="tk-m"><span class="pin" style="background:#005cde"></span> Procurement &middot; review</div></div>
+        </div>
+        <div class="col col-app">
+          <div class="col-h">Approved <span class="cnt">3</span></div>
+          <div class="tk"><div class="tk-t">Land Mobile Radio (APX) results</div><div class="tk-m"><span class="pin" style="background:#1f9d55"></span> PSI Finance &middot; signed off</div></div>
+          <div class="tk"><div class="tk-t">Backlog &amp; bookings</div><div class="tk-m"><span class="pin" style="background:#1f9d55"></span> CFO office &middot; signed off</div></div>
+          <div class="tk"><div class="tk-t">FY guidance range</div><div class="tk-m"><span class="pin" style="background:#1f9d55"></span> CFO + CEO &middot; signed off</div></div>
+        </div>
+        <div class="col col-live">
+          <div class="col-h">Live in Packet <span class="cnt">3</span></div>
+          <div class="tk"><div class="tk-t">Consolidated revenue &amp; EPS</div><div class="tk-m"><span class="pin" style="background:#1f9d55"></span> Published &middot; auto-updating</div></div>
+          <div class="tk"><div class="tk-t">Segment performance</div><div class="tk-m"><span class="pin" style="background:#1f9d55"></span> Published &middot; auto-updating</div></div>
+          <div class="tk"><div class="tk-t">KPI scorecard</div><div class="tk-m"><span class="pin" style="background:#1f9d55"></span> Published &middot; auto-updating</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTEL PACKET -->
+<section class="alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">The Deliverable</div>
+      <h2>The Intel Packet &mdash; a living view of the whole company.</h2>
+      <p>The story of your objectives, goals, and KPIs, told in stunning visuals &mdash; broken out by division, brand, and product, measured against the prior quarter and the same quarter last year, with the supply chain and operations behind it in view. And it updates the moment the numbers do.</p>
+    </div>
+    <div class="packet">
+      <div class="packet-top">
+        <div class="packet-title">
+          <div class="eyebrow">Motorola Solutions &middot; Q2 FY2026</div>
+          <h3>Earnings Intel Packet</h3>
+        </div>
+        <div style="text-align:right">
+          <span class="live"><span class="dot"></span> Live &middot; auto-updating</span>
+          <div class="live-time">Last refreshed just now &middot; source-linked</div>
+        </div>
+      </div>
+      <div class="pkpi">
+        <div class="k"><div class="l">Total Revenue</div><div class="v">$2.85B</div><div class="d">&uarr; 9.0% YoY</div></div>
+        <div class="k"><div class="l">Non-GAAP EPS</div><div class="v">$3.42</div><div class="d">&uarr; 12% YoY</div></div>
+        <div class="k"><div class="l">Operating Margin</div><div class="v">28.4%</div><div class="d">&uarr; 130 bps</div></div>
+        <div class="k"><div class="l">Ending Backlog</div><div class="v">$14.3B</div><div class="d">&uarr; 5.9% YoY</div></div>
+        <div class="k"><div class="l">On-Time Delivery</div><div class="v">96%</div><div class="d">&uarr; 2 pts QoQ</div></div>
+      </div>
+      <div class="pgrid" style="margin-bottom:14px">
+        <div class="pcard"><h4>Revenue by Division</h4><div class="cap">Q2 FY2026 ($B) &middot; segment view</div><div id="divChart" class="chart-sm"></div></div>
+        <div class="pcard"><h4>Revenue by Brand &amp; Product</h4><div class="cap">Share of Q2 revenue</div><div id="brandChart" class="chart-sm"></div></div>
+      </div>
+      <div class="pgrid" style="margin-bottom:14px">
+        <div class="pcard"><h4>Performance by Objective</h4><div class="cap">Change vs prior quarter and vs same quarter last year</div><div id="objChart" class="chart-sm"></div></div>
+        <div class="pcard"><h4>Division Revenue Trend</h4><div class="cap">Products &amp; SI vs Software &amp; Services ($B)</div><div id="trendChart" class="chart-sm"></div></div>
+      </div>
+      <div class="pgrid-3">
+        <div class="pcard"><h4>Supply Chain &amp; Operations</h4><div class="cap">Avg component lead time (weeks) vs target</div><div id="supplyChart" class="chart-sm"></div></div>
+        <div class="pcard"><h4>Operations Signal</h4>
+          <div style="margin-top:10px">
+            <div class="status-row"><span class="sdot g"></span><span class="lab">Factory on-time delivery</span><span class="meta">96%</span></div>
+            <div class="status-row"><span class="sdot a"></span><span class="lab">Memory / component cost</span><span class="meta">Elevated</span></div>
+            <div class="status-row"><span class="sdot g"></span><span class="lab">Supplier diversification</span><span class="meta">On track</span></div>
+            <div class="status-row"><span class="sdot g"></span><span class="lab">Inventory turns</span><span class="meta">Healthy</span></div>
+            <div class="status-row"><span class="sdot b"></span><span class="lab">Lead times</span><span class="meta">Improving</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRINCIPLES -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Why This Works</div>
+      <h2>The principles behind the packet.</h2>
+    </div>
+    <div class="principles">
+      <div class="principle"><div class="p-ico">&#128279;</div><h4>Every number is sourced</h4><p>Each figure traces back to its system of record &mdash; defensible on the call, in the filing, and in an audit.</p></div>
+      <div class="principle"><div class="p-ico">&#128274;</div><h4>Permission-aware</h4><p>People see only what they're entitled to. Sensitive forecasts and pre-release results stay locked to the right owners.</p></div>
+      <div class="principle"><div class="p-ico">&#9889;</div><h4>Real-time by design</h4><p>When a division updates a number, the packet, the charts, and the comparisons update instantly &mdash; no manual rebuilds.</p></div>
+      <div class="principle"><div class="p-ico">&#128101;</div><h4>One shared source of truth</h4><p>Finance, IR, and the business work from the same live view &mdash; no version chaos, no conflicting decks.</p></div>
+      <div class="principle"><div class="p-ico">&#127919;</div><h4>Objective-driven</h4><p>Every result is framed against your goals and KPIs, and measured versus prior quarter and same quarter last year.</p></div>
+      <div class="principle"><div class="p-ico">&#128200;</div><h4>Story-first visuals</h4><p>Stunning, consistent charts that turn a spreadsheet of results into a narrative leadership and the Street can follow.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CLOSING -->
+<section class="closing">
+  <div class="wrap">
+    <div class="eyebrow">The answer</div>
+    <h2>What if earnings season stopped being a scramble &mdash; and became <span class="hl">a button you press?</span></h2>
+    <p>One governed workflow that researches, confirms, aligns, measures, and delivers &mdash; a living Intel Packet for every division, brand, and product, backed by the supply chain and operations that drive them. That's the earnings motion Glean makes possible for Motorola Solutions.</p>
+    <div class="signoff">Motorola Solutions &times; Glean &middot; The intelligent earnings-reporting motion</div>
+  </div>
+</section>
+<div class="foot">Illustrative concept prepared for Motorola Solutions. Figures, divisions, brands, and supply-chain signals shown are representative examples to demonstrate how Glean can orchestrate the earnings-reporting workflow and Intel Packet &mdash; not actual reported results. NYSE: MSI.</div>
+
+
+<script>
+var CH={};
+var C={blue:'#005cde',deep:'#003a8c',teal:'#00b2a9',gold:'#c98a12',green:'#1f9d55',red:'#d64545',purple:'#4b3bd6',gray:'#c3ccd8',ink:'#0a1628',muted:'#6b7688',line:'#eef1f6'};
+
+// Approval flow — stacked horizontal by division (Confirmed / In Review / Approved)
+CH.approval=echarts.init(document.getElementById('approvalChart'),null,{renderer:'svg'});
+CH.approval.setOption({
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+  legend:{bottom:0,textStyle:{fontSize:10,color:C.muted},itemWidth:12,itemHeight:8},
+  grid:{left:8,right:16,top:10,bottom:38,containLabel:true},
+  xAxis:{type:'value',max:100,axisLabel:{formatter:'{value}%',fontSize:10,color:C.muted},splitLine:{lineStyle:{color:C.line}},axisLine:{show:false}},
+  yAxis:{type:'category',data:['Managed Services','Command Center','Video Security','Land Mobile Radio','Software & Services','Products & SI'],axisLabel:{fontSize:11,color:C.ink},axisLine:{lineStyle:{color:'#e3e8ef'}}},
+  series:[
+    {name:'Approved',type:'bar',stack:'x',barWidth:14,data:[100,90,60,100,85,95],itemStyle:{color:C.green}},
+    {name:'In review',type:'bar',stack:'x',barWidth:14,data:[0,10,30,0,15,5],itemStyle:{color:C.gold}},
+    {name:'Drafting',type:'bar',stack:'x',barWidth:14,data:[0,0,10,0,0,0],itemStyle:{color:C.gray,borderRadius:[0,4,4,0]}}
+  ]
+});
+
+// Revenue by division
+CH.div=echarts.init(document.getElementById('divChart'),null,{renderer:'svg'});
+CH.div.setOption({
+  tooltip:{trigger:'axis',formatter:'{b}: ${c}B'},
+  grid:{left:8,right:20,top:14,bottom:24,containLabel:true},
+  xAxis:{type:'category',data:['Products &\nSystems Integ.','Software &\nServices'],axisLabel:{fontSize:10,color:C.muted},axisLine:{lineStyle:{color:'#e3e8ef'}}},
+  yAxis:{type:'value',axisLabel:{formatter:'${value}B',fontSize:10,color:C.muted},splitLine:{lineStyle:{color:C.line}},axisLine:{show:false}},
+  series:[{type:'bar',barWidth:70,data:[
+    {value:1.74,itemStyle:{color:C.deep,borderRadius:[6,6,0,0]}},
+    {value:1.11,itemStyle:{color:C.teal,borderRadius:[6,6,0,0]}}
+  ],label:{show:true,position:'top',formatter:'${c}B',fontSize:12,fontWeight:700,color:C.ink}}]
+});
+
+// Revenue by brand/product (donut)
+CH.brand=echarts.init(document.getElementById('brandChart'),null,{renderer:'svg'});
+CH.brand.setOption({
+  tooltip:{trigger:'item',formatter:'{b}: {d}%'},
+  legend:{bottom:0,textStyle:{fontSize:10,color:C.muted},itemWidth:10,itemHeight:8},
+  series:[{type:'pie',radius:['46%','72%'],center:['50%','44%'],itemStyle:{borderColor:'#fff',borderWidth:3},
+    label:{show:true,position:'center',formatter:'$2.85B',fontSize:15,fontWeight:800,color:C.ink},
+    data:[
+      {value:45,name:'Land Mobile Radio (APX)',itemStyle:{color:C.deep}},
+      {value:22,name:'Video Security (Avigilon)',itemStyle:{color:C.blue}},
+      {value:20,name:'Command Center',itemStyle:{color:C.teal}},
+      {value:13,name:'Managed & Support Svcs',itemStyle:{color:C.gold}}
+    ]}]
+});
+
+// Performance by objective — QoQ vs YoY % change
+CH.obj=echarts.init(document.getElementById('objChart'),null,{renderer:'svg'});
+CH.obj.setOption({
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:function(p){return p[0].name+'<br>'+p.map(function(s){return s.marker+s.seriesName+': +'+s.value+'%'}).join('<br>')}},
+  legend:{bottom:0,textStyle:{fontSize:10,color:C.muted},itemWidth:12,itemHeight:8},
+  grid:{left:8,right:34,top:12,bottom:38,containLabel:true},
+  xAxis:{type:'value',axisLabel:{formatter:'+{value}%',fontSize:10,color:C.muted},splitLine:{lineStyle:{color:C.line}},axisLine:{show:false}},
+  yAxis:{type:'category',data:['AI-native adoption','Free cash flow','Backlog','EPS','Revenue'],axisLabel:{fontSize:11,color:C.ink},axisLine:{lineStyle:{color:'#e3e8ef'}}},
+  series:[
+    {name:'vs Same Q last year',type:'bar',barWidth:9,data:[50,8,5.9,12,9],itemStyle:{color:C.deep,borderRadius:[0,3,3,0]}},
+    {name:'vs Prior quarter',type:'bar',barWidth:9,data:[23,3,2.1,5.6,5.2],itemStyle:{color:C.teal,borderRadius:[0,3,3,0]}}
+  ]
+});
+
+// Division revenue trend
+CH.trend=echarts.init(document.getElementById('trendChart'),null,{renderer:'svg'});
+CH.trend.setOption({
+  tooltip:{trigger:'axis'},
+  legend:{bottom:0,textStyle:{fontSize:10,color:C.muted},itemWidth:12,itemHeight:8},
+  grid:{left:8,right:16,top:14,bottom:38,containLabel:true},
+  xAxis:{type:'category',data:["Q3'24","Q4'24","Q1'25","Q2'25","Q3'25","Q4'25","Q1'26","Q2'26"],axisLabel:{fontSize:9,color:C.muted},axisLine:{lineStyle:{color:'#e3e8ef'}}},
+  yAxis:{type:'value',axisLabel:{formatter:'${value}B',fontSize:10,color:C.muted},splitLine:{lineStyle:{color:C.line}},axisLine:{show:false}},
+  series:[
+    {name:'Products & SI',type:'line',smooth:true,data:[1.55,1.60,1.53,1.60,1.63,1.70,1.66,1.74],lineStyle:{color:C.deep,width:3},itemStyle:{color:C.deep},areaStyle:{color:'rgba(0,58,140,0.10)'},symbolSize:5},
+    {name:'Software & Services',type:'line',smooth:true,data:[1.00,1.02,0.98,1.02,1.05,1.09,1.05,1.11],lineStyle:{color:C.teal,width:3},itemStyle:{color:C.teal},areaStyle:{color:'rgba(0,178,169,0.10)'},symbolSize:5}
+  ]
+});
+
+// Supply chain lead time
+CH.supply=echarts.init(document.getElementById('supplyChart'),null,{renderer:'svg'});
+CH.supply.setOption({
+  tooltip:{trigger:'axis',formatter:'{b}: {c} wks'},
+  legend:{bottom:0,textStyle:{fontSize:10,color:C.muted},itemWidth:12,itemHeight:8},
+  grid:{left:8,right:16,top:14,bottom:38,containLabel:true},
+  xAxis:{type:'category',data:["Q3'24","Q4'24","Q1'25","Q2'25","Q3'25","Q4'25","Q1'26","Q2'26"],axisLabel:{fontSize:9,color:C.muted},axisLine:{lineStyle:{color:'#e3e8ef'}}},
+  yAxis:{type:'value',min:6,max:20,axisLabel:{formatter:'{value}w',fontSize:10,color:C.muted},splitLine:{lineStyle:{color:C.line}},axisLine:{show:false}},
+  series:[
+    {name:'Lead time',type:'line',smooth:true,data:[18,17,16.5,15,14,13,12.5,11.5],lineStyle:{color:C.gold,width:3},itemStyle:{color:C.gold},areaStyle:{color:'rgba(201,138,18,0.12)'},symbolSize:5},
+    {name:'Target',type:'line',data:[12,12,12,12,12,12,12,12],lineStyle:{color:C.gray,width:1.5,type:'dashed'},itemStyle:{color:C.gray},symbol:'none'}
+  ]
+});
+
+window.addEventListener('resize',function(){Object.values(CH).forEach(function(c){c.resize()})});
+</script>
+<script>
+if (window.GleanBridge && typeof window.GleanBridge.postMessage === 'function') {
+  window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
+  window.GleanBridge.onMessage('action',function(data){if(data.actionId==='export-pdf'){window.print();}});
+}
+</script>
+<script>
+function prepPrint(){
+  document.querySelectorAll('[_echarts_instance_]').forEach(function(el){
+    var chart=echarts.getInstanceByDom(el);if(!chart)return;
+    var img=new Image();img.src=chart.getDataURL({type:'png',pixelRatio:2});
+    img.className='print-chart-img';img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';
+    el.dataset.pp=el.style.position;el.style.position='relative';el.appendChild(img);
+  });
+}
+function restorePrint(){document.querySelectorAll('.print-chart-img').forEach(function(i){i.remove();});}
+window.addEventListener('beforeprint',prepPrint);
+window.addEventListener('afterprint',restorePrint);
+</script>
+
+</body>
+</html>
