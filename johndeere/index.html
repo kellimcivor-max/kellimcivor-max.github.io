@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>John Deere — Context Statement</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+  :root {
+    --artifact-background: var(--theme-background, #fbfaf6);
+    --artifact-surface: var(--theme-background-light, #ffffff);
+    --artifact-text-primary: var(--theme-text-primary, #1d241b);
+    --artifact-text-secondary: var(--theme-text-secondary, #55604f);
+    --artifact-text-muted: #8a917f;
+    --artifact-border: rgba(29,36,27,0.12);
+    --artifact-jd-green: #367C2B;
+    --artifact-jd-green-soft: rgba(54,124,43,0.10);
+    --artifact-jd-yellow: #F2C200;
+    --artifact-jd-yellow-soft: rgba(242,194,0,0.16);
+    --artifact-card-shadow: 0 1px 2px rgba(29,36,27,0.06), 0 8px 24px rgba(29,36,27,0.05);
+  }
+  html[data-theme='dark'] {
+    --artifact-background: #14170f;
+    --artifact-surface: #1c2016;
+    --artifact-text-primary: #eef0e6;
+    --artifact-text-secondary: #b7bdac;
+    --artifact-text-muted: #8a917f;
+    --artifact-border: rgba(255,255,255,0.12);
+    --artifact-jd-green: #6ab04c;
+    --artifact-jd-green-soft: rgba(106,176,76,0.14);
+    --artifact-jd-yellow: #F2C200;
+    --artifact-jd-yellow-soft: rgba(242,194,0,0.14);
+    --artifact-card-shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.35);
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0; padding: 0;
+    background: var(--artifact-background);
+    color: var(--artifact-text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 28px 80px; }
+
+  /* Header */
+  .hero { padding: 64px 0 40px; border-bottom: 1px solid var(--artifact-border); }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--artifact-jd-green); font-weight: 700; margin-bottom: 20px;
+  }
+  .eyebrow::before { content:""; width: 26px; height: 3px; background: var(--artifact-jd-yellow); border-radius: 2px; }
+  h1 { font-size: clamp(30px, 4.4vw, 46px); line-height: 1.1; margin: 0 0 18px; font-weight: 800; letter-spacing: -0.02em; }
+  h1 .accent { color: var(--artifact-jd-green); }
+  .lede { font-size: 18px; color: var(--artifact-text-secondary); max-width: 760px; margin: 0; }
+  .meta { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 30px; }
+  .meta div { font-size: 13.5px; }
+  .meta .k { color: var(--artifact-text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; font-weight: 700; margin-bottom: 3px; }
+  .meta .v { color: var(--artifact-text-primary); font-weight: 600; }
+
+  section { padding: 48px 0 8px; }
+  .section-tag { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--artifact-jd-green); font-weight: 700; margin-bottom: 10px; }
+  h2 { font-size: 27px; margin: 0 0 16px; font-weight: 800; letter-spacing: -0.015em; }
+  h3 { font-size: 17px; margin: 0 0 6px; font-weight: 700; }
+  p { margin: 0 0 16px; color: var(--artifact-text-secondary); }
+  p strong, li strong { color: var(--artifact-text-primary); }
+
+  /* stat band */
+  .stat-band { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 8px 0 4px; }
+  .stat {
+    background: var(--artifact-surface); border: 1px solid var(--artifact-border);
+    border-radius: 14px; padding: 22px 20px; box-shadow: var(--artifact-card-shadow);
+  }
+  .stat .num { font-size: 34px; font-weight: 800; color: var(--artifact-jd-green); letter-spacing: -0.02em; line-height: 1; }
+  .stat .lab { font-size: 13px; color: var(--artifact-text-secondary); margin-top: 8px; }
+
+  .card {
+    background: var(--artifact-surface); border: 1px solid var(--artifact-border);
+    border-radius: 16px; padding: 26px; box-shadow: var(--artifact-card-shadow);
+  }
+  .chart { width: 100%; height: 340px; }
+  .chart.tall { height: 420px; }
+  .cap { font-size: 13px; color: var(--artifact-text-muted); margin-top: 12px; text-align: center; }
+
+  .issues { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 6px; }
+  .issue { background: var(--artifact-surface); border: 1px solid var(--artifact-border); border-radius: 14px; padding: 22px; box-shadow: var(--artifact-card-shadow); }
+  .issue .ic { width: 40px; height: 40px; border-radius: 10px; background: var(--artifact-jd-green-soft); display:flex; align-items:center; justify-content:center; margin-bottom: 14px; }
+  .issue .ic svg { width: 20px; height: 20px; stroke: var(--artifact-jd-green); fill: none; stroke-width: 2; }
+  .issue p { font-size: 14.5px; margin: 0; }
+
+  /* tool comparison */
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .toolcard { background: var(--artifact-surface); border: 1px solid var(--artifact-border); border-radius: 14px; padding: 22px; box-shadow: var(--artifact-card-shadow); }
+  .toolcard h3 { display:flex; align-items:center; gap:10px; }
+  .pill { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--artifact-jd-yellow-soft); color: var(--artifact-text-primary); }
+  .toolcard ul { margin: 10px 0 0; padding-left: 18px; }
+  .toolcard li { font-size: 14px; color: var(--artifact-text-secondary); margin-bottom: 7px; }
+
+  /* layer diagram */
+  .layers { display: flex; flex-direction: column; gap: 14px; }
+  .layer { border-radius: 14px; padding: 20px 24px; border: 1px solid var(--artifact-border); }
+  .layer .lt { font-weight: 700; font-size: 15px; margin-bottom: 3px; }
+  .layer .ld { font-size: 13.5px; color: var(--artifact-text-secondary); }
+  .layer.top { background: var(--artifact-surface); }
+  .layer.mid { background: var(--artifact-jd-green); border-color: var(--artifact-jd-green); }
+  .layer.mid .lt { color: #fff; } .layer.mid .ld { color: rgba(255,255,255,0.88); }
+  .layer.bot { background: var(--artifact-surface); }
+  .conn { text-align: center; color: var(--artifact-jd-yellow); font-size: 18px; line-height: 0.4; }
+
+  .outcome-list { list-style: none; padding: 0; margin: 8px 0 0; }
+  .outcome-list li { position: relative; padding: 14px 0 14px 34px; border-bottom: 1px solid var(--artifact-border); color: var(--artifact-text-secondary); font-size: 15px; }
+  .outcome-list li:last-child { border-bottom: none; }
+  .outcome-list li::before {
+    content:""; position:absolute; left:0; top:18px; width: 18px; height: 18px; border-radius: 5px;
+    background: var(--artifact-jd-green-soft);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23367C2B' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");
+    background-repeat: no-repeat; background-position: center; background-size: 12px;
+  }
+
+  .scope { background: var(--artifact-jd-green-soft); border: 1px solid var(--artifact-border); border-radius: 16px; padding: 28px; }
+  .scope h2 { margin-top: 0; }
+
+  .foot { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--artifact-border); font-size: 13px; color: var(--artifact-text-muted); display:flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+
+  @media (max-width: 820px) {
+    .stat-band { grid-template-columns: repeat(2,1fr); }
+    .issues, .cols { grid-template-columns: 1fr; }
+  }
+
+  @media print {
+    body { margin:0; padding: 0.4in 0.6in; background:#fff; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .wrap { max-width:100% !important; }
+    section, .card { break-inside: avoid; }
+    [class*="chart"] { height: 300px !important; }
+    button, [role="button"] { display:none !important; }
+    *, *::before, *::after { animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero" data-glean-id="hero">
+    <div class="eyebrow">Context Statement</div>
+    <h1>Unifying engineering knowledge across <span class="accent">product development</span></h1>
+    <p class="lede">A shared view of the challenge facing John Deere's ISG and Ag &amp; Turf product-development teams — and the context layer needed to keep engineering knowledge continuous, secure, and reusable across software, electrical, and hardware work.</p>
+    <div class="meta">
+      <div><div class="k">Teams</div><div class="v">ISG &amp; Ag &amp; Turf — Product Development</div></div>
+      <div><div class="k">Key stakeholders</div><div class="v">Narsi Rangan · Ryan Hamor · Nathan Peitz</div></div>
+      <div><div class="k">Basis</div><div class="v">Discovery session, June 29, 2026</div></div>
+    </div>
+  </header>
+
+  <section data-glean-id="context">
+    <div class="section-tag">The teams</div>
+    <h2>Product organizations building intelligent machines</h2>
+    <p>John Deere's Intelligence Solutions Group (ISG) and Ag &amp; Turf teams build the embedded software, electrical, and hardware systems that go directly into machines. Narsi's group leads AI enablement for product development; Ryan's group leads AI for embedded software on vehicle products. These are <strong>product organizations — not global IT or manufacturing</strong> — developing electromechanical systems where software runs on hardware that sits on the machine.</p>
+    <p>The goal is a <strong>durable, agentic product-development workflow</strong> spanning the people who build these systems: software engineers, electrical engineers, product managers, and customer support engineers.</p>
+  </section>
+
+  <section data-glean-id="problem">
+    <div class="section-tag">The challenge</div>
+    <h2>Engineering knowledge is scattered across too many systems</h2>
+    <p>Design intent, risk assessments, technical specifications, hydraulic and electrical schematics, requirements, code repositories, tickets, and tribal knowledge all live in separate places. Before a team can act — design a part, trace a change, or answer a question — they must first reconstruct the history, ownership, and downstream impact of the work.</p>
+
+    <div class="stat-band" data-glean-id="stat-band">
+      <div class="stat" data-glean-id="stat-apis"><div class="num">5–6</div><div class="lab">APIs touched to complete a single task</div></div>
+      <div class="stat" data-glean-id="stat-hubs"><div class="num">4–5</div><div class="lab">separate data hubs pulled from per task</div></div>
+      <div class="stat" data-glean-id="stat-sources"><div class="num">7+</div><div class="lab">disconnected knowledge sources</div></div>
+      <div class="stat" data-glean-id="stat-domains"><div class="num">3</div><div class="lab">domains to reconcile: software, electrical, hardware</div></div>
+    </div>
+
+    <div class="card" style="margin-top:22px" data-glean-id="chart-sources-card">
+      <h3>Where engineering knowledge lives today</h3>
+      <p style="font-size:14px">Each source is queried separately, with no unified way to connect them.</p>
+      <div id="chartSources" class="chart" data-glean-id="chart-sources"></div>
+    </div>
+  </section>
+
+  <section data-glean-id="issues">
+    <div class="section-tag">Three compounding issues</div>
+    <h2>Why the fragmentation hurts</h2>
+    <div class="issues">
+      <div class="issue" data-glean-id="issue-durability">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></div>
+        <h3>Weak workflow durability</h3>
+        <p>Knowledge fragmented across software and hardware teams means workflows break and context is lost. There is no reusable layer that keeps product knowledge continuous as the team develops.</p>
+      </div>
+      <div class="issue" data-glean-id="issue-context">
+        <div class="ic"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/><path d="M7.6 7.4 11 16M16.4 7.4 13 16M8 6h8"/></svg></div>
+        <h3>No cross-system context</h3>
+        <p>A single change can ripple across the system. Today there is no way to see and reason across the relationships between schematics, shared components, and controllers in one place.</p>
+      </div>
+      <div class="issue" data-glean-id="issue-unstructured">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h10M4 19h7"/></svg></div>
+        <h3>Unstructured, siloed knowledge</h3>
+        <p>Critical information lives in spreadsheets on shared drives, in individual engineers' heads, and in documents that can't be structured — with no way to bring it together.</p>
+      </div>
+    </div>
+  </section>
+
+  <section data-glean-id="example">
+    <div class="section-tag">A concrete example</div>
+    <h2>One component change touches everything</h2>
+    <p>Multiple machine platforms use <strong>different hydraulic schematics</strong> but share the <strong>same pressure sensor</strong>. That sensor is used across <strong>multiple controllers</strong>, each with its own <strong>electrical schematic</strong>, all connected in a network. There is no single place to trace those relationships — so understanding the impact of one change means manually piecing it together across systems.</p>
+    <div class="card" data-glean-id="chart-network-card">
+      <div id="chartNetwork" class="chart tall" data-glean-id="chart-network"></div>
+      <div class="cap">Illustrative relationship map: a shared sensor links platforms, controllers, and schematics that live in separate systems today.</div>
+    </div>
+  </section>
+
+  <section data-glean-id="tools">
+    <div class="section-tag">Why existing tools fall short</div>
+    <h2>Today's AI tools don't close the gap</h2>
+    <p>The team relies on GitHub Copilot as its predominant AI tool and has access to other foundation models, including Claude. Neither reaches across the systems where engineering knowledge lives.</p>
+    <div class="cols">
+      <div class="toolcard" data-glean-id="tool-copilot">
+        <h3>GitHub Copilot <span class="pill">Predominant tool</span></h3>
+        <ul>
+          <li>Only a handful of connectors into enterprise systems.</li>
+          <li>Lacks the context to reach across John Deere's data.</li>
+          <li>Answers come back generic — hard to fold into engineering work.</li>
+        </ul>
+      </div>
+      <div class="toolcard" data-glean-id="tool-claude">
+        <h3>Claude &amp; standalone models <span class="pill">In use</span></h3>
+        <ul>
+          <li>Not secure across the enterprise.</li>
+          <li>Cannot safely span John Deere's internal systems.</li>
+          <li>Everyone "navigating their own waters" — not cohesive, introduces security risk.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card" style="margin-top:18px" data-glean-id="chart-connectors-card">
+      <h3>Reach across enterprise systems</h3>
+      <p style="font-size:14px">The gap isn't model quality — it's how much of the enterprise each tool can securely see and connect.</p>
+      <div id="chartConnectors" class="chart" data-glean-id="chart-connectors"></div>
+    </div>
+  </section>
+
+  <section data-glean-id="outcome">
+    <div class="section-tag">The desired outcome</div>
+    <h2>A secure context &amp; connectivity layer beneath existing tools</h2>
+    <p>Rather than replacing Copilot or GitHub, the goal is a layer that unifies knowledge underneath them — feeding secure, connected context into where the team already works.</p>
+    <div class="layers" data-glean-id="layer-diagram">
+      <div class="layer top" data-glean-id="layer-top"><div class="lt">Internal apps &amp; agents</div><div class="ld">Copilot, GitHub, product-development agents — where engineers do the work.</div></div>
+      <div class="conn">▲<br>▼</div>
+      <div class="layer mid" data-glean-id="layer-mid"><div class="lt">Context &amp; connectivity layer</div><div class="ld">Permissions-aware, multimodal knowledge unified into one reusable foundation for retrieval and grounding.</div></div>
+      <div class="conn">▲<br>▼</div>
+      <div class="layer bot" data-glean-id="layer-bot"><div class="lt">Enterprise systems</div><div class="ld">Code, tickets, design docs, hydraulic &amp; electrical schematics, requirements, chat.</div></div>
+    </div>
+    <ul class="outcome-list" data-glean-id="outcome-list">
+      <li>Unifies structured and unstructured engineering knowledge — including PDF schematics, diagrams, and technical specs — into a single, permissions-aware layer.</li>
+      <li>Preserves native security permissions so users only ever see what they already have access to — no extra security work to bring permissions over.</li>
+      <li>Provides a durable, reusable foundation so internal agents and workflows don't rediscover the same context every time.</li>
+      <li>Enables an agentic product-development workflow across software, electrical, and hardware domains, connecting into existing tools like Copilot and GitHub.</li>
+    </ul>
+  </section>
+
+  <section data-glean-id="scope">
+    <div class="scope">
+      <div class="section-tag">Scope &amp; next step</div>
+      <h2>Start focused, then expand</h2>
+      <p>The team wants to first validate whether the context connection makes sense for a focused group — Narsi, Ryan, and a few team members — before evaluating enterprise-scale governance and rollout.</p>
+      <p style="margin-bottom:0"><strong>Immediate next step:</strong> define specific pilot use cases and success criteria, with governance (who uses it and how) addressed as the effort expands.</p>
+    </div>
+  </section>
+
+  <div class="foot">
+    <span>Prepared for John Deere · ISG &amp; Ag &amp; Turf Product Development</span>
+    <span>In partnership with Glean</span>
+  </div>
+
+</div>
+
+<script>
+  var css = function(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); };
+  var green = css('--artifact-jd-green') || '#367C2B';
+  var yellow = css('--artifact-jd-yellow') || '#F2C200';
+  var ink = css('--artifact-text-primary') || '#1d241b';
+  var sub = css('--artifact-text-secondary') || '#55604f';
+  var border = css('--artifact-border') || 'rgba(0,0,0,0.1)';
+  var charts = [];
+
+  function mk(id){ var c = echarts.init(document.getElementById(id), null, {renderer:'svg'}); charts.push(c); return c; }
+
+  // Sources bar
+  mk('chartSources').setOption({
+    grid:{ left:150, right:24, top:10, bottom:20 },
+    tooltip:{ trigger:'axis', axisPointer:{type:'shadow'} },
+    xAxis:{ type:'value', axisLabel:{color:sub}, splitLine:{lineStyle:{color:border}}, name:'relative fragmentation', nameLocation:'middle', nameGap:34, nameTextStyle:{color:sub} },
+    yAxis:{ type:'category', inverse:true, axisLabel:{color:ink, fontSize:13},
+      data:['Code repositories','Tickets / issues','Design documentation','Hydraulic & electrical schematics','Requirements docs','Team chat','Tribal knowledge'] },
+    series:[{ type:'bar', barWidth:'58%', itemStyle:{color:green, borderRadius:[0,6,6,0]},
+      data:[9,8,8,10,7,6,7] }]
+  });
+
+  // Network / relationship graph
+  var nodes = [
+    {name:'Pressure sensor', symbolSize:64, itemStyle:{color:yellow}, label:{color:ink,fontWeight:'bold'}, x:300, y:200},
+    {name:'Platform A', symbolSize:40, itemStyle:{color:green}, x:120, y:70},
+    {name:'Platform B', symbolSize:40, itemStyle:{color:green}, x:120, y:200},
+    {name:'Platform C', symbolSize:40, itemStyle:{color:green}, x:120, y:330},
+    {name:'Controller 1', symbolSize:40, itemStyle:{color:'#7a8b73'}, x:480, y:110},
+    {name:'Controller 2', symbolSize:40, itemStyle:{color:'#7a8b73'}, x:480, y:290},
+    {name:'Electrical schematic 1', symbolSize:34, itemStyle:{color:'#b9c2b1'}, x:660, y:80},
+    {name:'Electrical schematic 2', symbolSize:34, itemStyle:{color:'#b9c2b1'}, x:660, y:300},
+    {name:'Hydraulic schematic A', symbolSize:30, itemStyle:{color:'#b9c2b1'}, x:60, y:20},
+    {name:'Hydraulic schematic B', symbolSize:30, itemStyle:{color:'#b9c2b1'}, x:40, y:200},
+    {name:'Hydraulic schematic C', symbolSize:30, itemStyle:{color:'#b9c2b1'}, x:60, y:380}
+  ];
+  var links = [
+    {source:'Platform A', target:'Pressure sensor'},
+    {source:'Platform B', target:'Pressure sensor'},
+    {source:'Platform C', target:'Pressure sensor'},
+    {source:'Pressure sensor', target:'Controller 1'},
+    {source:'Pressure sensor', target:'Controller 2'},
+    {source:'Controller 1', target:'Electrical schematic 1'},
+    {source:'Controller 2', target:'Electrical schematic 2'},
+    {source:'Platform A', target:'Hydraulic schematic A'},
+    {source:'Platform B', target:'Hydraulic schematic B'},
+    {source:'Platform C', target:'Hydraulic schematic C'}
+  ];
+  mk('chartNetwork').setOption({
+    tooltip:{},
+    series:[{
+      type:'graph', layout:'none', roam:false,
+      label:{show:true, position:'bottom', color:sub, fontSize:11},
+      lineStyle:{color:green, opacity:0.4, width:1.6, curveness:0.08},
+      edgeSymbol:['none','arrow'], edgeSymbolSize:7,
+      data:nodes, links:links
+    }]
+  });
+
+  // Connector reach comparison
+  mk('chartConnectors').setOption({
+    grid:{ left:150, right:36, top:10, bottom:30 },
+    tooltip:{ trigger:'axis', axisPointer:{type:'shadow'}, valueFormatter:function(v){return v+ (v>=100?'+ connectors':' connectors');} },
+    xAxis:{ type:'value', axisLabel:{color:sub}, splitLine:{lineStyle:{color:border}}, name:'enterprise systems reachable', nameLocation:'middle', nameGap:36, nameTextStyle:{color:sub} },
+    yAxis:{ type:'category', inverse:true, axisLabel:{color:ink, fontSize:13}, data:['GitHub Copilot (a handful)','Standalone models (siloed)','Unified context layer'] },
+    series:[{ type:'bar', barWidth:'52%',
+      label:{show:true, position:'right', color:ink, formatter:function(p){return p.dataIndex===2 ? '100+' : (p.dataIndex===0?'~5':'~1');}},
+      itemStyle:{ borderRadius:[0,6,6,0] },
+      data:[
+        {value:5, itemStyle:{color:'#b9c2b1'}},
+        {value:1, itemStyle:{color:'#b9c2b1'}},
+        {value:100, itemStyle:{color:green}}
+      ] }]
+  });
+
+  window.addEventListener('resize', function(){ charts.forEach(function(c){ c.resize(); }); });
+
+  // PDF export
+  window.GleanBridge && window.GleanBridge.postMessage({ actionId:'export-pdf', type:'glean-add-menu', metadata:{ label:'Export as PDF', icon:'export' } });
+  window.GleanBridge && window.GleanBridge.onMessage('action', function(data){ if(data.actionId==='export-pdf') window.print(); });
+  function prepareChartsForPrint(){ document.querySelectorAll('[_echarts_instance_]').forEach(function(el){ var c=echarts.getInstanceByDom(el); if(!c)return; var img=new Image(); img.src=c.getDataURL({type:'png',pixelRatio:2}); img.className='print-chart-img'; img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;'; el.dataset.prevPosition=el.style.position; el.style.position='relative'; el.appendChild(img); }); }
+  function cleanUpAfterPrint(){ document.querySelectorAll('[_echarts_instance_]').forEach(function(el){ var img=el.querySelector('.print-chart-img'); if(!img)return; img.remove(); el.style.position=el.dataset.prevPosition||''; delete el.dataset.prevPosition; }); }
+  window.addEventListener('beforeprint', prepareChartsForPrint);
+  window.addEventListener('afterprint', cleanUpAfterPrint);
+</script>
+</body>
+</html>
