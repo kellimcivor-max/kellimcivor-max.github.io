@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Good Morning, Kenn — ADM FP&A Command Center</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+  :root{
+    --artifact-background: var(--theme-background, #f5f7f2);
+    --artifact-surface: var(--theme-background-elevated, #ffffff);
+    --artifact-surface-soft: var(--theme-background-light, #eef2e8);
+    --artifact-text-primary: var(--theme-text-primary, #16221a);
+    --artifact-text-muted: var(--theme-text-secondary, #5b6a5f);
+    --artifact-green: #5aa829;
+    --artifact-green-deep: #1f4a2c;
+    --artifact-green-soft: #e7f2dc;
+    --artifact-accent: #0f7d6b;
+    --artifact-amber: #d99411;
+    --artifact-red: #c0492e;
+    --artifact-border: rgba(31,74,44,0.12);
+    --artifact-card-shadow: 0 1px 3px rgba(22,34,26,0.06), 0 8px 24px rgba(22,34,26,0.05);
+  }
+  html[data-theme='dark']{
+    --artifact-background:#0e150f; --artifact-surface:#16211a; --artifact-surface-soft:#1b271d;
+    --artifact-text-primary:#eaf1e8; --artifact-text-muted:#9fb0a3; --artifact-green:#7fc94f;
+    --artifact-green-soft:#1f3a20; --artifact-border:rgba(255,255,255,0.1);
+    --artifact-card-shadow:0 1px 3px rgba(0,0,0,0.4);
+  }
+  *{box-sizing:border-box;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    margin:0;background:var(--artifact-background);color:var(--artifact-text-primary);
+    -webkit-font-smoothing:antialiased;line-height:1.5;}
+  .shell{max-width:1100px;margin:0 auto;padding:28px 22px 60px;}
+  /* Header */
+  .hero{background:linear-gradient(135deg,var(--artifact-green-deep),#2f6b3a 55%,var(--artifact-green));
+    color:#fff;border-radius:20px;padding:34px 34px 30px;position:relative;overflow:hidden;box-shadow:var(--artifact-card-shadow);}
+  .hero::after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;
+    background:radial-gradient(circle,rgba(255,255,255,0.14),transparent 70%);}
+  .hero .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;opacity:.85;font-weight:600;}
+  .hero h1{margin:8px 0 6px;font-size:34px;font-weight:700;letter-spacing:-.5px;}
+  .hero .sub{font-size:15px;max-width:620px;opacity:.92;}
+  .hero .meta{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;}
+  .chip{background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.22);
+    padding:5px 12px;border-radius:999px;font-size:12.5px;font-weight:500;}
+  .section-title{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--artifact-text-muted);
+    font-weight:700;margin:34px 4px 14px;display:flex;align-items:center;gap:10px;}
+  .section-title::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--artifact-green);}
+  /* KPI */
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;}
+  .kpi{background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:16px;
+    padding:20px;box-shadow:var(--artifact-card-shadow);}
+  .kpi .label{font-size:12.5px;color:var(--artifact-text-muted);font-weight:600;}
+  .kpi .value{font-size:32px;font-weight:750;letter-spacing:-1px;margin:6px 0 2px;color:var(--artifact-green-deep);}
+  html[data-theme='dark'] .kpi .value{color:var(--artifact-green);}
+  .kpi .delta{font-size:12.5px;font-weight:600;}
+  .up{color:var(--artifact-green);} .down{color:var(--artifact-red);}
+  /* Cards / grid */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .card{background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:16px;
+    padding:22px;box-shadow:var(--artifact-card-shadow);}
+  .card h3{margin:0 0 4px;font-size:16px;font-weight:700;}
+  .card .card-sub{font-size:12.5px;color:var(--artifact-text-muted);margin-bottom:14px;}
+  .chart{width:100%;height:280px;}
+  /* Briefing list */
+  .brief{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--artifact-border);}
+  .brief:last-child{border-bottom:none;}
+  .brief .dot{flex:0 0 auto;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;
+    justify-content:center;font-size:16px;background:var(--artifact-green-soft);}
+  .brief .b-body{flex:1;}
+  .brief .b-title{font-weight:650;font-size:14.5px;}
+  .brief .b-desc{font-size:13px;color:var(--artifact-text-muted);margin-top:2px;}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;margin-left:6px;
+    background:var(--artifact-green-soft);color:var(--artifact-green-deep);}
+  html[data-theme='dark'] .tag{color:var(--artifact-green);}
+  .tag.amber{background:rgba(217,148,17,.16);color:var(--artifact-amber);}
+  .tag.red{background:rgba(192,73,46,.14);color:var(--artifact-red);}
+  /* Table */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{text-align:left;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--artifact-text-muted);
+    font-weight:700;padding:8px 10px;border-bottom:1px solid var(--artifact-border);}
+  td{padding:11px 10px;border-bottom:1px solid var(--artifact-border);}
+  tr:last-child td{border-bottom:none;}
+  .status{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:12.5px;}
+  .status::before{content:"";width:8px;height:8px;border-radius:50%;}
+  .s-live::before{background:var(--artifact-green);} .s-live{color:var(--artifact-green);}
+  .s-prog::before{background:var(--artifact-amber);} .s-prog{color:var(--artifact-amber);}
+  .s-queue::before{background:var(--artifact-text-muted);} .s-queue{color:var(--artifact-text-muted);}
+  /* Agent library */
+  .agent{background:var(--artifact-surface);border:1px solid var(--artifact-border);border-radius:14px;padding:18px;
+    box-shadow:var(--artifact-card-shadow);}
+  .agent .ico{width:38px;height:38px;border-radius:10px;background:var(--artifact-green-soft);display:flex;
+    align-items:center;justify-content:center;font-size:19px;margin-bottom:10px;}
+  .agent h4{margin:0 0 5px;font-size:14.5px;}
+  .agent p{margin:0;font-size:12.5px;color:var(--artifact-text-muted);}
+  /* Governance */
+  .gov{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--artifact-border);}
+  .gov:last-child{border-bottom:none;}
+  .gov .gk{font-size:18px;}
+  .gov .gt{font-weight:650;font-size:13.5px;}
+  .gov .gd{font-size:12.5px;color:var(--artifact-text-muted);}
+  /* Peer */
+  .peer{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--artifact-border);}
+  .peer:last-child{border-bottom:none;}
+  .peer .av{width:38px;height:38px;border-radius:50%;background:var(--artifact-green-deep);color:#fff;display:flex;
+    align-items:center;justify-content:center;font-weight:700;font-size:14px;}
+  .peer .pn{font-weight:650;font-size:14px;} .peer .pr{font-size:12.5px;color:var(--artifact-text-muted);}
+  /* Next step */
+  .next{background:linear-gradient(135deg,var(--artifact-green-deep),var(--artifact-green));color:#fff;
+    border-radius:18px;padding:26px 30px;display:flex;justify-content:space-between;align-items:center;gap:20px;
+    flex-wrap:wrap;box-shadow:var(--artifact-card-shadow);}
+  .next h3{margin:0 0 6px;font-size:20px;} .next p{margin:0;font-size:13.5px;opacity:.92;max-width:560px;}
+  .footnote{font-size:11.5px;color:var(--artifact-text-muted);margin-top:26px;text-align:center;}
+  @media (max-width:760px){.grid-2,.grid-3{grid-template-columns:1fr;} .hero h1{font-size:27px;}}
+  @media print{
+    body{margin:0;padding:0.4in 0.6in;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact;}
+    .shell{max-width:100%!important;width:100%!important;}
+    section,.card,.kpi,.hero,.next{break-inside:avoid;}
+    .card{box-shadow:none!important;border:1px solid rgba(0,0,0,0.08);}
+    .chart{height:240px!important;}
+    *,*::before,*::after{animation:none!important;transition:none!important;}
+    button,[role="button"]{display:none!important;}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="hero" data-glean-id="hero">
+    <div class="eyebrow">ADM · FP&A Transformation Command Center</div>
+    <h1>Good morning, Kenn.</h1>
+    <div class="sub">Your daily briefing across earnings prep, month-end close, market intelligence, and AI governance — every insight drawn from ADM's own governed enterprise context, permission-aware and private by design.</div>
+    <div class="meta">
+      <span class="chip">Wednesday, August 12, 2026</span>
+      <span class="chip">Director, Transformation — FP&A</span>
+      <span class="chip">Enterprise context: permission-aware</span>
+      <span class="chip">Powered by Glean</span>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="section-title" data-glean-id="section-kpis">Speed to insights, at a glance</div>
+  <div class="kpi-grid">
+    <div class="kpi" data-glean-id="kpi-time-to-insight">
+      <div class="label">Avg. time to insight</div>
+      <div class="value">2.1 hrs</div>
+      <div class="delta up">▼ 68% vs. manual gathering</div>
+    </div>
+    <div class="kpi" data-glean-id="kpi-llm-cost">
+      <div class="label">AI / LLM run-cost reduction</div>
+      <div class="value">~50%</div>
+      <div class="delta up">context layer + query-to-code routing</div>
+    </div>
+    <div class="kpi" data-glean-id="kpi-token-budget">
+      <div class="label">Token spend vs. budget (MTD)</div>
+      <div class="value">72%</div>
+      <div class="delta up">on pace — $0.31M of $0.43M</div>
+    </div>
+    <div class="kpi" data-glean-id="kpi-governed-sources">
+      <div class="label">Governed sources connected</div>
+      <div class="value">9 / 9</div>
+      <div class="delta up">100% permission-aware coverage</div>
+    </div>
+  </div>
+
+  <!-- Morning briefing -->
+  <div class="section-title" data-glean-id="section-briefing">Your morning agent briefing</div>
+  <div class="grid-2">
+    <div class="card" data-glean-id="card-briefing">
+      <h3>What needs you today</h3>
+      <div class="card-sub">Auto-assembled from Oracle HFM, planning models, email, and meetings you're permissioned to see.</div>
+      <div class="brief">
+        <div class="dot">📊</div>
+        <div class="b-body">
+          <div class="b-title">Q2 earnings prep pack is 80% drafted<span class="tag amber">Review</span></div>
+          <div class="b-desc">Variance commentary for Nutrition and Ag Services pulled from HFM and last quarter's transcript. Two figures flagged for your sign-off.</div>
+        </div>
+      </div>
+      <div class="brief">
+        <div class="dot">📉</div>
+        <div class="b-body">
+          <div class="b-title">Competitor & market watch<span class="tag">3 new</span></div>
+          <div class="b-desc">Bunge and Cargill margin commentary, plus commodity price moves relevant to your crush spread assumptions.</div>
+        </div>
+      </div>
+      <div class="brief">
+        <div class="dot">🗓️</div>
+        <div class="b-body">
+          <div class="b-title">Month-end close tracker<span class="tag">Day 3 of 5</span></div>
+          <div class="b-desc">On schedule. Two business-unit submissions outstanding; reminders drafted and ready to send.</div>
+        </div>
+      </div>
+      <div class="brief">
+        <div class="dot">✉️</div>
+        <div class="b-body">
+          <div class="b-title">4 emails awaiting your reply<span class="tag red">Owed</span></div>
+          <div class="b-desc">Including the head of planning on the FY forecast cadence and a BU CFO on capital reallocation.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-glean-id="card-governance">
+      <h3>Governance & security posture</h3>
+      <div class="card-sub">The guardrails that end the "AI wild west" — proprietary data stays inside ADM.</div>
+      <div class="gov"><span class="gk">🔒</span><div><div class="gt">Single-tenant, zero-day retention</div><div class="gd">Your data never trains an external LLM and never leaves ADM's tenancy.</div></div></div>
+      <div class="gov"><span class="gk">🛡️</span><div><div class="gt">Permission-aware by default</div><div class="gd">Every answer respects existing ADM access controls — no over-exposure of finance IP.</div></div></div>
+      <div class="gov"><span class="gk">🧭</span><div><div class="gt">One governed front door for AI</div><div class="gd">Replaces ungoverned personal ChatGPT / Claude usage with a controlled enterprise layer.</div></div></div>
+      <div class="gov"><span class="gk">✅</span><div><div class="gt">Built for regulated finance</div><div class="gd">Compliance, privacy, and legal review workflows supported end-to-end.</div></div></div>
+    </div>
+  </div>
+
+  <!-- Token economics -->
+  <div class="section-title" data-glean-id="section-tokens">Token economics — measuring productivity your way</div>
+  <div class="grid-2">
+    <div class="card" data-glean-id="card-spend-by-llm">
+      <h3>AI spend by model vs. budget</h3>
+      <div class="card-sub">Waldo routes each query to the right model for the job — including ADM's own FinAI.</div>
+      <div id="chartSpend" class="chart"></div>
+    </div>
+    <div class="card" data-glean-id="card-cost-trend">
+      <h3>Monthly run-cost: with vs. without Glean</h3>
+      <div class="card-sub">Context reuse plus query-to-code compression compound the savings over time.</div>
+      <div id="chartTrend" class="chart"></div>
+    </div>
+  </div>
+
+  <!-- Connector health -->
+  <div class="section-title" data-glean-id="section-connectors">Enterprise context health</div>
+  <div class="card" data-glean-id="card-connectors">
+    <div class="card-sub">The governed systems feeding your FP&A intelligence layer — cleansed and harmonized automatically.</div>
+    <table>
+      <thead><tr><th>Source</th><th>Role in your workflow</th><th>Sync</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr data-glean-id="conn-hfm"><td><strong>Oracle HFM</strong></td><td>Consolidation, actuals & variance</td><td>Live API</td><td><span class="status s-live">Connected</span></td></tr>
+        <tr data-glean-id="conn-finai"><td><strong>FinAI</strong> (ADM-built models)</td><td>Finance-specific reasoning</td><td>Live API</td><td><span class="status s-live">Connected</span></td></tr>
+        <tr data-glean-id="conn-databricks"><td><strong>Databricks</strong> warehouse</td><td>Enterprise data lake, BI & Genie metadata</td><td>Hybrid index + live query</td><td><span class="status s-live">Connected</span></td></tr>
+        <tr data-glean-id="conn-cxo"><td><strong>CXO</strong> (insightsoftware)</td><td>Reporting & dashboards</td><td>Index</td><td><span class="status s-live">Connected</span></td></tr>
+        <tr data-glean-id="conn-salesforce"><td><strong>Salesforce</strong></td><td>Commercial pipeline & demand signals</td><td>Live API</td><td><span class="status s-live">Connected</span></td></tr>
+        <tr data-glean-id="conn-sharepoint"><td><strong>SharePoint / files</strong></td><td>Board decks, reports, spreadsheets</td><td>Index</td><td><span class="status s-live">Connected</span></td></tr>
+        <tr data-glean-id="conn-servicenow"><td><strong>ServiceNow</strong></td><td>Two-way actions (open/update tickets)</td><td>Live API</td><td><span class="status s-prog">Provisioning</span></td></tr>
+        <tr data-glean-id="conn-market"><td><strong>Market & competitor data</strong></td><td>Earnings, commodity & peer intel</td><td>Live</td><td><span class="status s-live">Connected</span></td></tr>
+        <tr data-glean-id="conn-planning"><td><strong>Planning models</strong></td><td>Forecast, budget & scenario inputs</td><td>Index</td><td><span class="status s-queue">Queued</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Agent library -->
+  <div class="section-title" data-glean-id="section-agents">Agents built for your day</div>
+  <div class="grid-3">
+    <div class="agent" data-glean-id="agent-earnings"><div class="ico">📈</div><h4>Earnings Prep Assistant</h4><p>Drafts variance commentary and Q&A prep from HFM actuals, prior transcripts, and market context.</p></div>
+    <div class="agent" data-glean-id="agent-close"><div class="ico">✔️</div><h4>Month-End Close Tracker</h4><p>Monitors BU submissions, flags gaps, and drafts follow-ups so close stays on the 5-day path.</p></div>
+    <div class="agent" data-glean-id="agent-market"><div class="ico">🌍</div><h4>Market & Competitor Watch</h4><p>Summarizes peer earnings, commodity moves, and analyst notes against your assumptions each morning.</p></div>
+    <div class="agent" data-glean-id="agent-variance"><div class="ico">🔍</div><h4>Variance Explainer</h4><p>Ask "why is Nutrition EBITDA down QoQ?" and get a traced answer across HFM, planning, and commentary.</p></div>
+    <div class="agent" data-glean-id="agent-board"><div class="ico">🖼️</div><h4>Board Deck Generator</h4><p>Turns approved numbers into shareable, on-brand quarterly review assets in minutes, not a week.</p></div>
+    <div class="agent" data-glean-id="agent-tokens"><div class="ico">🎛️</div><h4>Token & Cost Monitor</h4><p>Tracks spend by team and model against budget — build-before-you-buy, measured in real usage.</p></div>
+  </div>
+
+  <!-- Team signals -->
+  <div class="section-title" data-glean-id="section-peers">Your team & peer signals</div>
+  <div class="grid-2">
+    <div class="card" data-glean-id="card-peers">
+      <h3>People in your orbit</h3>
+      <div class="card-sub">The stakeholders your transformation touches across finance and AI.</div>
+      <div class="peer"><div class="av">JM</div><div><div class="pn">Jagadish Manukonda</div><div class="pr">Senior Director of AI, ADM — your partner on model strategy & token economics</div></div></div>
+      <div class="peer"><div class="av">CFO</div><div><div class="pn">Business-Unit CFOs</div><div class="pr">Nutrition, Ag Services & Carbohydrate Solutions — consumers of faster insight</div></div></div>
+      <div class="peer"><div class="av">HP</div><div><div class="pn">Head of Planning</div><div class="pr">Forecast cadence & scenario planning alignment</div></div></div>
+      <div class="peer"><div class="av">AI</div><div><div class="pn">AI Governance Practice</div><div class="pr">Privacy, legal & security review for new model capabilities</div></div></div>
+    </div>
+    <div class="card" data-glean-id="card-speed">
+      <h3>Speed to insight, by task</h3>
+      <div class="card-sub">Hours to a decision-ready answer — before and with a governed context layer.</div>
+      <div id="chartSpeed" class="chart"></div>
+    </div>
+  </div>
+
+  <!-- Next step -->
+  <div class="section-title" data-glean-id="section-next">Next step</div>
+  <div class="next" data-glean-id="card-next">
+    <div>
+      <h3>See this live at the Cincinnati Open</h3>
+      <p>Let's turn this preview into a working demo on your own use cases — earnings prep, close, and governed AI — with Jagadish alongside you. Bring the questions; we'll bring the laptop.</p>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:13px;opacity:.85;">Kelli McIvor · Shanna Brokaw</div>
+      <div style="font-size:13px;opacity:.85;">Strategic Account Team · Glean</div>
+    </div>
+  </div>
+
+  <div class="footnote" data-glean-id="footnote">Figures shown are illustrative projections modeling a governed Glean deployment on ADM's finance stack, based on our August 12 conversation. Actuals will reflect your environment.</div>
+
+</div>
+
+<script>
+  var green="#5aa829", greenDeep="#1f4a2c", accent="#0f7d6b", amber="#d99411", muted="#8a978c";
+  function baseGrid(){return {left:8,right:14,top:30,bottom:8,containLabel:true};}
+  var spend=echarts.init(document.getElementById('chartSpend'),null,{renderer:'svg'});
+  spend.setOption({
+    tooltip:{trigger:'axis'},
+    legend:{data:['Spend','Budget'],top:0,textStyle:{color:muted}},
+    grid:baseGrid(),
+    xAxis:{type:'category',data:['FinAI','GPT-4o','Claude','Gemini','Waldo-routed'],axisLabel:{color:muted}},
+    yAxis:{type:'value',axisLabel:{color:muted,formatter:'${value}k'},splitLine:{lineStyle:{color:'rgba(140,140,140,.15)'}}},
+    series:[
+      {name:'Spend',type:'bar',data:[62,88,74,29,58],itemStyle:{color:green,borderRadius:[5,5,0,0]},barGap:0},
+      {name:'Budget',type:'bar',data:[80,110,95,45,90],itemStyle:{color:'rgba(31,74,44,.25)',borderRadius:[5,5,0,0]}}
+    ]
+  });
+  var trend=echarts.init(document.getElementById('chartTrend'),null,{renderer:'svg'});
+  trend.setOption({
+    tooltip:{trigger:'axis'},
+    legend:{data:['Without Glean','With Glean'],top:0,textStyle:{color:muted}},
+    grid:baseGrid(),
+    xAxis:{type:'category',boundaryGap:false,data:['Mar','Apr','May','Jun','Jul','Aug'],axisLabel:{color:muted}},
+    yAxis:{type:'value',axisLabel:{color:muted,formatter:'${value}k'},splitLine:{lineStyle:{color:'rgba(140,140,140,.15)'}}},
+    series:[
+      {name:'Without Glean',type:'line',smooth:true,data:[410,455,520,560,610,640],lineStyle:{color:amber,width:2},itemStyle:{color:amber}},
+      {name:'With Glean',type:'line',smooth:true,data:[410,360,330,320,310,308],areaStyle:{color:'rgba(90,168,41,.15)'},lineStyle:{color:green,width:3},itemStyle:{color:green}}
+    ]
+  });
+  var speed=echarts.init(document.getElementById('chartSpeed'),null,{renderer:'svg'});
+  speed.setOption({
+    tooltip:{trigger:'axis'},
+    legend:{data:['Before','With Glean'],top:0,textStyle:{color:muted}},
+    grid:baseGrid(),
+    xAxis:{type:'value',axisLabel:{color:muted,formatter:'{value}h'},splitLine:{lineStyle:{color:'rgba(140,140,140,.15)'}}},
+    yAxis:{type:'category',data:['Board deck','Variance analysis','Competitor scan','Earnings pack'],axisLabel:{color:muted}},
+    series:[
+      {name:'Before',type:'bar',data:[40,12,8,24],itemStyle:{color:'rgba(31,74,44,.25)',borderRadius:[0,5,5,0]}},
+      {name:'With Glean',type:'bar',data:[3,1.5,0.5,4],itemStyle:{color:green,borderRadius:[0,5,5,0]}}
+    ]
+  });
+  window.addEventListener('resize',function(){spend.resize();trend.resize();speed.resize();});
+</script>
+
+<script>
+  window.GleanBridge && window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
+  window.GleanBridge && window.GleanBridge.onMessage('action',function(data){if(data.actionId==='export-pdf')window.print();});
+  function prepareChartsForPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var chart=echarts.getInstanceByDom(el);if(!chart)return;var img=new Image();img.src=chart.getDataURL({type:'png',pixelRatio:2});img.className='print-chart-img';img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';el.dataset.prevPosition=el.style.position;el.style.position='relative';el.appendChild(img);});}
+  function cleanUpAfterPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var img=el.querySelector('.print-chart-img');if(!img)return;img.remove();el.style.position=el.dataset.prevPosition||'';delete el.dataset.prevPosition;});}
+  window.addEventListener('beforeprint',prepareChartsForPrint);
+  window.addEventListener('afterprint',cleanUpAfterPrint);
+</script>
+</body>
+</html>
