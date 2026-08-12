@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glean for ADM — AI &amp; FP&amp;A</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root{
+  --artifact-background:#ffffff;
+  --artifact-background-light:#f4f6f3;
+  --artifact-panel:#f1f4ef;
+  --artifact-border-light:#e5e9e2;
+  --artifact-border-dark:#d2d9cd;
+  --artifact-primary-brand:#1a7d45;
+  --artifact-primary-highlight:#1a7d45;
+  --artifact-primary-hover:#14663a;
+  --artifact-navy:#1f2a5a;
+  --artifact-navy-soft:#3a4776;
+  --artifact-selected:#eef4ec;
+  --artifact-text-primary:#17201b;
+  --artifact-text-secondary:#5f6b62;
+  --artifact-muted:#8b948a;
+  --artifact-positive:#1a7d45;
+  --artifact-card-shadow:0 1px 2px rgba(23,32,27,.06),0 8px 28px rgba(23,32,27,.05);
+  --artifact-chart-1:#1a7d45;
+  --artifact-chart-2:#1f2a5a;
+  --artifact-chart-grid:#e5e9e2;
+}
+html[data-theme='dark']{
+  --artifact-background:#12160f;
+  --artifact-background-light:#1a1f16;
+  --artifact-panel:#1c2218;
+  --artifact-border-light:#2b3326;
+  --artifact-border-dark:#3a4432;
+  --artifact-primary-brand:#4cc37c;
+  --artifact-primary-highlight:#5fce8a;
+  --artifact-primary-hover:#6ed996;
+  --artifact-navy:#9fb0e6;
+  --artifact-navy-soft:#8092d0;
+  --artifact-selected:#20281b;
+  --artifact-text-primary:#eef3ea;
+  --artifact-text-secondary:#a7b1a4;
+  --artifact-muted:#7f8a7d;
+  --artifact-positive:#4cc37c;
+  --artifact-card-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35);
+  --artifact-chart-1:#4cc37c;
+  --artifact-chart-2:#9fb0e6;
+  --artifact-chart-grid:#2b3326;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;background:var(--artifact-background);color:var(--artifact-text-primary);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.display{font-family:Georgia,"Times New Roman",Times,serif;font-weight:400;line-height:1.06;letter-spacing:-.02em;color:var(--artifact-text-primary);}
+h1{font-size:clamp(2.4rem,5.5vw,4rem);}
+h2{font-size:clamp(1.8rem,3.6vw,2.7rem);margin:0 0 .3em;}
+h3{font-size:1.25rem;font-weight:600;line-height:1.25;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;letter-spacing:-.01em;}
+p{margin:.5em 0;}
+.eyebrow,.kicker{font-family:"SF Mono","IBM Plex Mono","Cascadia Code","Consolas",monospace;font-size:11.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--artifact-primary-brand);}
+.metric{font-family:"SF Mono","IBM Plex Mono","Consolas",monospace;font-weight:500;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+a{color:var(--artifact-primary-brand);text-decoration:none;}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px;}
+section{padding:76px 0;border-top:1px solid var(--artifact-border-light);}
+.sec-num{font-family:"SF Mono","Consolas",monospace;font-size:12px;letter-spacing:.14em;color:var(--artifact-muted);text-transform:uppercase;margin-bottom:14px;}
+
+/* NAV */
+.topnav{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--artifact-background) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--artifact-border-light);}
+.topnav .wrap{display:flex;align-items:center;justify-content:space-between;height:58px;gap:20px;}
+.brand{display:flex;align-items:center;gap:11px;font-weight:600;font-size:15px;white-space:nowrap;}
+.leaf{width:22px;height:22px;flex:0 0 auto;}
+.navlinks{display:flex;gap:20px;overflow:auto;scrollbar-width:none;}
+.navlinks::-webkit-scrollbar{display:none;}
+.navlinks a{font-size:12.5px;color:var(--artifact-text-secondary);white-space:nowrap;font-weight:500;}
+.navlinks a:hover{color:var(--artifact-primary-brand);}
+@media(max-width:820px){.navlinks{display:none;}}
+
+/* HERO */
+.hero{padding:82px 0 60px;position:relative;overflow:hidden;}
+.hero:before{content:"";position:absolute;top:-140px;right:-120px;width:460px;height:460px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--artifact-primary-brand) 12%,transparent),transparent 68%);pointer-events:none;}
+.hero h1{margin:.15em 0 .25em;max-width:16ch;}
+.hero .lead{font-size:1.22rem;color:var(--artifact-text-secondary);max-width:56ch;}
+.hero .sub{font-size:1.02rem;color:var(--artifact-text-secondary);max-width:64ch;margin-top:14px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:26px 0 4px;}
+.chip{font-family:"SF Mono","Consolas",monospace;font-size:11px;letter-spacing:.04em;padding:6px 11px;border:1px solid var(--artifact-border-dark);border-radius:999px;color:var(--artifact-text-secondary);background:var(--artifact-background-light);}
+.statrow{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--artifact-border-light);border:1px solid var(--artifact-border-light);border-radius:14px;overflow:hidden;margin-top:34px;}
+.statrow .cell{background:var(--artifact-background);padding:22px 20px;}
+.statrow .v{font-family:"SF Mono","Consolas",monospace;font-size:1.9rem;font-weight:500;color:var(--artifact-primary-brand);letter-spacing:-.02em;}
+.statrow .l{font-size:12.5px;color:var(--artifact-text-secondary);margin-top:6px;line-height:1.4;}
+@media(max-width:720px){.statrow{grid-template-columns:repeat(2,1fr);}}
+.hero-grid{display:grid;grid-template-columns:1.55fr 1fr;gap:48px;align-items:center;}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:30px;}}
+.hero-main h1{max-width:20ch;}
+.hero-main .lead,.hero-main .sub{max-width:60ch;}
+.hero-stats{display:flex;flex-direction:column;gap:1px;background:var(--artifact-border-light);border:1px solid var(--artifact-border-light);border-radius:14px;overflow:hidden;}
+.hero-stats .cell{background:var(--artifact-background);padding:20px 22px;display:flex;flex-direction:column;gap:6px;}
+.hero-stats .v{font-family:"SF Mono","Consolas",monospace;font-size:1.85rem;font-weight:500;color:var(--artifact-primary-brand);letter-spacing:-.02em;line-height:1;}
+.hero-stats .l{font-size:12.5px;color:var(--artifact-text-secondary);line-height:1.4;}
+
+.lead-line{font-size:1.15rem;color:var(--artifact-text-secondary);max-width:64ch;}
+
+/* CARDS */
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px;}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:30px;}
+@media(max-width:820px){.grid3,.grid2{grid-template-columns:1fr;}}
+.card{background:var(--artifact-background);border:1px solid var(--artifact-border-light);border-radius:14px;padding:26px;box-shadow:var(--artifact-card-shadow);}
+.card .ic{width:38px;height:38px;border-radius:10px;background:var(--artifact-selected);display:flex;align-items:center;justify-content:center;color:var(--artifact-primary-brand);margin-bottom:16px;}
+.card h3{margin:0 0 8px;}
+.card p{color:var(--artifact-text-secondary);font-size:14.5px;margin:0;}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;}
+.src-tag{font-family:"SF Mono","Consolas",monospace;font-size:10.5px;padding:4px 8px;border-radius:6px;background:var(--artifact-panel);color:var(--artifact-text-secondary);border:1px solid var(--artifact-border-light);}
+
+/* TABLE */
+.cmp{width:100%;border-collapse:collapse;margin-top:28px;font-size:14.5px;}
+.cmp th,.cmp td{padding:14px 14px;text-align:left;border-bottom:1px solid var(--artifact-border-light);}
+.cmp thead th{font-family:"SF Mono","Consolas",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--artifact-text-secondary);font-weight:600;vertical-align:bottom;}
+.cmp thead th.glean{color:var(--artifact-primary-brand);}
+.cmp td.cap{color:var(--artifact-text-primary);font-weight:500;width:44%;}
+.cmp td.mk{text-align:center;font-size:17px;}
+.cmp th.mk{text-align:center;}
+.cmp .gleancol{background:var(--artifact-selected);}
+.dot-full{color:var(--artifact-primary-brand);}
+.dot-part{color:var(--artifact-navy-soft);}
+.dot-none{color:var(--artifact-muted);}
+.legend{font-family:"SF Mono","Consolas",monospace;font-size:11.5px;color:var(--artifact-text-secondary);margin-top:14px;}
+
+/* MATURITY */
+.path{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px;position:relative;}
+@media(max-width:820px){.path{grid-template-columns:1fr;}}
+.stage{background:var(--artifact-background);border:1px solid var(--artifact-border-light);border-radius:14px;padding:24px;box-shadow:var(--artifact-card-shadow);}
+.stage .ph{font-family:"SF Mono","Consolas",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--artifact-muted);}
+.stage.now{border-color:var(--artifact-primary-brand);box-shadow:0 0 0 1px var(--artifact-primary-brand),var(--artifact-card-shadow);}
+.stage.now .ph{color:var(--artifact-primary-brand);}
+.stage h3{margin:8px 0 10px;}
+.stage p{color:var(--artifact-text-secondary);font-size:14px;margin:0;}
+
+/* PILLARS */
+.pillar{display:flex;gap:20px;align-items:flex-start;}
+.pillar .no{font-family:"SF Mono","Consolas",monospace;font-size:13px;color:var(--artifact-primary-brand);border:1px solid var(--artifact-primary-brand);border-radius:8px;padding:6px 9px;flex:0 0 auto;font-weight:600;}
+
+/* ARCH */
+.arch{margin-top:30px;display:flex;flex-direction:column;gap:12px;}
+.layer{border:1px solid var(--artifact-border-light);border-radius:14px;padding:20px 22px;background:var(--artifact-background);box-shadow:var(--artifact-card-shadow);}
+.layer .lh{font-family:"SF Mono","Consolas",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--artifact-text-secondary);margin-bottom:12px;}
+.layer.core{background:var(--artifact-navy);border-color:var(--artifact-navy);}
+.layer.core .lh{color:#c8d0ee;}
+.layer.core .pill{background:rgba(255,255,255,.10);color:#eef1fb;border-color:rgba(255,255,255,.16);}
+.pills{display:flex;flex-wrap:wrap;gap:8px;}
+.pill{font-size:12.5px;padding:8px 12px;border-radius:8px;background:var(--artifact-panel);border:1px solid var(--artifact-border-light);color:var(--artifact-text-primary);}
+.arrow{text-align:center;color:var(--artifact-muted);font-family:"SF Mono","Consolas",monospace;font-size:11px;letter-spacing:.1em;}
+
+/* USE CASES */
+.uc{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:30px;}
+@media(max-width:820px){.uc{grid-template-columns:1fr;}}
+.uc .card{display:flex;flex-direction:column;}
+.uc .num{font-family:"SF Mono","Consolas",monospace;font-size:12px;color:var(--artifact-primary-brand);letter-spacing:.06em;margin-bottom:10px;}
+
+/* PROOF */
+.chartbox{background:var(--artifact-background);border:1px solid var(--artifact-border-light);border-radius:14px;padding:22px;box-shadow:var(--artifact-card-shadow);}
+.chartbox .ct{font-size:14.5px;font-weight:600;margin-bottom:2px;}
+.chartbox .cs{font-size:12.5px;color:var(--artifact-text-secondary);margin-bottom:6px;}
+.chart{width:100%;height:250px;}
+.proofgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:18px;}
+@media(max-width:820px){.proofgrid{grid-template-columns:repeat(2,1fr);}}
+.proof{background:var(--artifact-panel);border:1px solid var(--artifact-border-light);border-radius:12px;padding:16px;}
+.proof .co{font-weight:600;font-size:14.5px;}
+.proof .mt{font-family:"SF Mono","Consolas",monospace;font-size:11px;color:var(--artifact-primary-brand);margin:6px 0;}
+.proof .ds{font-size:12.5px;color:var(--artifact-text-secondary);line-height:1.45;}
+
+/* ROADMAP */
+.tl{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px;}
+@media(max-width:820px){.tl{grid-template-columns:1fr;}}
+.phase{background:var(--artifact-background);border:1px solid var(--artifact-border-light);border-radius:14px;padding:20px;box-shadow:var(--artifact-card-shadow);border-top:3px solid var(--artifact-primary-brand);}
+.phase .wk{font-family:"SF Mono","Consolas",monospace;font-size:11px;color:var(--artifact-primary-brand);letter-spacing:.06em;}
+.phase .dt{font-size:11px;color:var(--artifact-muted);margin-bottom:8px;}
+.phase h3{font-size:1.02rem;margin:2px 0 8px;}
+.phase p{font-size:13px;color:var(--artifact-text-secondary);margin:0;}
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px;}
+@media(max-width:820px){.controls{grid-template-columns:1fr;}}
+.ctrl{padding:18px;border:1px solid var(--artifact-border-light);border-radius:12px;background:var(--artifact-panel);}
+.ctrl h4{margin:0 0 6px;font-size:14px;color:var(--artifact-primary-brand);}
+.ctrl p{margin:0;font-size:13px;color:var(--artifact-text-secondary);}
+
+/* CONCERNS */
+.qa{margin-top:28px;display:flex;flex-direction:column;gap:14px;}
+.qcard{border:1px solid var(--artifact-border-light);border-radius:14px;padding:22px 24px;background:var(--artifact-background);box-shadow:var(--artifact-card-shadow);}
+.qcard .q{font-family:Georgia,serif;font-size:1.15rem;color:var(--artifact-text-primary);margin-bottom:8px;}
+.qcard .a{font-size:14.5px;color:var(--artifact-text-secondary);margin:0;}
+
+/* NEXT */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px;}
+@media(max-width:820px){.steps{grid-template-columns:1fr;}}
+.step{border:1px solid var(--artifact-border-light);border-radius:14px;padding:22px;background:var(--artifact-background);box-shadow:var(--artifact-card-shadow);}
+.step .sn{font-family:"SF Mono","Consolas",monospace;font-size:11px;letter-spacing:.1em;color:var(--artifact-muted);}
+.step h3{font-size:1.05rem;margin:8px 0 4px;}
+.step .meta{font-family:"SF Mono","Consolas",monospace;font-size:11px;color:var(--artifact-primary-brand);margin-bottom:8px;}
+.step p{font-size:13px;color:var(--artifact-text-secondary);margin:0;}
+.cta{margin-top:34px;background:var(--artifact-navy);color:#eef1fb;border-radius:16px;padding:34px 34px;}
+.cta .eyebrow{color:#a9b6ea;}
+.cta h2{color:#ffffff;}
+.cta p{color:#cdd4ee;max-width:64ch;}
+.footer{padding:40px 0 60px;border-top:1px solid var(--artifact-border-light);color:var(--artifact-muted);font-size:13px;}
+.footer .tag{font-family:Georgia,serif;font-style:italic;color:var(--artifact-text-secondary);font-size:15px;margin-top:6px;}
+
+@media print{
+  body{margin:0;padding:.4in .6in;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact;}
+  .topnav{display:none !important;}
+  .wrap{max-width:100% !important;width:100% !important;}
+  section{break-inside:avoid;padding:26px 0;}
+  .card,.stage,.phase,.qcard,.step,.chartbox,.proof{break-inside:avoid;box-shadow:none !important;border:1px solid rgba(0,0,0,.1);}
+  .chart{height:240px !important;}
+  .hero:before{display:none;}
+  *,*::before,*::after{animation:none !important;transition:none !important;}
+}
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <div class="wrap">
+    <div class="brand">
+      <svg class="leaf" viewBox="0 0 24 24" fill="none"><path d="M20 4C11 4 4 10 4 19c0 .6.4 1 1 1 8-1 14-7 15-16Z" fill="var(--artifact-primary-brand)"/><path d="M6 18C9 13 13 9 19 6" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Glean&nbsp;×&nbsp;ADM
+    </div>
+    <div class="navlinks">
+      <a href="#summary">Summary</a>
+      <a href="#why">Why Glean</a>
+      <a href="#understanding">Understanding</a>
+      <a href="#solution">Solution</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#usecases">Use Cases</a>
+      <a href="#value">Value &amp; Proof</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#concerns">Concerns</a>
+      <a href="#next">Next Steps</a>
+    </div>
+  </div>
+</div>
+
+<header class="hero" data-glean-id="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-main">
+      <div class="eyebrow">Glean × ADM — Finance &amp; FP&amp;A Center of Excellence</div>
+      <h1>The enterprise intelligence layer for financial planning, analysis &amp; governed AI.</h1>
+      <p class="lead">Finance doesn't need another siloed tool — it needs a governed foundation that unifies ADM's ERP, planning, and reporting knowledge, so FP&amp;A teams can plan, forecast, and explain the numbers instead of hunting for them.</p>
+      <p class="sub">Glean is that layer, sitting beneath the tools your teams already use — turning scattered financial and operational knowledge into grounded, permission-aware answers.</p>
+      <div class="chips">
+        <span class="chip">Prepared for ADM Finance &amp; FP&amp;A · Chicago, IL</span>
+        <span class="chip">Solution · Work AI Intelligence Layer</span>
+        <span class="chip">Motion · Blueprint → Demo → Pilot</span>
+        <span class="chip">Pilot window · 10 weeks</span>
+      </div>
+    </div>
+    <aside class="hero-stats">
+      <div class="cell"><div class="v">90%+</div><div class="l">Typical AI adoption within weeks of enterprise rollout</div></div>
+      <div class="cell"><div class="v">25–30%</div><div class="l">Lower AI consumption cost — context served before external LLM calls</div></div>
+      <div class="cell"><div class="v">98%</div><div class="l">Permission-aware answer accuracy — native security for every user</div></div>
+      <div class="cell"><div class="v">250+</div><div class="l">Productized connectors across M365, SAP, Snowflake &amp; more</div></div>
+    </aside>
+  </div>
+</header>
+
+<section id="summary" data-glean-id="sec-summary">
+  <div class="wrap">
+    <div class="sec-num">01 · Executive Summary</div>
+    <h2>Turn AI momentum into finance-planning leverage.</h2>
+    <p class="lead-line">Our recommendation: adopt Glean as the horizontal intelligence layer for ADM's Finance &amp; FP&amp;A organization — connecting ERP, planning, reporting, and operational knowledge under one governed, permission-aware foundation — while your teams keep the tools and front ends they already use.</p>
+    <div class="grid3">
+      <div class="card" data-glean-id="sum-1">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 3v18h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7 14l3-4 3 3 5-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Enable real planning &amp; analysis</h3>
+        <p>Give FP&amp;A, controllership, and business-finance teams one governed front door to institutional knowledge — so they stop re-finding what ADM already knows and start doing the forecasting, variance, and decision-support work finance was built for.</p>
+      </div>
+      <div class="card" data-glean-id="sum-2">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 4v5c0 5-3 7-7 9-4-2-7-4-7-9V7l7-4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Complements, never replaces</h3>
+        <p>Glean sits beneath your existing stack — including Microsoft Copilot, Excel, SAP, and your planning platform — as the shared context and retrieval layer, so nothing your teams rely on gets ripped out.</p>
+      </div>
+      <div class="card" data-glean-id="sum-3">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <h3>Proven at enterprise scale</h3>
+        <p>The same pattern is live at manufacturing, industrial, and regulated leaders — General Motors, Rivian, Nationwide, and Dell — where Glean moved from pilot to enterprise in weeks with measurable ROI.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="why" data-glean-id="sec-why">
+  <div class="wrap">
+    <div class="sec-num">02 · Why Glean vs. the Alternatives</div>
+    <h2>One horizontal layer beats another point tool — or a custom build.</h2>
+    <p class="lead-line">Finance's decision isn't which chatbot to buy. It's whether ADM keeps building and maintaining isolated tools in-house, or stands up one governed layer that serves every planning, analysis, and reporting workflow. Only Glean is horizontal, model-agnostic, and permission-aware across the whole estate.</p>
+    <div style="overflow-x:auto;">
+    <table class="cmp" data-glean-id="cmp-table">
+      <thead>
+        <tr>
+          <th>Capability Finance &amp; FP&amp;A needs</th>
+          <th class="mk glean">Glean</th>
+          <th class="mk">Build in-house</th>
+          <th class="mk">Microsoft Copilot</th>
+          <th class="mk">Point AI tools</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="cap">Permission-aware knowledge across 250+ sources</td><td class="mk gleancol dot-full">&#9679;</td><td class="mk dot-none">—</td><td class="mk dot-part">&#9680;</td><td class="mk dot-none">—</td></tr>
+        <tr><td class="cap">Financial + operational knowledge unified, not siloed</td><td class="mk gleancol dot-full">&#9679;</td><td class="mk dot-part">&#9680;</td><td class="mk dot-none">—</td><td class="mk dot-none">—</td></tr>
+        <tr><td class="cap">Model-agnostic — no single-LLM lock-in</td><td class="mk gleancol dot-full">&#9679;</td><td class="mk dot-part">&#9680;</td><td class="mk dot-none">—</td><td class="mk dot-part">&#9680;</td></tr>
+        <tr><td class="cap">No-code agents built by finance employees</td><td class="mk gleancol dot-full">&#9679;</td><td class="mk dot-none">—</td><td class="mk dot-part">&#9680;</td><td class="mk dot-part">&#9680;</td></tr>
+        <tr><td class="cap">Sits beneath / coexists with existing tools</td><td class="mk gleancol dot-full">&#9679;</td><td class="mk dot-part">&#9680;</td><td class="mk dot-part">&#9680;</td><td class="mk dot-none">—</td></tr>
+        <tr><td class="cap">Managed platform — low internal maintenance</td><td class="mk gleancol dot-full">&#9679;</td><td class="mk dot-none">—</td><td class="mk dot-full">&#9679;</td><td class="mk dot-part">&#9680;</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="legend">&#9679; Full&nbsp;&nbsp;&#9680; Partial / ecosystem-bound&nbsp;&nbsp;— Not designed for this.</div>
+    <p style="margin-top:18px;color:var(--artifact-text-secondary);max-width:70ch;">A custom-built assistant solves one team's problem but carries high maintenance and technical complexity, and its knowledge stays trapped. Glean turns that same proprietary corpus into a governed enterprise asset — reusable across FP&amp;A, controllership, treasury, and the business units.</p>
+  </div>
+</section>
+
+<section id="understanding" data-glean-id="sec-understanding">
+  <div class="wrap">
+    <div class="sec-num">03 · Our Understanding</div>
+    <h2>From siloed finance tools to an enterprise financial-intelligence layer.</h2>
+    <p class="lead-line">Finance sits at the intersection of AI and the business — driving forecasting, budgeting, variance analysis, and board reporting while moving teams off spreadsheet-bound, backward-looking cycles. Today, the knowledge that fuels that work is scattered across ERP, planning platforms, Excel, SharePoint, and disconnected AI tools. Here's the maturity path Glean enables.</p>
+    <div class="path">
+      <div class="stage" data-glean-id="stage-today">
+        <div class="ph">Today — Fragmentation</div>
+        <h3>Siloed tools &amp; scattered knowledge</h3>
+        <p>Financial knowledge lives across SAP, planning platforms, Excel models, SharePoint, and BI tools. Teams use ChatGPT, Copilot, and others in disconnected workflows — nobody has one place to plan, analyze, and explain the numbers.</p>
+      </div>
+      <div class="stage now" data-glean-id="stage-now">
+        <div class="ph">Now — Foundation</div>
+        <h3>Governed context layer</h3>
+        <p>Glean connects those sources into one permission-aware assistant and search platform — a governed front door to knowledge that proves value fast across a focused set of FP&amp;A and controllership workflows.</p>
+      </div>
+      <div class="stage" data-glean-id="stage-next">
+        <div class="ph">Next — Financial intelligence</div>
+        <h3>Agents &amp; repeatable workflows</h3>
+        <p>Teams build no-code agents for forecast prep, variance narratives, and month-end reporting — repeatable workflows that run on their own and compound as more systems connect.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="solution" data-glean-id="sec-solution">
+  <div class="wrap">
+    <div class="sec-num">04 · The Solution</div>
+    <h2>Three foundations, one governed platform.</h2>
+    <p class="lead-line">Glean delivers exactly what Finance needs — connected context, orchestration without lock-in, and enterprise-grade governance — through three integrated pillars.</p>
+    <div class="grid3">
+      <div class="card" data-glean-id="pillar-1">
+        <div class="pillar"><span class="no">01</span><div><h3>Enterprise Context</h3><p style="margin-top:8px;">The Enterprise Graph + Personal Graph build a permission-aware understanding of ADM's people, content, and systems — and how finance and business teams actually work. That grounding makes retrieval precise and answers trustworthy.</p></div></div>
+      </div>
+      <div class="card" data-glean-id="pillar-2">
+        <div class="pillar"><span class="no">02</span><div><h3>Glean Intelligence</h3><p style="margin-top:8px;">Intelligent routing across ~30 models, a no-code agent builder, and continual learning. Retrieval runs against Glean's index before inference — cutting AI consumption cost 25–30% while improving answer quality.</p></div></div>
+      </div>
+      <div class="card" data-glean-id="pillar-3">
+        <div class="pillar"><span class="no">03</span><div><h3>Glean Protect</h3><p style="margin-top:8px;">AI-powered access controls, native permission mirroring, full auditability, and agent guardrails. Every retrieval respects each user's identity — so Glean never surfaces what a user isn't authorized to see.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="architecture" data-glean-id="sec-architecture">
+  <div class="wrap">
+    <div class="sec-num">05 · Reference Architecture</div>
+    <h2>Glean sits beneath your tools — not in front of them.</h2>
+    <p class="lead-line">Copilot, Excel, and your planning and BI front ends keep their interfaces. Glean provides the enterprise intelligence layer beneath them — context, retrieval, orchestration, and governance — accessible by everything above it.</p>
+    <div class="arch">
+      <div class="layer" data-glean-id="arch-experience">
+        <div class="lh">Experience Layer — preserved &amp; unchanged</div>
+        <div class="pills"><span class="pill">Microsoft Copilot / M365</span><span class="pill">Excel · financial models</span><span class="pill">Planning &amp; BI front ends</span><span class="pill">Glean Assistant</span></div>
+      </div>
+      <div class="arrow">&#9650;&nbsp;&nbsp;API · SDK · MCP&nbsp;&nbsp;&#9650;</div>
+      <div class="layer core" data-glean-id="arch-core">
+        <div class="lh">Glean Enterprise Intelligence Layer — the foundation</div>
+        <div class="pills"><span class="pill">Enterprise + Personal Graph</span><span class="pill">Model Router · ~30 models</span><span class="pill">No-code Agent Builder</span><span class="pill">Continual learning &amp; memory</span><span class="pill">Glean Protect · governance</span></div>
+      </div>
+      <div class="arrow">&#9660;&nbsp;&nbsp;Permission-aware, productized connectors&nbsp;&nbsp;&#9660;</div>
+      <div class="layer" data-glean-id="arch-data">
+        <div class="lh">Enterprise Data — connected, not moved</div>
+        <div class="pills"><span class="pill">SAP / ERP</span><span class="pill">Planning platform</span><span class="pill">SharePoint / M365</span><span class="pill">Snowflake</span><span class="pill">Teams &amp; Outlook</span><span class="pill">ServiceNow</span><span class="pill">Workday</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="usecases" data-glean-id="sec-usecases">
+  <div class="wrap">
+    <div class="sec-num">06 · Use Cases for Finance &amp; FP&amp;A</div>
+    <h2>Where Glean earns its place in the finance function.</h2>
+    <p class="lead-line">Real workflows tied to the FP&amp;A mandate — planning, analysis, reporting, and moving faster than a spreadsheet-bound cycle allows.</p>
+    <div class="uc">
+      <div class="card" data-glean-id="uc-1">
+        <div class="num">1 · Planning &amp; forecasting</div>
+        <h3>Forecasting &amp; planning assistant</h3>
+        <p>Ask across prior forecasts, actuals, planning assumptions, and business commentary in one place — so teams start every planning cycle from what ADM already knows instead of a blank spreadsheet.</p>
+        <div class="tag-row"><span class="src-tag">SAP</span><span class="src-tag">Planning platform</span><span class="src-tag">Snowflake</span><span class="src-tag">SharePoint</span></div>
+      </div>
+      <div class="card" data-glean-id="uc-2">
+        <div class="num">2 · Variance &amp; drivers</div>
+        <h3>Variance &amp; driver analysis</h3>
+        <p>Explain actual-vs-plan and actual-vs-forecast variances by pulling numbers and the qualitative context behind them — turning "what changed" into a grounded narrative in minutes, not days.</p>
+        <div class="tag-row"><span class="src-tag">ERP actuals</span><span class="src-tag">BI reports</span><span class="src-tag">Teams</span><span class="src-tag">Outlook</span></div>
+      </div>
+      <div class="card" data-glean-id="uc-3">
+        <div class="num">3 · Close &amp; reporting</div>
+        <h3>Month-end close &amp; reporting acceleration</h3>
+        <p>Index the policies, reconciliations, and prior reporting packages scattered across SharePoint and finance systems into one governed layer — turning a maintenance burden into a reusable enterprise asset that speeds every close.</p>
+        <div class="tag-row"><span class="src-tag">SharePoint</span><span class="src-tag">ERP</span><span class="src-tag">Controllership docs</span></div>
+      </div>
+      <div class="card" data-glean-id="uc-4">
+        <div class="num">4 · Board &amp; investor reporting</div>
+        <h3>Board &amp; investor reporting synthesis</h3>
+        <p>Aggregate results, commentary, and prior board materials, connect them to KPIs, and surface where performance is and isn't landing — the executive-narrative work the finance org is chartered to deliver.</p>
+        <div class="tag-row"><span class="src-tag">Snowflake</span><span class="src-tag">Board decks</span><span class="src-tag">BI dashboards</span></div>
+      </div>
+      <div class="card" data-glean-id="uc-5">
+        <div class="num">5 · Ways of working</div>
+        <h3>Plan-my-day &amp; finance workflow agents</h3>
+        <p>No-code agents that plan the day across meetings and open work, prep for reviews, and run a weekly close or forecast tracker — habits that help teams move off manual, spreadsheet-bound cycles.</p>
+        <div class="tag-row"><span class="src-tag">Calendar</span><span class="src-tag">Teams</span><span class="src-tag">Email</span><span class="src-tag">Planning platform</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="value" data-glean-id="sec-value">
+  <div class="wrap">
+    <div class="sec-num">07 · Value &amp; Proof</div>
+    <h2>Proven where enterprise complexity is highest.</h2>
+    <p class="lead-line">Glean is deployed as the enterprise foundation at manufacturing, industrial, and regulated leaders with the same scale, data depth, and knowledge-fragmentation challenges ADM's finance organization faces.</p>
+    <div class="grid2">
+      <div class="chartbox" data-glean-id="chart-adoption">
+        <div class="ct">AI-native adoption after enterprise rollout</div>
+        <div class="cs">Illustrative adoption curve observed across enterprise deployments</div>
+        <div id="adoptionChart" class="chart"></div>
+      </div>
+      <div class="chartbox" data-glean-id="chart-cost">
+        <div class="ct">AI consumption cost — context-layer impact</div>
+        <div class="cs">Retrieval against Glean's index before external LLM calls</div>
+        <div id="costChart" class="chart"></div>
+      </div>
+    </div>
+    <div class="proofgrid">
+      <div class="proof" data-glean-id="proof-gm"><div class="co">General Motors</div><div class="mt">140K users</div><div class="ds">~$900M identified savings · 15.8× 3-yr ROI · pilot → enterprise in 90 days</div></div>
+      <div class="proof" data-glean-id="proof-rivian"><div class="co">Rivian</div><div class="mt">EV automotive</div><div class="ds">Innovator accelerating enterprise AI adoption</div></div>
+      <div class="proof" data-glean-id="proof-nationwide"><div class="co">Nationwide</div><div class="mt">25K users</div><div class="ds">50-person pilot → 25K users in 8 weeks</div></div>
+      <div class="proof" data-glean-id="proof-dell"><div class="co">Dell</div><div class="mt">6-week pilot</div><div class="ds">Expanded to all internal users in 6 weeks</div></div>
+      <div class="proof" data-glean-id="proof-coinbase"><div class="co">Coinbase</div><div class="mt">Regulated scale</div><div class="ds">Enterprise foundation under high governance scrutiny</div></div>
+    </div>
+    <p style="margin-top:20px;color:var(--artifact-text-secondary);max-width:72ch;">General Motors is the closest proof point for enterprise-wide AI transformation in a complex, industrial environment — spanning finance, engineering, plant, and executive use cases — the same context that surrounds financial planning at ADM.</p>
+  </div>
+</section>
+
+<section id="roadmap" data-glean-id="sec-roadmap">
+  <div class="wrap">
+    <div class="sec-num">08 · Delivery Roadmap</div>
+    <h2>A focused pilot that proves value in weeks, not years.</h2>
+    <p class="lead-line">Start with a champion cohort of ~50–75 users across 2–3 high-value use cases, then expand into a broader user evaluation once prompts, permissions, and success criteria are validated. The structure sequences secure activation before broad exposure.</p>
+    <div class="chartbox" style="margin-top:26px;" data-glean-id="chart-value">
+      <div class="ct">Value realization across the pilot</div>
+      <div class="cs">Indicative time-to-answer reduction &amp; workflows live under Glean</div>
+      <div id="valueChart" class="chart"></div>
+    </div>
+    <div class="controls">
+      <div class="ctrl" data-glean-id="ctrl-1"><h4>Security &amp; access first</h4><p>SSO and CMEK/BYOK on GCP established before scale; permissions validated before wider rollout.</p></div>
+      <div class="ctrl" data-glean-id="ctrl-2"><h4>Connector readiness</h4><p>Microsoft and finance systems activated early; crawls and freshness checked before user evaluation.</p></div>
+      <div class="ctrl" data-glean-id="ctrl-3"><h4>Business proof</h4><p>Champions and weekly scoring create a feedback loop; the final readout ties any launch decision to measured outcomes.</p></div>
+    </div>
+    <div class="tl">
+      <div class="phase" data-glean-id="phase-1"><div class="wk">Weeks 1–2</div><div class="dt">Build &amp; Setup</div><h3>Environment stand-up</h3><p>Stand up the environment with ADM-controlled keys, configure SSO, load people data, and activate first-wave connectors — SharePoint, Teams, Outlook, SAP, Snowflake.</p></div>
+      <div class="phase" data-glean-id="phase-2"><div class="wk">Weeks 3–6</div><div class="dt">Champions / UAT</div><h3>Champion enablement</h3><p>Champion kickoff and Glean 101, use-case deep dives, permission verification, prompt &amp; agent refinement, and weekly scoring against a fixed question set — with a mid-point go/no-go gate.</p></div>
+      <div class="phase" data-glean-id="phase-3"><div class="wk">Weeks 7–9</div><div class="dt">User Evaluation</div><h3>Broader rollout</h3><p>Roll out to the broader pilot cohort, run department enablement and office hours, and track adoption and usage while the post-pilot survey opens.</p></div>
+      <div class="phase" data-glean-id="phase-4"><div class="wk">Week 10</div><div class="dt">Readout &amp; Launch</div><h3>Results &amp; decision</h3><p>Results analysis vs. success criteria, executive wrap-up on outcomes and path forward, launch plan finalized, and a joint go-forward decision.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="concerns" data-glean-id="sec-concerns">
+  <div class="wrap">
+    <div class="sec-num">09 · Addressing Your Concerns</div>
+    <h2>We've heard the questions. Here's how we answer them.</h2>
+    <div class="qa">
+      <div class="qcard" data-glean-id="q-1">
+        <div class="q">"We're already building AI tools in-house — why buy?"</div>
+        <p class="a">A custom build solves one team's problem but carries ongoing maintenance and technical complexity, and its knowledge stays trapped. Glean turns that proprietary corpus into a governed enterprise asset — maintained as a product — so your team builds differentiated finance agents instead of re-engineering foundation.</p>
+      </div>
+      <div class="qcard" data-glean-id="q-2">
+        <div class="q">"We don't want to duplicate our Microsoft Copilot investment."</div>
+        <p class="a">You won't. Glean sits underneath as the shared context layer and reduces AI consumption cost ~25–30% by serving enterprise context before external LLM calls. Copilot stays your M365 productivity surface; Glean makes retrieval enterprise-wide across every system Copilot can't reach — including SAP, planning, and BI.</p>
+      </div>
+      <div class="qcard" data-glean-id="q-3">
+        <div class="q">"Will security and permissions hold across sensitive financial data?"</div>
+        <p class="a">Permission-aware by default: every retrieval respects each user's identity and entitlements, with native permission mirroring, full auditability, and ADM-controlled encryption keys (CMEK/BYOK) on GCP. Glean never surfaces what a user isn't authorized to see — critical for material, pre-release, and restricted financial information.</p>
+      </div>
+      <div class="qcard" data-glean-id="q-4">
+        <div class="q">"How fast will teams actually adopt it?"</div>
+        <p class="a">Glean typically reaches 90%+ adoption with ~98% answer accuracy, and employees build their own agents in natural language — a direct enabler of the planning, analysis, and reporting goals finance is driving. Connector maintenance shifts off your team, managed by Glean across 250+ sources.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="next" data-glean-id="sec-next">
+  <div class="wrap">
+    <div class="sec-num">10 · Next Steps</div>
+    <h2>A clear path from vision to a governed pilot.</h2>
+    <p class="lead-line">Measurable ROI in weeks, not years — sequenced so Finance proves value on real ADM content with the right users.</p>
+    <div class="steps">
+      <div class="step" data-glean-id="step-1"><div class="sn">Step 1</div><h3>Blueprint Session</h3><div class="meta">30 min</div><p>Align on Finance's vision, priority use cases, and success criteria for planning, variance, and reporting.</p></div>
+      <div class="step" data-glean-id="step-2"><div class="sn">Step 2</div><h3>Tailored Demo</h3><div class="meta">Live</div><p>Walk the FP&amp;A team through the priority workflows — grounded in the use cases your team cares about.</p></div>
+      <div class="step" data-glean-id="step-3"><div class="sn">Step 3</div><h3>Pilot Scoping</h3><div class="meta">50–75 users</div><p>Confirm 2–3 use cases and teams, data sources, security model, timeline, and success criteria.</p></div>
+      <div class="step" data-glean-id="step-4"><div class="sn">Step 4</div><h3>Scale &amp; Rollout</h3><div class="meta">Post-pilot</div><p>Expand horizontally on one platform once the pilot demonstrates value against the agreed measures.</p></div>
+    </div>
+    <div class="cta" data-glean-id="cta">
+      <div class="eyebrow">Glean:GO · Aug 26–27</div>
+      <h2>Let's scope the Finance &amp; FP&amp;A pilot together.</h2>
+      <p>We're ready to move into joint solution design — a focused first pilot connecting your highest-value financial and operational knowledge for a defined champion group, the fastest way to prove the foundation with real ADM content. Join us at Glean:GO to see the platform live and network with peers already running it.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap">
+    Prepared by Glean for ADM Finance &amp; FP&amp;A · Work AI Intelligence Layer · 2026.
+    <div class="tag">Together, the numbers run deeper — one governed layer for planning, analysis, and governed AI.</div>
+  </div>
+</footer>
+
+<script>
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function txt(){return css('--artifact-text-secondary');}
+function mkChart(id,opt){var el=document.getElementById(id);if(!el)return;var c=echarts.init(el,null,{renderer:'svg'});c.setOption(opt);window.addEventListener('resize',function(){c.resize();});}
+
+document.addEventListener('DOMContentLoaded',function(){
+  var c1=css('--artifact-chart-1'),c2=css('--artifact-chart-2'),grid=css('--artifact-chart-grid'),t=txt();
+  mkChart('adoptionChart',{
+    grid:{left:44,right:16,top:16,bottom:30},
+    tooltip:{trigger:'axis'},
+    xAxis:{type:'category',boundaryGap:false,data:['Wk 1','Wk 2','Wk 4','Wk 6','Wk 8','Wk 10','Wk 12'],axisLine:{lineStyle:{color:grid}},axisLabel:{color:t,fontSize:11}},
+    yAxis:{type:'value',max:100,axisLabel:{color:t,fontSize:11,formatter:'{value}%'},splitLine:{lineStyle:{color:grid}}},
+    series:[{type:'line',smooth:true,data:[12,28,52,71,84,90,93],lineStyle:{color:c1,width:3},itemStyle:{color:c1},areaStyle:{color:'rgba(26,125,69,.12)'},symbolSize:6}]
+  });
+  mkChart('costChart',{
+    grid:{left:52,right:16,top:16,bottom:30},
+    tooltip:{trigger:'axis'},
+    xAxis:{type:'category',data:['External LLM only','With Glean context layer'],axisLine:{lineStyle:{color:grid}},axisLabel:{color:t,fontSize:11}},
+    yAxis:{type:'value',axisLabel:{color:t,fontSize:11,formatter:'{value}'},splitLine:{lineStyle:{color:grid}},name:'Relative cost',nameTextStyle:{color:t,fontSize:10}},
+    series:[{type:'bar',barWidth:'46%',data:[{value:100,itemStyle:{color:c2}},{value:72,itemStyle:{color:c1}}],label:{show:true,position:'top',color:t,formatter:function(p){return p.dataIndex===1?'−28%':'';}}}]
+  });
+  mkChart('valueChart',{
+    grid:{left:48,right:20,top:20,bottom:30},
+    tooltip:{trigger:'axis'},
+    legend:{data:['Time-to-answer reduction','Workflows live'],textStyle:{color:t,fontSize:11},top:0},
+    xAxis:{type:'category',data:['Wk 2','Wk 4','Wk 6','Wk 8','Wk 10'],axisLine:{lineStyle:{color:grid}},axisLabel:{color:t,fontSize:11}},
+    yAxis:[{type:'value',max:80,axisLabel:{color:t,fontSize:11,formatter:'{value}%'},splitLine:{lineStyle:{color:grid}}},{type:'value',max:12,axisLabel:{color:t,fontSize:11},splitLine:{show:false}}],
+    series:[
+      {name:'Time-to-answer reduction',type:'line',smooth:true,yAxisIndex:0,data:[18,38,55,66,72],lineStyle:{color:c1,width:3},itemStyle:{color:c1},areaStyle:{color:'rgba(26,125,69,.10)'}},
+      {name:'Workflows live',type:'bar',yAxisIndex:1,barWidth:'34%',data:[1,3,6,9,11],itemStyle:{color:c2,opacity:.85}}
+    ]
+  });
+});
+
+window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
+window.GleanBridge.onMessage('action',function(data){if(data.actionId==='export-pdf')window.print();});
+function prepareChartsForPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var chart=echarts.getInstanceByDom(el);if(!chart)return;var img=new Image();img.src=chart.getDataURL({type:'png',pixelRatio:2});img.className='print-chart-img';img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';el.dataset.prevPosition=el.style.position;el.style.position='relative';el.appendChild(img);});}
+function cleanUpAfterPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var img=el.querySelector('.print-chart-img');if(!img)return;img.remove();el.style.position=el.dataset.prevPosition||'';delete el.dataset.prevPosition;});}
+window.addEventListener('beforeprint',prepareChartsForPrint);
+window.addEventListener('afterprint',cleanUpAfterPrint);
+</script>
+</body>
+</html>
