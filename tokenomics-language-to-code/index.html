@@ -269,6 +269,35 @@ footer .mark { font-weight: 600; color: var(--artifact-text-primary); letter-spa
   </div>
 </section>
 
+<section data-glean-id="savings-waterfall">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Compounding savings</p>
+      <h2>Two layers of savings &mdash; before and after language-to-code.</h2>
+    </div>
+    <p class="lead" style="max-width:70ch; margin-bottom:24px;">Glean already lowers the cost of every request through precise, indexed context and smart model routing. Language-to-code adds a second layer on top: a code-execution harness that does more work per token. The two savings compound rather than compete.</p>
+    <div class="chart-card" data-glean-id="chart-savings-waterfall">
+      <div class="chart-title">Relative cost of one coding-style query</div>
+      <div class="chart-sub">Illustrative index &mdash; routing everything through a frontier model alone = 100. Each step is a further reduction, not a one-time discount.</div>
+      <div id="waterfallChart" class="chart" data-glean-id="waterfall-chart-container"></div>
+    </div>
+    <div class="metric-row reveal" style="margin-top:28px;" data-glean-id="savings-metrics">
+      <div class="metric-cell" data-glean-id="metric-before-l2c">
+        <div class="num">~26%</div>
+        <div class="cap">Saved <strong>before</strong> language-to-code &mdash; Glean&rsquo;s indexed context and Waldo routing reduce what the frontier model has to read and reason over.</div>
+      </div>
+      <div class="metric-cell" data-glean-id="metric-after-l2c">
+        <div class="num">~24%</div>
+        <div class="cap">Additional savings <strong>after</strong> language-to-code &mdash; the code-execution harness cuts tokens further on every coding task.</div>
+      </div>
+      <div class="metric-cell" data-glean-id="metric-combined">
+        <div class="num">~44%</div>
+        <div class="cap">Combined reduction in cost per coding-style query versus a frontier model doing the whole job alone.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section data-glean-id="worked-example">
   <div class="wrap">
     <div class="chart-card" data-glean-id="chart-token-cost">
@@ -362,6 +391,55 @@ footer .mark { font-weight: 600; color: var(--artifact-text-primary); letter-spa
       label: { show: true, position: 'top', color: ink, fontSize: 15, fontWeight: 500, formatter: function(p){ return '$' + p.value.toFixed(2); } },
       markLine: { silent: true, symbol: 'none', data: [] }
     }]
+  });
+  window.addEventListener('resize', function(){ chart.resize(); });
+})();
+</script>
+
+<script>
+(function(){
+  var el = document.getElementById('waterfallChart');
+  if (!el || typeof echarts === 'undefined') return;
+  var cs = getComputedStyle(document.documentElement);
+  var brand = cs.getPropertyValue('--artifact-primary-brand').trim() || '#3559e6';
+  var mid = cs.getPropertyValue('--artifact-border-dark').trim() || '#cdd2db';
+  var ink = cs.getPropertyValue('--artifact-text-primary').trim() || '#11141a';
+  var sub = cs.getPropertyValue('--artifact-text-secondary').trim() || '#5c6470';
+  var line = cs.getPropertyValue('--artifact-border-light').trim() || '#e3e6ec';
+  var pos = cs.getPropertyValue('--artifact-positive').trim() || '#159a6a';
+  var cats = ['Frontier\nalone', 'Context +\nWaldo', '+ Language-\nto-Code', 'Net\ncost'];
+  var placeholder = [0, 74, 56, 0];
+  var chart = echarts.init(el, null, { renderer: 'svg' });
+  chart.setOption({
+    grid: { left: 10, right: 20, top: 30, bottom: 10, containLabel: true },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
+      formatter: function(params){
+        var i = params[0].dataIndex;
+        var labels = ['Frontier model alone', 'Savings from context + Waldo', 'Savings from language-to-code', 'Net cost per query'];
+        var vals = ['100', '\u221226 (down to 74)', '\u221218 (down to 56)', '56'];
+        return labels[i] + '<br/><b>' + vals[i] + '</b>';
+      } },
+    xAxis: { type: 'category', data: cats,
+      axisLine: { lineStyle: { color: line } }, axisTick: { show: false },
+      axisLabel: { color: ink, fontSize: 12, lineHeight: 15 } },
+    yAxis: { type: 'value', name: 'Cost index', max: 110,
+      nameTextStyle: { color: sub, fontFamily: 'SF Mono, monospace', fontSize: 11 },
+      axisLabel: { color: sub }, splitLine: { lineStyle: { color: line } } },
+    series: [
+      { name: 'placeholder', type: 'bar', stack: 'total', silent: true,
+        itemStyle: { color: 'transparent' }, emphasis: { itemStyle: { color: 'transparent' } },
+        data: placeholder },
+      { name: 'value', type: 'bar', stack: 'total', barWidth: '52%',
+        data: [
+          { value: 100, itemStyle: { color: mid } },
+          { value: 26, itemStyle: { color: pos } },
+          { value: 18, itemStyle: { color: pos } },
+          { value: 56, itemStyle: { color: brand } }
+        ],
+        label: { show: true, position: 'top', color: ink, fontSize: 14, fontWeight: 500,
+          formatter: function(p){ if (p.dataIndex === 0) return '100'; if (p.dataIndex === 3) return '56'; return '\u2212' + p.value; } }
+      }
+    ]
   });
   window.addEventListener('resize', function(){ chart.resize(); });
 })();
