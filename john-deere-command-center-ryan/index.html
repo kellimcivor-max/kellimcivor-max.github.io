@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Good Morning, Ryan — Command Center</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+<style>
+:root{
+  --jd-bg:#07160c;
+  --jd-bg2:#0c2414;
+  --jd-panel:rgba(20,54,30,0.55);
+  --jd-panel-solid:#123521;
+  --jd-border:rgba(124,197,118,0.20);
+  --jd-border-strong:rgba(124,197,118,0.42);
+  --jd-green:#367C2B;
+  --jd-green-bright:#7CC576;
+  --jd-green-deep:#1E4D18;
+  --jd-yellow:#FFDE00;
+  --jd-text:#EAF7EC;
+  --jd-text-muted:#A8C6AC;
+  --jd-text-dim:#6F9174;
+  --jd-ok:#3ED598;
+  --jd-amber:#FFB454;
+  --jd-red:#FF6F6F;
+  --jd-glow:0 0 0 1px rgba(124,197,118,0.10), 0 18px 40px rgba(0,0,0,0.5);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:
+    radial-gradient(1200px 700px at 80% -10%, rgba(54,124,43,0.20), transparent 60%),
+    radial-gradient(900px 600px at 0% 10%, rgba(30,77,24,0.40), transparent 55%),
+    linear-gradient(160deg,var(--jd-bg),var(--jd-bg2));
+  color:var(--jd-text);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.shell{max-width:1100px;margin:0 auto;padding:34px 24px 70px}
+.eyebrow{font-size:12px;letter-spacing:2.4px;text-transform:uppercase;color:var(--jd-green-bright);font-weight:700}
+h1,h2,h3{margin:0}
+a{color:inherit}
+
+/* Hero */
+.hero{position:relative;padding:38px 34px;border-radius:20px;overflow:hidden;
+  background:linear-gradient(135deg,rgba(30,77,24,0.60),rgba(7,22,12,0.2));
+  border:1px solid var(--jd-border);box-shadow:var(--jd-glow)}
+.hero .emblem{position:absolute;right:-30px;top:-24px;width:250px;height:250px;opacity:0.10}
+.brandline{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.jdlogo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:1px;font-size:15px;color:var(--jd-yellow)}
+.jdlogo .dm{width:30px;height:30px}
+.brand-sep{width:1px;height:16px;background:var(--jd-border-strong)}
+.hero h1{font-size:36px;font-weight:800;letter-spacing:-0.5px;margin:6px 0 4px;
+  background:linear-gradient(90deg,#fff,#b9f0b0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero .sub{color:var(--jd-green-bright);font-weight:600;font-size:15px}
+.hero .lede{color:var(--jd-text-muted);font-size:16px;max-width:770px;margin-top:14px}
+.hero .meta{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;font-size:13px;color:var(--jd-text-dim)}
+.hero .meta .dot{width:4px;height:4px;border-radius:50%;background:var(--jd-text-dim);display:inline-block}
+.hero .powered{margin-left:auto;color:var(--jd-green-bright);font-weight:600}
+
+/* Ask bar */
+.askbar{margin-top:18px;border-radius:16px;border:1px solid var(--jd-border);background:var(--jd-panel);padding:18px 20px}
+.askbar .field{display:flex;align-items:center;gap:12px;font-size:15px;color:var(--jd-text-muted)}
+.askbar .spark{color:var(--jd-green-bright);font-size:18px}
+.askbar .prompts{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.askbar .prompt{font-size:13px;color:var(--jd-text);background:rgba(54,124,43,0.14);border:1px solid var(--jd-border);
+  border-radius:999px;padding:7px 14px}
+
+/* Metric strip */
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:22px}
+.metric{background:var(--jd-panel);border:1px solid var(--jd-border);border-radius:14px;padding:16px 15px}
+.metric .val{font-size:25px;font-weight:800;color:#fff;display:flex;align-items:baseline;gap:6px}
+.metric .val .up{font-size:13px;color:var(--jd-ok)}
+.metric .k{font-size:12px;letter-spacing:0.3px;color:var(--jd-green-bright);font-weight:700;margin-top:8px;text-transform:uppercase}
+.metric .d{font-size:12px;color:var(--jd-text-muted);margin-top:5px}
+
+/* Section */
+section{margin-top:34px}
+.s-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.s-head h2{font-size:19px;font-weight:750;letter-spacing:-0.2px}
+.s-head .ic{font-size:18px}
+.panel{background:var(--jd-panel);border:1px solid var(--jd-border);border-radius:16px;padding:20px}
+
+/* Status grid */
+.status-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.status{display:flex;gap:12px;align-items:flex-start;padding:13px 15px;border-radius:12px;
+  background:rgba(9,28,15,0.55);border:1px solid var(--jd-border)}
+.status .led{width:9px;height:9px;border-radius:50%;margin-top:6px;flex:none;box-shadow:0 0 8px currentColor}
+.led.ok{color:var(--jd-ok);background:var(--jd-ok)}
+.led.warn{color:var(--jd-amber);background:var(--jd-amber)}
+.led.blue{color:var(--jd-green-bright);background:var(--jd-green-bright)}
+.status .t{font-weight:700;font-size:14px}
+.status .m{font-size:12.5px;color:var(--jd-text-muted);margin-top:2px}
+
+/* Schedule */
+.sched{display:flex;flex-direction:column;gap:2px}
+.slot{display:grid;grid-template-columns:74px 1fr;gap:16px;padding:14px 6px;border-bottom:1px solid var(--jd-border)}
+.slot:last-child{border-bottom:none}
+.slot .time{font-weight:800;color:var(--jd-green-bright);font-size:14px}
+.slot .title{font-weight:700;font-size:15px}
+.slot .desc{font-size:13px;color:var(--jd-text-muted);margin-top:2px}
+.slot.key{background:linear-gradient(90deg,rgba(54,124,43,0.16),transparent);border-radius:10px}
+
+/* Charts */
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chart-card{background:var(--jd-panel);border:1px solid var(--jd-border);border-radius:16px;padding:18px}
+.chart-card h3{font-size:14px;font-weight:750;margin-bottom:6px}
+.chart-card .cd{font-size:12px;color:var(--jd-text-dim);margin-bottom:8px}
+.chart{width:100%;height:260px}
+
+/* readiness tiles */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+.tile{background:rgba(9,28,15,0.55);border:1px solid var(--jd-border);border-radius:12px;padding:15px}
+.tile .badge{font-size:11px;font-weight:800;letter-spacing:0.4px;text-transform:uppercase;padding:3px 9px;border-radius:999px;display:inline-block}
+.badge.ready{background:rgba(62,213,152,0.15);color:var(--jd-ok)}
+.badge.wave{background:rgba(255,180,84,0.15);color:var(--jd-amber)}
+.tile .tt{font-weight:750;font-size:14.5px;margin-top:10px}
+.tile .td{font-size:12.5px;color:var(--jd-text-muted);margin-top:4px}
+
+/* two col */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.mini-list{display:flex;flex-direction:column;gap:11px}
+.mini{display:flex;gap:11px;align-items:flex-start}
+.mini .mi{color:var(--jd-green-bright);font-size:15px;flex:none;margin-top:1px}
+.mini .mt{font-weight:700;font-size:13.5px}
+.mini .mm{font-size:12.5px;color:var(--jd-text-muted)}
+
+/* progress */
+.prog{margin-top:8px}
+.prog .row{margin:14px 0}
+.prog .lab{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.prog .lab b{color:#fff}
+.bar{height:9px;border-radius:999px;background:rgba(255,255,255,0.08);overflow:hidden}
+.bar>span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--jd-green),var(--jd-green-bright))}
+.stat-pills{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:6px}
+.stat-pill .n{font-size:22px;font-weight:800;color:#fff}
+.stat-pill .l{font-size:12px;color:var(--jd-text-muted)}
+
+/* table */
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:11.5px;letter-spacing:0.6px;text-transform:uppercase;color:var(--jd-text-dim);
+  font-weight:700;padding:10px 12px;border-bottom:1px solid var(--jd-border-strong)}
+td{padding:12px;border-bottom:1px solid var(--jd-border);color:var(--jd-text)}
+tr:last-child td{border-bottom:none}
+.pill{font-size:11.5px;font-weight:800;padding:3px 10px;border-radius:999px;display:inline-block}
+.p-active{background:rgba(62,213,152,0.15);color:var(--jd-ok)}
+.p-track{background:rgba(54,124,43,0.20);color:var(--jd-green-bright)}
+.p-decide{background:rgba(255,180,84,0.15);color:var(--jd-amber)}
+.p-hold{background:rgba(255,111,111,0.15);color:var(--jd-red)}
+.p-par{background:rgba(168,198,172,0.15);color:var(--jd-text-muted)}
+
+/* proven */
+.proven td .co{font-weight:800;color:#fff}
+.proven .scale{color:var(--jd-green-bright);font-weight:700}
+.proven-note{margin-top:14px;font-size:13.5px;color:var(--jd-text-muted);font-style:italic}
+
+/* insights */
+.insights{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.insight{background:rgba(9,28,15,0.55);border:1px solid var(--jd-border);border-radius:14px;padding:16px 17px}
+.insight .h{font-weight:750;font-size:14.5px;display:flex;gap:8px;align-items:flex-start}
+.insight p{font-size:13px;color:var(--jd-text-muted);margin:8px 0 0}
+.insight .anchor{margin-top:8px;font-size:12px;color:var(--jd-green-bright);font-weight:700}
+
+/* closing */
+.closing{text-align:center;padding:44px 20px;margin-top:36px;border-radius:20px;
+  background:linear-gradient(135deg,rgba(30,77,24,0.55),rgba(7,22,12,0.2));border:1px solid var(--jd-border)}
+.closing .big{font-size:22px;font-weight:750;max-width:730px;margin:0 auto;color:#fff}
+.closing .seq{margin-top:18px;font-size:15px;color:var(--jd-green-bright);font-weight:700;letter-spacing:0.5px}
+.footer{margin-top:26px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;
+  font-size:12.5px;color:var(--jd-text-dim)}
+.savebtn{background:rgba(54,124,43,0.16);border:1px solid var(--jd-border-strong);color:var(--jd-green-bright);
+  border-radius:10px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer}
+.savebtn:hover{background:rgba(54,124,43,0.28)}
+
+@media (max-width:900px){
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .status-grid,.chart-row,.two,.insights{grid-template-columns:1fr}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .hero h1{font-size:28px}
+}
+
+@media print{
+  body{margin:0;padding:0.4in 0.5in;background:#07160c;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .shell{max-width:100%!important;width:100%!important}
+  section,.hero,.closing{break-inside:avoid;margin-bottom:18px!important}
+  .metric,.status,.tile,.chart-card,.insight,.panel{break-inside:avoid}
+  .chart{height:240px!important}
+  button,.savebtn,.interactive-only{display:none!important}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- HERO -->
+  <div class="hero" data-glean-id="hero">
+    <svg class="emblem" viewBox="0 0 100 100" fill="none"><path d="M14 82c9-3 13-11 16-19 3-6 6-12 12-16l-4-13 10 6 5-11 4 11 10-5-5 14c6 4 10 10 13 17 3 8 4 15 12 20-11-4-21-6-33-6-12 0-23 2-34 5z" fill="#FFDE00"/></svg>
+    <div class="brandline">
+      <div class="jdlogo"><svg class="dm" viewBox="0 0 100 100"><path d="M14 82c9-3 13-11 16-19 3-6 6-12 12-16l-4-13 10 6 5-11 4 11 10-5-5 14c6 4 10 10 13 17 3 8 4 15 12 20-11-4-21-6-33-6-12 0-23 2-34 5z" fill="#FFDE00"/></svg>JOHN&nbsp;DEERE</div>
+      <div class="brand-sep"></div>
+      <div class="eyebrow">Embedded Software &middot; Ag &amp; Turf Vehicle Products</div>
+    </div>
+    <div class="eyebrow">Command Center</div>
+    <h1>Good Morning, Ryan</h1>
+    <div class="sub">AI Initiatives &middot; Embedded Software, John Deere Ag &amp; Turf</div>
+    <p class="lede">Every repository, spec, schematic, and ticket behind the embedded software you build for Ag &amp; Turf vehicle products &mdash; knowledge scattered across GitHub, Copilot, and internal systems that aren&rsquo;t connected today &mdash; brought together in one governed, permission-aware context layer.</p>
+    <div class="meta">
+      <span>Friday, August 28 2026</span><span class="dot"></span>
+      <span>Urbandale, IA</span><span class="dot"></span>
+      <span>74&deg;F clear</span>
+      <span class="powered">Powered by Glean Work AI</span>
+    </div>
+  </div>
+
+  <!-- ASK BAR -->
+  <div class="askbar" data-glean-id="ask-bar">
+    <div class="field"><span class="spark">&#10022;</span><span>Ask anything across your embedded software knowledge&hellip;</span></div>
+    <div class="prompts">
+      <span class="prompt">&ldquo;Pull the design intent, open tickets, and prior root-cause for this embedded control module.&rdquo;</span>
+      <span class="prompt">&ldquo;What internal systems and repos does Copilot need connected to answer this in context?&rdquo;</span>
+      <span class="prompt">&ldquo;Trace this hydraulic and electrical schematic to the controllers and code that depend on it.&rdquo;</span>
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metrics" data-glean-id="metric-strip">
+    <div class="metric" data-glean-id="metric-adoption"><div class="val">90%+<span class="up">&uarr;</span></div><div class="k">Engineer Adoption</div><div class="d">Typical within weeks of rollout</div></div>
+    <div class="metric" data-glean-id="metric-agents"><div class="val">3.5&times;</div><div class="k">Sources Behind Every Answer</div><div class="d">Repos &middot; tickets &middot; docs &middot; email in one reply</div></div>
+    <div class="metric" data-glean-id="metric-cost"><div class="val">30&ndash;50%</div><div class="k">AI Consumption Cost Reduction</div><div class="d">Context served before external LLM calls</div></div>
+    <div class="metric" data-glean-id="metric-sources"><div class="val">150+</div><div class="k">Connectors &amp; Custom APIs</div><div class="d">GitHub &middot; Copilot &middot; M365 &middot; Jira &middot; SDK</div></div>
+    <div class="metric" data-glean-id="metric-accuracy"><div class="val">2 wks</div><div class="k">Pilot Stand-Up</div><div class="d">SSO &middot; connectors &middot; ~5-day indexing</div></div>
+  </div>
+
+  <!-- LIVE STATUS -->
+  <section data-glean-id="sec-status">
+    <div class="s-head"><span class="ic">&#127760;</span><h2>Embedded Software Intelligence &mdash; Live Status</h2></div>
+    <div class="status-grid">
+      <div class="status"><span class="led ok"></span><div><div class="t">Embedded Software Knowledge Graph</div><div class="m">Connected &middot; code, tickets &amp; design docs indexed</div></div></div>
+      <div class="status"><span class="led ok"></span><div><div class="t">GitHub &amp; Copilot Integration</div><div class="m">Context layer feeding Copilot via MCP / API</div></div></div>
+      <div class="status"><span class="led warn"></span><div><div class="t">Hydraulic &amp; Electrical Schematics</div><div class="m">Onboarding &middot; multimodal PDF &amp; diagram indexing</div></div></div>
+      <div class="status"><span class="led ok"></span><div><div class="t">Requirements &amp; Design Intent</div><div class="m">Traceable &middot; specs linked to controllers &amp; code</div></div></div>
+      <div class="status"><span class="led ok"></span><div><div class="t">Microsoft 365 / SharePoint</div><div class="m">Normal &middot; documents searchable in context</div></div></div>
+      <div class="status"><span class="led blue"></span><div><div class="t">Custom Connectors &middot; Internal Systems</div><div class="m">SDK to custom APIs &middot; connect what isn&rsquo;t wired up today</div></div></div>
+      <div class="status"><span class="led warn"></span><div><div class="t">Blue River / Emerging Tech &middot; Santa Clara</div><div class="m">Onboarding &middot; extend the context layer to advanced teams</div></div></div>
+      <div class="status"><span class="led ok"></span><div><div class="t">Glean Protect &middot; Governance</div><div class="m">Native permissions &middot; single-tenant &middot; SSO</div></div></div>
+    </div>
+  </section>
+
+  <!-- YOUR DAY -->
+  <section data-glean-id="sec-day">
+    <div class="s-head"><span class="ic">&#128197;</span><h2>Your Day &mdash; August 28</h2></div>
+    <div class="panel sched">
+      <div class="slot"><div class="time">8:00a</div><div><div class="title">Embedded Software Stand-up &middot; Ag &amp; Turf</div><div class="desc">Open tickets, design intent &amp; root-cause across vehicle products</div></div></div>
+      <div class="slot"><div class="time">9:00a</div><div><div class="title">Copilot in Context</div><div class="desc">Connect repos &amp; internal systems so Copilot answers with real Deere context</div></div></div>
+      <div class="slot"><div class="time">10:30a</div><div><div class="title">Schematic &harr; Code Traceability</div><div class="desc">Link hydraulic/electrical schematics to controllers &amp; the code that depends on them</div></div></div>
+      <div class="slot"><div class="time">1:00p</div><div><div class="title">Agentic Dev Workflow Design</div><div class="desc">Durable workflow across software, electrical &amp; PM personas</div></div></div>
+      <div class="slot"><div class="time">2:00p</div><div><div class="title">Requirements &amp; Reuse</div><div class="desc">Spec to repo to shared components across machine platforms</div></div></div>
+      <div class="slot key"><div class="time">11:00a</div><div><div class="title">Glean &times; John Deere &mdash; Tailored Demo (Kelli McIvor)</div><div class="desc">Personalized to your embedded-software use cases &middot; WorldLink joining &middot; NDA next step</div></div></div>
+    </div>
+  </section>
+
+  <!-- CHARTS -->
+  <section data-glean-id="sec-adoption">
+    <div class="s-head"><span class="ic">&#128202;</span><h2>Adoption &amp; Agentic Workflow Coverage</h2></div>
+    <div class="chart-row">
+      <div class="chart-card" data-glean-id="chart-adoption-trend"><h3>Adoption Trend by Engineering Function (%)</h3><div class="cd">Weeks since pilot rollout</div><div id="chartAdoption" class="chart"></div></div>
+      <div class="chart-card" data-glean-id="chart-agent-coverage"><h3>Workflow Coverage &mdash; Embedded Software Dev</h3><div class="cd">Share of routine dev workflows agent-assisted</div><div id="chartAgents" class="chart"></div></div>
+    </div>
+    <div class="tiles" data-glean-id="tiles-readiness">
+      <div class="tile"><span class="badge ready">Ready</span><div class="tt">Embedded Software &middot; Ag &amp; Turf</div><div class="td">Code, tickets &amp; design intent &mdash; your highest-value corpus</div></div>
+      <div class="tile"><span class="badge ready">Ready</span><div class="tt">Copilot / GitHub Integration</div><div class="td">Feed permission-aware context into the tools you already use</div></div>
+      <div class="tile"><span class="badge wave">Wave 1</span><div class="tt">Schematics &amp; Requirements</div><div class="td">Multimodal PDFs &amp; specs &mdash; highest cross-system value</div></div>
+      <div class="tile"><span class="badge ready">Ready</span><div class="tt">Electrical &amp; Hardware Systems</div><div class="td">Controllers &amp; sensor networks connected in one graph</div></div>
+    </div>
+  </section>
+
+  <!-- SECURITY & PLATFORM -->
+  <section data-glean-id="sec-posture">
+    <div class="two">
+      <div class="panel" data-glean-id="panel-security">
+        <div class="s-head"><span class="ic">&#128274;</span><h2 style="font-size:16px">Security &amp; Governance Posture</h2></div>
+        <div class="mini-list">
+          <div class="mini"><span class="mi">&#9679;</span><div><div class="mt">Native Permission-Aware Index</div><div class="mm">Mirrors source ACLs &mdash; each user sees only what they already can access, no security rework</div></div></div>
+          <div class="mini"><span class="mi">&#9679;</span><div><div class="mt">Single-Tenant Deployment</div><div class="mm">Runs inside Deere&rsquo;s own tenant &mdash; guaranteed data isolation</div></div></div>
+          <div class="mini"><span class="mi">&#9679;</span><div><div class="mt">SSO-Backed Access Control</div><div class="mm">Every retrieval honors clearance &amp; entitlement on each edge</div></div></div>
+          <div class="mini"><span class="mi">&#9679;</span><div><div class="mt">No Training on Your Data</div><div class="mm">Proprietary source &amp; product data stays governed and private</div></div></div>
+        </div>
+      </div>
+      <div class="panel" data-glean-id="panel-platform">
+        <div class="s-head"><span class="ic">&#9729;</span><h2 style="font-size:16px">Platform &amp; Automation Health</h2></div>
+        <div class="mini-list">
+          <div class="mini"><span class="mi">&#9679;</span><div><div class="mt">Enterprise Context Graph</div><div class="mm">People, code, content &amp; systems connected across software, electrical &amp; hardware</div></div></div>
+          <div class="mini"><span class="mi">&#9679;</span><div><div class="mt">Copilot / MCP Integration</div><div class="mm">Feed context into Copilot to write unit tests, trace a spec or reason over a ticket</div></div></div>
+          <div class="mini"><span class="mi">&#9679;</span><div><div class="mt">Model Hub / LLM Gateway</div><div class="mm">No lock-in &middot; Copilot, Claude &amp; more &middot; best model per task</div></div></div>
+          <div class="mini"><span class="mi">&#9679;</span><div><div class="mt">Custom &amp; Managed Connectors</div><div class="mm">SDK for internal &amp; proprietary systems &middot; connect what Copilot can&rsquo;t reach today</div></div></div>
+          <div class="mini"><span class="mi">&#9679;</span><div><div class="mt">Multimodal &amp; Continual Learning</div><div class="mm">Reads PDFs, schematics, diagrams &middot; learns from meetings, email &amp; notes</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COST CHART -->
+  <section data-glean-id="sec-cost">
+    <div class="s-head"><span class="ic">&#128176;</span><h2>AI Consumption Cost &mdash; Context Layer Impact</h2></div>
+    <div class="chart-card" data-glean-id="chart-cost"><div class="cd">Monthly external-LLM spend &mdash; without vs. with Glean serving engineering context first</div><div id="chartCost" class="chart" style="height:280px"></div></div>
+  </section>
+
+  <!-- PIPELINE TABLE -->
+  <section data-glean-id="sec-pipeline">
+    <div class="s-head"><span class="ic">&#129302;</span><h2>Evaluation &amp; Pilot Pipeline</h2></div>
+    <div class="panel" style="padding:8px 12px">
+      <table>
+        <thead><tr><th>Initiative</th><th>Owner</th><th>Phase</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr data-glean-id="row-copilot"><td>Copilot Context Integration</td><td>Ryan Hamor</td><td>Design</td><td><span class="pill p-active">Active</span></td></tr>
+          <tr data-glean-id="row-poc"><td>Embedded Software Knowledge Graph POC</td><td>Ryan Hamor (with Narsi)</td><td>Scoping</td><td><span class="pill p-decide">Deciding</span></td></tr>
+          <tr data-glean-id="row-schematics"><td>Schematic &amp; Multimodal Indexing</td><td>Product Engineering</td><td>Discovery</td><td><span class="pill p-track">On Track</span></td></tr>
+          <tr data-glean-id="row-demo"><td>Tailored Demo &middot; Aug 28</td><td>Glean (Kelli) &middot; WorldLink</td><td>Scheduled</td><td><span class="pill p-active">Active</span></td></tr>
+          <tr data-glean-id="row-nda"><td>NDA / Master Agreement</td><td>Nathan Peitz</td><td>Pending</td><td><span class="pill p-hold">Needs Sign-off</span></td></tr>
+          <tr data-glean-id="row-governance"><td>Enterprise Governance &amp; Rollout</td><td>ISG / Global IT</td><td>Future</td><td><span class="pill p-par">Parallel</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- READINESS TRACKER -->
+  <section data-glean-id="sec-tracker">
+    <div class="s-head"><span class="ic">&#128295;</span><h2>Discovery &rarr; Pilot Readiness Tracker</h2></div>
+    <div class="panel">
+      <div class="stat-pills">
+        <div class="stat-pill"><div class="n">4 personas</div><div class="l">Software, electrical, PM &amp; support engineers</div></div>
+        <div class="stat-pill"><div class="n">2 wks</div><div class="l">Pilot stand-up once connectors selected</div></div>
+        <div class="stat-pill"><div class="n">1 layer</div><div class="l">Governed context, not another silo</div></div>
+      </div>
+      <div class="prog">
+        <div class="row"><div class="lab"><b>Copilot / MCP Integration Path</b><span>52%</span></div><div class="bar"><span style="width:52%"></span></div></div>
+        <div class="row"><div class="lab"><b>Connector &amp; Source Mapping</b> &middot; internal systems<span>48%</span></div><div class="bar"><span style="width:48%"></span></div></div>
+        <div class="row"><div class="lab"><b>Use-Case Definition</b> &middot; embedded dev workflows<span>45%</span></div><div class="bar"><span style="width:45%"></span></div></div>
+        <div class="row"><div class="lab"><b>NDA &amp; Internal Alignment</b><span>30%</span></div><div class="bar"><span style="width:30%"></span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROVEN AT SCALE -->
+  <section data-glean-id="sec-proven">
+    <div class="s-head"><span class="ic">&#127981;</span><h2>Proven at Enterprise Scale &mdash; Manufacturing &amp; Product Engineering</h2></div>
+    <div class="panel proven" style="padding:8px 12px">
+      <table>
+        <thead><tr><th>Company</th><th>Scale</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr data-glean-id="row-gm"><td class="co">General Motors</td><td class="scale">Small pilot &rarr; 25K users</td><td>Started with a small pilot; once teams saw the value in real time, spread to 25,000+ users</td></tr>
+          <tr data-glean-id="row-ericsson"><td class="co">Ericsson</td><td class="scale">Global engineering</td><td>Enterprise adoption across GTM &amp; engineering in a complex, standards-driven business</td></tr>
+          <tr data-glean-id="row-dell"><td class="co">Dell</td><td class="scale">6-wk pilot</td><td>Moved to all internal users in 6 weeks</td></tr>
+          <tr data-glean-id="row-nationwide"><td class="co">Nationwide</td><td class="scale">25K users</td><td>50-person pilot &rarr; 25K in 8 weeks</td></tr>
+        </tbody>
+      </table>
+      <div class="proven-note">GM shows exactly the motion you and Narsi described &mdash; validate with a focused group first, then scale once the value is undeniable across complex, product-driven engineering environments like Deere&rsquo;s.</div>
+    </div>
+  </section>
+
+  <!-- INSIGHTS -->
+  <section data-glean-id="sec-insights">
+    <div class="s-head"><span class="ic">&#128161;</span><h2>Intelligent Insights &mdash; What Deserves Your Attention</h2></div>
+    <div class="insights">
+      <div class="insight" data-glean-id="insight-copilot"><div class="h"><span>&#128161;</span><span>Copilot needs context you haven&rsquo;t connected yet.</span></div><p>You flagged the gap &mdash; you&rsquo;re looking to connect internal systems and knowledge at the connector level. Glean builds that permission-aware context layer and feeds it into Copilot, so answers fold into real embedded-software work.</p><div class="anchor">Anchor your 9:00a Copilot-in-context session here.</div></div>
+      <div class="insight" data-glean-id="insight-schematic"><div class="h"><span>&#128993;</span><span>Cross-system reasoning is the core problem.</span></div><p>Multiple platforms use different hydraulic schematics but share the same pressure sensor across controllers with distinct electrical schematics. A unified graph lets you trace those relationships to the code that depends on them.</p><div class="anchor">Carry this into your 10:30a traceability review.</div></div>
+      <div class="insight" data-glean-id="insight-cost"><div class="h"><span>&#9989;</span><span>Cost is part of the story.</span></div><p>Serving engineering context from the index before external LLM calls reduces AI consumption cost by 30&ndash;50% &mdash; a measurable win as agentic dev workflows scale.</p></div>
+      <div class="insight" data-glean-id="insight-start"><div class="h"><span>&#128200;</span><span>Start small, prove value, then scale.</span></div><p>You and Narsi want to validate with a focused group first. That&rsquo;s the exact path GM took &mdash; a focused pilot before enterprise governance and rollout.</p></div>
+      <div class="insight" data-glean-id="insight-multimodal"><div class="h"><span>&#128196;</span><span>Multimodal is built in.</span></div><p>Glean indexes extracted text, metadata, permissions, relationship signals, and embedded images &mdash; so PDF schematics, diagrams, and technical specs become first-class, searchable context.</p></div>
+      <div class="insight" data-glean-id="insight-permissions"><div class="h"><span>&#128274;</span><span>Native permissions mean no security rework.</span></div><p>Glean carries over your source permissions automatically &mdash; engineers only ever see what they already can access, single-tenant, with no additional work to bring security over.</p></div>
+    </div>
+  </section>
+
+  <!-- TEAM & PEER SIGNALS -->
+  <section data-glean-id="sec-team">
+    <div class="s-head"><span class="ic">&#128101;</span><h2>Team &amp; Partner Signals</h2></div>
+    <div class="panel" style="padding:8px 12px">
+      <table>
+        <thead><tr><th>Person / Team</th><th>Role</th><th>Top Item This Week</th><th>Needs You</th></tr></thead>
+        <tbody>
+          <tr data-glean-id="row-narsi"><td>Narsi Rangan</td><td>AI Enablement Lead &middot; ISG Product Development</td><td>Reason through the POC with you; define pilot use cases</td><td><span class="pill p-active">Collaborate</span></td></tr>
+          <tr data-glean-id="row-nathan"><td>Nathan Peitz</td><td>Supply Base Manager &middot; NDA / Agreements Contact</td><td>Put NDA / master agreement in place before you go deeper</td><td><span class="pill p-track">Review</span></td></tr>
+          <tr data-glean-id="row-worldlink"><td>WorldLink (Zubin &amp; Will)</td><td>Deere Partner</td><td>Joining your tailored demo to support the motion</td><td><span class="pill p-par">FYI</span></td></tr>
+          <tr data-glean-id="row-kelli"><td>Kelli McIvor</td><td>Glean &middot; Strategic AE</td><td>Tailored demo Aug 28; collateral shared, NDA next step</td><td><span class="pill p-par">FYI</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CLOSING -->
+  <div class="closing" data-glean-id="closing">
+    <div class="big">A glimpse of what every morning could look like &mdash; every schematic, spec, ticket, and repository surfaced automatically by Glean&rsquo;s Work AI platform.</div>
+    <div class="seq">No systems to stitch together. &nbsp;No context to rebuild. &nbsp;Simply ask.</div>
+  </div>
+
+  <div class="footer">
+    <span>Prepared for Ryan Hamor &middot; AI Initiatives, Embedded Software (Ag &amp; Turf), John Deere &middot; August 2026</span>
+    <button class="savebtn interactive-only" onclick="window.print()">&#10515; Save as PDF</button>
+  </div>
+
+</div>
+
+<script>
+var green='#367C2B', bright='#7CC576', yellow='#FFDE00', grid='rgba(168,198,172,0.12)', axis='#6F9174';
+function base(){return {textStyle:{fontFamily:'-apple-system,Segoe UI,Roboto,sans-serif'},grid:{left:38,right:16,top:28,bottom:28}};}
+
+var cA=echarts.init(document.getElementById('chartAdoption'),null,{renderer:'svg'});
+cA.setOption(Object.assign(base(),{
+  tooltip:{trigger:'axis'},
+  legend:{textStyle:{color:'#A8C6AC',fontSize:10},top:0,itemWidth:10,itemHeight:10},
+  xAxis:{type:'category',data:['Wk 1','Wk 2','Wk 4','Wk 6','Wk 8','Wk 12'],axisLine:{lineStyle:{color:axis}},axisLabel:{color:axis,fontSize:11}},
+  yAxis:{type:'value',max:100,splitLine:{lineStyle:{color:grid}},axisLabel:{color:axis,fontSize:11,formatter:'{value}%'}},
+  series:[
+    {name:'Software Eng',type:'line',smooth:true,data:[24,46,68,80,88,93],lineStyle:{width:3,color:bright},itemStyle:{color:bright},areaStyle:{color:'rgba(124,197,118,0.10)'}},
+    {name:'Electrical / HW',type:'line',smooth:true,data:[16,36,58,72,82,89],lineStyle:{width:3,color:green},itemStyle:{color:green}},
+    {name:'Product Mgmt',type:'line',smooth:true,data:[10,26,44,58,70,82],lineStyle:{width:2,color:yellow},itemStyle:{color:yellow}}
+  ]
+}));
+
+var cG=echarts.init(document.getElementById('chartAgents'),null,{renderer:'svg'});
+cG.setOption(Object.assign(base(),{
+  grid:{left:180,right:24,top:10,bottom:24},
+  tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+  xAxis:{type:'value',max:100,splitLine:{lineStyle:{color:grid}},axisLabel:{color:axis,fontSize:11,formatter:'{value}%'}},
+  yAxis:{type:'category',inverse:true,data:['Code Context (Copilot)','Ticket Triage & Root Cause','Schematic / Design Retrieval','Requirements Traceability','Unit Test / Change Checks','Product History Research'],axisLine:{lineStyle:{color:axis}},axisLabel:{color:'#EAF7EC',fontSize:11}},
+  series:[{type:'bar',data:[76,81,72,68,58,84],barWidth:'55%',itemStyle:{borderRadius:[0,5,5,0],color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:green},{offset:1,color:bright}])}}]
+}));
+
+var cC=echarts.init(document.getElementById('chartCost'),null,{renderer:'svg'});
+cC.setOption(Object.assign(base(),{
+  grid:{left:52,right:20,top:34,bottom:28},
+  tooltip:{trigger:'axis'},
+  legend:{textStyle:{color:'#A8C6AC',fontSize:10},top:0,data:['Without Glean','With Glean']},
+  xAxis:{type:'category',data:['Q1','Q2','Q3','Q4 (proj.)'],axisLine:{lineStyle:{color:axis}},axisLabel:{color:axis,fontSize:11}},
+  yAxis:{type:'value',splitLine:{lineStyle:{color:grid}},axisLabel:{color:axis,fontSize:11,formatter:'${value}K'}},
+  series:[
+    {name:'Without Glean',type:'bar',data:[300,360,420,480],barWidth:'28%',itemStyle:{borderRadius:[4,4,0,0],color:'rgba(168,198,172,0.35)'}},
+    {name:'With Glean',type:'bar',data:[180,216,252,288],barWidth:'28%',itemStyle:{borderRadius:[4,4,0,0],color:new echarts.graphic.LinearGradient(0,1,0,0,[{offset:0,color:green},{offset:1,color:bright}])}}
+  ]
+}));
+
+window.addEventListener('resize',function(){cA.resize();cG.resize();cC.resize();});
+</script>
+
+<script>
+  if(window.GleanBridge){
+    window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
+    window.GleanBridge.onMessage('action',function(data){if(data.actionId==='export-pdf')window.print();});
+  }
+  function prepareChartsForPrint(){
+    document.querySelectorAll('[_echarts_instance_]').forEach(function(el){
+      var chart=echarts.getInstanceByDom(el); if(!chart) return;
+      var img=new Image(); img.src=chart.getDataURL({type:'png',pixelRatio:2}); img.className='print-chart-img';
+      img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';
+      el.dataset.prevPosition=el.style.position; el.style.position='relative'; el.appendChild(img);
+    });
+  }
+  function cleanUpAfterPrint(){
+    document.querySelectorAll('[_echarts_instance_]').forEach(function(el){
+      var img=el.querySelector('.print-chart-img'); if(!img) return;
+      img.remove(); el.style.position=el.dataset.prevPosition||''; delete el.dataset.prevPosition;
+    });
+  }
+  window.addEventListener('beforeprint',prepareChartsForPrint);
+  window.addEventListener('afterprint',cleanUpAfterPrint);
+</script>
+</body>
+</html>
