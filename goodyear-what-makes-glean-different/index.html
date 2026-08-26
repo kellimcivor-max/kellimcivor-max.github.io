@@ -206,6 +206,9 @@ html[data-theme='dark'] .taocard .n{-webkit-text-stroke:1px var(--gy-navy)}
 .close .wrapc{position:relative;z-index:2}
 .close h2{font-size:26px;font-weight:800;margin-bottom:14px}
 .close p{font-size:18px;color:rgba(255,255,255,.92);max-width:760px}
+.dlbtn{position:fixed;bottom:22px;right:22px;z-index:50;background:var(--gy-fill-navy);color:#fff;border:none;border-radius:999px;padding:14px 22px;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 8px 24px rgba(0,30,98,.35);display:inline-flex;align-items:center;gap:8px;transition:background .2s,transform .15s}
+.dlbtn:hover{background:var(--gy-fill-blue);transform:translateY(-1px)}
+.dlbtn svg{width:18px;height:18px;stroke:var(--gy-yellow);fill:none;stroke-width:2}
 .foot{text-align:center;color:var(--artifact-muted);font-size:13px;padding:24px 0 48px}
 
 @media(max-width:860px){
@@ -548,6 +551,7 @@ html[data-theme='dark'] .taocard .n{-webkit-text-stroke:1px var(--gy-navy)}
   </div></section>
 </div>
 
+<button class="dlbtn" id="dlPdf" title="Download this page as a PDF" type="button"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>Download PDF</button>
 <div class="foot">Glean · Enterprise intelligence for Goodyear</div>
 
 <script>
@@ -679,6 +683,8 @@ if(window.GleanBridge){
 }
 function prepareChartsForPrint(){buildStory();buildTao();buildTokens();document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var ch=echarts.getInstanceByDom(el);if(!ch)return;var img=new Image();img.src=ch.getDataURL({type:'png',pixelRatio:2});img.className='print-chart-img';img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';el.dataset.prevPosition=el.style.position;el.style.position='relative';el.appendChild(img);});}
 function cleanUpAfterPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var img=el.querySelector('.print-chart-img');if(!img)return;img.remove();el.style.position=el.dataset.prevPosition||'';delete el.dataset.prevPosition;});}
+var dl=document.getElementById('dlPdf');
+if(dl)dl.addEventListener('click',function(){try{buildStory();buildTao();buildTokens();}catch(e){}window.print();});
 window.addEventListener('beforeprint',prepareChartsForPrint);
 window.addEventListener('afterprint',cleanUpAfterPrint);
 </script>
