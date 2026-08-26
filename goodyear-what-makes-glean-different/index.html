@@ -206,6 +206,19 @@ html[data-theme='dark'] .taocard .n{-webkit-text-stroke:1px var(--gy-navy)}
 .close .wrapc{position:relative;z-index:2}
 .close h2{font-size:26px;font-weight:800;margin-bottom:14px}
 .close p{font-size:18px;color:rgba(255,255,255,.92);max-width:760px}
+.cmpwrap{margin-top:24px;overflow:auto;border-radius:16px;border:1px solid var(--artifact-border);box-shadow:var(--artifact-shadow)}
+.cmptable{width:100%;border-collapse:separate;border-spacing:0;min-width:640px;background:var(--artifact-surface)}
+.cmptable th,.cmptable td{padding:15px 18px;text-align:left;font-size:14px;border-bottom:1px solid var(--artifact-border);vertical-align:top}
+.cmptable thead th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:800}
+.cmptable thead .th-dim{color:var(--artifact-muted)}
+.cmptable thead .th-glean{background:var(--gy-fill-navy);color:#fff}
+.cmptable thead .th-glean span{color:var(--gy-yellow)}
+.cmptable thead .th-cop{color:var(--artifact-muted)}
+.cmptable td.dim{font-weight:700;color:var(--gy-blue);width:22%}
+.cmptable td.g{width:40%;background:var(--gy-blue-soft)}
+.cmptable td.c{width:38%;color:var(--artifact-muted)}
+.cmptable tbody tr:last-child td{border-bottom:none}
+.cmptable td.g b{color:var(--gy-blue)}
 .dlbtn{position:fixed;bottom:22px;right:22px;z-index:50;background:var(--gy-fill-navy);color:#fff;border:none;border-radius:999px;padding:14px 22px;font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 8px 24px rgba(0,30,98,.35);display:inline-flex;align-items:center;gap:8px;transition:background .2s,transform .15s}
 .dlbtn:hover{background:var(--gy-fill-blue);transform:translateY(-1px)}
 .dlbtn svg{width:18px;height:18px;stroke:var(--gy-yellow);fill:none;stroke-width:2}
@@ -251,6 +264,7 @@ html[data-theme='dark'] .taocard .n{-webkit-text-stroke:1px var(--gy-navy)}
     <button class="tabbtn" data-tab="innovation" role="tab">Product Innovation</button>
     <button class="tabbtn" data-tab="engineering" role="tab">Product Engineering</button>
     <button class="tabbtn" data-tab="transformation" role="tab">Digital &amp; Enterprise Data</button>
+    <button class="tabbtn" data-tab="copilot" role="tab">Glean vs. Copilot Premium</button>
     <button class="tabbtn" data-tab="tao" role="tab">Glean Tao</button>
     <button class="tabbtn" data-tab="tokens" role="tab">Tokenomics / Tokenmaxxing</button>
   </div>
@@ -490,6 +504,34 @@ html[data-theme='dark'] .taocard .n{-webkit-text-stroke:1px var(--gy-navy)}
     </div>
   </div></section>
 </div>
+<div class="tab-panel" data-panel="copilot" data-glean-id="panel-copilot">
+  <section class="section"><div class="wrap">
+    <div class="panelhead fade d1"><div class="eyebrow">Choosing your AI foundation</div>
+      <h2>Glean vs. Copilot Premium</h2>
+      <p>Copilot Premium is strong inside the Microsoft ecosystem. But Goodyear's work spans far beyond Microsoft — engineering, supply chain, creative, finance, and proprietary systems. Glean is the horizontal layer that works across all of it, and complements Copilot rather than competing with it.</p></div>
+
+    <div class="charts fade d2" style="grid-template-columns:1fr">
+      <div class="ccard"><h3>Fit across what Goodyear actually runs on</h3><div class="sub">Relative coverage &amp; fit by capability (illustrative)</div><div id="copilotChart" class="chart" style="height:340px"></div></div>
+    </div>
+
+    <div class="cmpwrap fade d3">
+      <table class="cmptable">
+        <thead><tr><th class="th-dim">Capability</th><th class="th-glean">Glean</th><th class="th-cop">Copilot Premium</th></tr></thead>
+        <tbody>
+          <tr><td class="dim">Source coverage</td><td class="g"><b>150+ connectors</b> across Microsoft and non-Microsoft — ServiceNow, Workday, GitHub, Airtable, Salesforce, plus proprietary systems like tire-dev knowledge.</td><td class="c">Best within the Microsoft Graph; non-Microsoft sources are limited or require extra work.</td></tr>
+          <tr><td class="dim">Model choice</td><td class="g"><b>Model-agnostic.</b> Use GPT, Claude, Gemini — even Copilot — and switch as the market evolves. No lock-in.</td><td class="c">Tied to Microsoft's chosen models.</td></tr>
+          <tr><td class="dim">Cross-app reasoning</td><td class="g">A <b>knowledge graph</b> connects people, content, and activity so answers reason across departments and systems.</td><td class="c">Strongest reasoning over Microsoft 365 content; cross-system context is thinner.</td></tr>
+          <tr><td class="dim">Custom agents</td><td class="g"><b>Build once, reuse everywhere</b> — agents and skills that run across every connected source and team.</td><td class="c">Copilot Studio agents are capable but Microsoft-centric.</td></tr>
+          <tr><td class="dim">Security &amp; permissions</td><td class="g">Permission-aware end to end, <b>inheriting existing access</b> from every source system.</td><td class="c">Enterprise-grade within Microsoft's permission model.</td></tr>
+          <tr><td class="dim">Adoption</td><td class="g"><b>90%+ adoption</b> is typical; one horizontal experience for the whole company.</td><td class="c">Adoption often concentrated among heavy Microsoft 365 users.</td></tr>
+          <tr><td class="dim">Cost efficiency</td><td class="g">Reaches enterprise data before an LLM and rewrites queries into code — <b>up to 50% lower</b> AI consumption cost.</td><td class="c">Fixed per-seat premium; consumption not optimized across sources.</td></tr>
+          <tr><td class="dim">Relationship</td><td class="g"><b>Complements Copilot</b> — Glean is the context and governance layer that makes every model, including Copilot, more useful.</td><td class="c">One assistant, one ecosystem.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="rw-note fade d4">Bottom line: this isn't Glean <em>or</em> Copilot. Glean is the enterprise-wide intelligence layer that unifies Goodyear's full stack and makes whatever models you use — Copilot included — deliver better, cheaper answers.</p>
+  </div></section>
+</div>
 <div class="tab-panel" data-panel="tao" data-glean-id="panel-tao">
   <section class="section"><div class="wrap">
     <div class="panelhead fade d1"><div class="eyebrow">The Glean Tao</div>
@@ -639,6 +681,15 @@ function buildTokens(){if(built.tokens)return;built.tokens=true;var p=palette();
      {value:70,itemStyle:{color:p.blue,borderRadius:[6,6,0,0]}},
      {value:53,itemStyle:{color:p.blue,borderRadius:[6,6,0,0]}},
      {value:53,itemStyle:{color:p.yellow,borderRadius:[6,6,0,0]}}]}]});reg(t);}
+function buildCopilot(){if(built.copilot)return;built.copilot=true;var p=palette();
+  var c=echarts.init(document.getElementById('copilotChart'),null,{renderer:'svg'});
+  c.setOption({legend:{bottom:0,textStyle:{color:p.muted},data:['Glean','Copilot Premium']},tooltip:{trigger:'axis'},
+   grid:{left:16,right:16,top:20,bottom:56,containLabel:true},
+   xAxis:{type:'category',data:['Source\ncoverage','Model\nchoice','Cross-app\nreasoning','Custom\nagents','Enterprise\nadoption','Cost\nefficiency'],axisLabel:{color:p.muted,interval:0,fontSize:11,lineHeight:14},axisLine:{lineStyle:{color:p.grid}}},
+   yAxis:{type:'value',max:100,axisLabel:{color:p.muted},splitLine:{lineStyle:{color:p.grid}}},
+   series:[
+    {name:'Glean',type:'bar',data:[95,95,92,90,93,88],itemStyle:{color:p.blue,borderRadius:[5,5,0,0]},barGap:'10%'},
+    {name:'Copilot Premium',type:'bar',data:[60,45,62,65,60,55],itemStyle:{color:p.yellow,borderRadius:[5,5,0,0]}}]});reg(c);}
 
 /* ---- query rewriter ---- */
 var RW=[
@@ -670,7 +721,7 @@ document.querySelectorAll('.tabbtn').forEach(function(btn){
     var tab=btn.getAttribute('data-tab');
     document.querySelectorAll('.tabbtn').forEach(function(b){b.classList.toggle('active',b===btn);});
     document.querySelectorAll('.tab-panel').forEach(function(pn){pn.classList.toggle('active',pn.getAttribute('data-panel')===tab);});
-    if(tab==='story')buildStory(); if(tab==='tao')buildTao(); if(tab==='tokens')buildTokens();
+    if(tab==='story')buildStory(); if(tab==='tao')buildTao(); if(tab==='tokens')buildTokens(); if(tab==='copilot')buildCopilot();
     setTimeout(function(){charts.forEach(function(c){try{c.resize();}catch(e){}});},40);
     window.scrollTo({top:0,behavior:'smooth'});
   });
@@ -679,12 +730,12 @@ window.addEventListener('resize',function(){charts.forEach(function(c){try{c.res
 
 if(window.GleanBridge){
   window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
-  window.GleanBridge.onMessage('action',function(d){if(d.actionId==='export-pdf'){buildStory();buildTao();buildTokens();window.print();}});
+  window.GleanBridge.onMessage('action',function(d){if(d.actionId==='export-pdf'){buildStory();buildTao();buildTokens();buildCopilot();window.print();}});
 }
-function prepareChartsForPrint(){buildStory();buildTao();buildTokens();document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var ch=echarts.getInstanceByDom(el);if(!ch)return;var img=new Image();img.src=ch.getDataURL({type:'png',pixelRatio:2});img.className='print-chart-img';img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';el.dataset.prevPosition=el.style.position;el.style.position='relative';el.appendChild(img);});}
+function prepareChartsForPrint(){buildStory();buildTao();buildTokens();buildCopilot();document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var ch=echarts.getInstanceByDom(el);if(!ch)return;var img=new Image();img.src=ch.getDataURL({type:'png',pixelRatio:2});img.className='print-chart-img';img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';el.dataset.prevPosition=el.style.position;el.style.position='relative';el.appendChild(img);});}
 function cleanUpAfterPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var img=el.querySelector('.print-chart-img');if(!img)return;img.remove();el.style.position=el.dataset.prevPosition||'';delete el.dataset.prevPosition;});}
 var dl=document.getElementById('dlPdf');
-if(dl)dl.addEventListener('click',function(){try{buildStory();buildTao();buildTokens();}catch(e){}window.print();});
+if(dl)dl.addEventListener('click',function(){try{buildStory();buildTao();buildTokens();buildCopilot();}catch(e){}window.print();});
 window.addEventListener('beforeprint',prepareChartsForPrint);
 window.addEventListener('afterprint',cleanUpAfterPrint);
 </script>
