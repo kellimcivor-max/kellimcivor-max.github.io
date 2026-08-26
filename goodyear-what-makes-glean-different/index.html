@@ -236,13 +236,24 @@ html[data-theme='dark'] .taocard .n{-webkit-text-stroke:1px var(--gy-navy)}
   .rw-mid .arrow{transform:rotate(90deg)}
 }
 @media print{
+  @page{size:letter;margin:0.5in}
+  :root,html[data-theme='dark']{
+    --artifact-background:#ffffff;--artifact-surface:#ffffff;
+    --artifact-ink:#0d1b3e;--artifact-muted:#41496b;
+    --gy-blue:#0033A0;--gy-navy:#001E62;
+    --gy-blue-soft:rgba(0,51,160,0.08);--gy-blue-line:rgba(0,51,160,0.16);
+    --artifact-border:rgba(0,30,98,0.18);--track:rgba(0,51,160,0.14);
+  }
+  html,body{background:#fff!important;color:#0d1b3e!important}
+  *,*::before,*::after{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;animation:none!important;transition:none!important}
   .tabnav{display:none!important}
-  .tab-panel{display:block!important;border-top:2px solid var(--gy-blue);margin-top:20px}
-  .section{break-inside:avoid;margin-bottom:16px}
-  .chart{height:240px!important}
-  [class*="card"]{break-inside:avoid;box-shadow:none!important;border:1px solid rgba(0,0,0,0.08)}
-  *,*::before,*::after{animation:none!important;transition:none!important}
-  button,[role="button"]{display:none!important}
+  .tab-panel{display:block!important;border-top:2px solid var(--gy-blue);margin-top:18px;padding-top:6px}
+  .tab-panel:first-of-type{border-top:none}
+  .section{break-inside:avoid;margin-bottom:14px;padding:22px 0}
+  .chart{height:260px!important}
+  [class*="card"]{break-inside:avoid;box-shadow:none!important}
+  .close,.hero,.state.to,.stat,.gleanbar,.results,.tokstat .t,.rw-col.opt{break-inside:avoid}
+  button,[role="button"],.dlbtn{display:none!important}
 }
 </style>
 </head>
@@ -732,8 +743,17 @@ if(window.GleanBridge){
   window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
   window.GleanBridge.onMessage('action',function(d){if(d.actionId==='export-pdf'){buildStory();buildTao();buildTokens();buildCopilot();window.print();}});
 }
-function prepareChartsForPrint(){buildStory();buildTao();buildTokens();buildCopilot();document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var ch=echarts.getInstanceByDom(el);if(!ch)return;var img=new Image();img.src=ch.getDataURL({type:'png',pixelRatio:2});img.className='print-chart-img';img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';el.dataset.prevPosition=el.style.position;el.style.position='relative';el.appendChild(img);});}
-function cleanUpAfterPrint(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var img=el.querySelector('.print-chart-img');if(!img)return;img.remove();el.style.position=el.dataset.prevPosition||'';delete el.dataset.prevPosition;});}
+function prepareChartsForPrint(){
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.dataset.pd=p.style.display;p.style.display='block';});
+  buildStory();buildTao();buildTokens();buildCopilot();
+  charts.forEach(function(c){try{c.resize();}catch(e){}});
+  document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var ch=echarts.getInstanceByDom(el);if(!ch)return;var img=new Image();img.src=ch.getDataURL({type:'png',pixelRatio:2,backgroundColor:'#ffffff'});img.className='print-chart-img';img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';el.dataset.prevPosition=el.style.position;el.style.position='relative';el.appendChild(img);});
+}
+function cleanUpAfterPrint(){
+  document.querySelectorAll('[_echarts_instance_]').forEach(function(el){var img=el.querySelector('.print-chart-img');if(!img)return;img.remove();el.style.position=el.dataset.prevPosition||'';delete el.dataset.prevPosition;});
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.style.display=p.dataset.pd||'';delete p.dataset.pd;});
+  charts.forEach(function(c){try{c.resize();}catch(e){}});
+}
 var dl=document.getElementById('dlPdf');
 if(dl)dl.addEventListener('click',function(){try{buildStory();buildTao();buildTokens();buildCopilot();}catch(e){}window.print();});
 window.addEventListener('beforeprint',prepareChartsForPrint);
