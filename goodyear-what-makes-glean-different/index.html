@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>What Makes Glean Different — Goodyear</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
 <style>
 :root{
   --artifact-background: var(--theme-background, #f7f8fb);
@@ -256,13 +255,6 @@ html[data-theme='dark'] .taocard .n{-webkit-text-stroke:1px var(--gy-navy)}
   .close,.hero,.state.to,.stat,.gleanbar,.results,.tokstat .t,.rw-col.opt{break-inside:avoid}
   button,[role="button"],.dlbtn{display:none!important}
 }
-
-/* PDF export layout */
-body.exporting .tabnav,body.exporting .dlbtn{display:none!important}
-body.exporting .tab-panel{display:block!important}
-body.exporting .tab-panel{page-break-before:always;break-before:page}
-body.exporting .tab-panel:first-of-type{page-break-before:auto;break-before:auto}
-body.exporting .section,body.exporting .chart,body.exporting .wf,body.exporting .ws,body.exporting .card{page-break-inside:avoid;break-inside:avoid}
 </style>
 </head>
 <body>
@@ -612,7 +604,7 @@ body.exporting .section,body.exporting .chart,body.exporting .wf,body.exporting 
   </div></section>
 </div>
 
-<button class="dlbtn" id="dlPdf" title="Download this page as a PDF" type="button"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>Download PDF</button>
+<button class="dlbtn" id="dlPdf" title="Download the PDF (opens in a new tab)" type="button"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M5 21h14"/></svg>Download PDF</button>
 <div class="foot">Glean · Enterprise intelligence for Goodyear</div>
 
 <script>
@@ -763,34 +755,7 @@ function cleanUpAfterPrint(){
   charts.forEach(function(c){try{c.resize();}catch(e){}});
 }
 var dl=document.getElementById('dlPdf');
-function _gyResizeCharts(){document.querySelectorAll('[_echarts_instance_]').forEach(function(el){try{var ch=echarts.getInstanceByDom(el);if(ch)ch.resize();}catch(e){}});}
-function exportPDF(){
-  try{buildStory();buildTao();buildTokens();buildCopilot();}catch(e){}
-  if(typeof html2pdf==='undefined'){try{prepareChartsForPrint();}catch(e){}window.print();return;}
-  var btn=dl,oldHTML=btn?btn.innerHTML:'';
-  if(btn){btn.disabled=true;btn.style.pointerEvents='none';btn.innerHTML='<span style="font-weight:700">Generating PDF\u2026</span>';}
-  var active=document.querySelector('.tab-panel.active');
-  var activeName=active?active.getAttribute('data-panel'):'story';
-  document.body.classList.add('exporting');
-  _gyResizeCharts();
-  function finish(){
-    document.body.classList.remove('exporting');
-    document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.toggle('active',p.getAttribute('data-panel')===activeName);});
-    _gyResizeCharts();
-    if(btn){btn.disabled=false;btn.style.pointerEvents='';btn.innerHTML=oldHTML;}
-  }
-  var opt={margin:[8,8,10,8],filename:'Goodyear-What-Makes-Glean-Different.pdf',
-    image:{type:'jpeg',quality:0.97},
-    html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff',scrollX:0,scrollY:0,windowWidth:document.documentElement.scrollWidth,logging:false},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait',compress:true},
-    pagebreak:{mode:['css','legacy']}};
-  setTimeout(function(){
-    try{
-      html2pdf().set(opt).from(document.body).save().then(finish).catch(function(){finish();try{prepareChartsForPrint();window.print();}catch(e){}});
-    }catch(e){finish();try{prepareChartsForPrint();window.print();}catch(e2){}}
-  },500);
-}
-if(dl)dl.addEventListener('click',exportPDF);
+if(dl)dl.addEventListener('click',function(){try{window.open('https://kellimcivor-max.github.io/goodyear-what-makes-glean-different/Goodyear-What-Makes-Glean-Different.pdf','_blank','noopener');}catch(e){location.href='https://kellimcivor-max.github.io/goodyear-what-makes-glean-different/Goodyear-What-Makes-Glean-Different.pdf';}});
 window.addEventListener('beforeprint',prepareChartsForPrint);
 window.addEventListener('afterprint',cleanUpAfterPrint);
 </script>
