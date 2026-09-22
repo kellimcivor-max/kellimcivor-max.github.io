@@ -241,6 +241,7 @@
             <th style="min-width:220px">Capability the journey needs</th>
             <th class="glean">Glean</th>
             <th>Microsoft Copilot<span class="sm">M365 Suite</span></th>
+            <th>Claude<span class="sm">Anthropic</span></th>
             <th>GitHub Copilot<span class="sm">Engineering IDEs</span></th>
             <th>In-House Build<span class="sm">AI/ML teams</span></th>
           </tr>
@@ -250,6 +251,7 @@
             <td><span class="cap">Enterprise knowledge graph<span class="sm">Permissions-aware unified index</span></span></td>
             <td class="glean-col"><span class="verdict"><span class="m m-yes"></span>Yes</span><span class="vtext">Purpose-built across 150+ sources</span></td>
             <td><span class="verdict"><span class="m m-part"></span>Limited</span><span class="vtext">Microsoft Graph, M365-centric</span></td>
+            <td><span class="verdict"><span class="m m-no"></span>No</span><span class="vtext">A model, not an enterprise index</span></td>
             <td><span class="verdict"><span class="m m-part"></span>Limited</span><span class="vtext">Code &amp; repos, not the enterprise</span></td>
             <td><span class="verdict"><span class="m m-no"></span>Heavy lift</span><span class="vtext">Manual metadata, engineering to maintain</span></td>
           </tr>
@@ -257,6 +259,7 @@
             <td><span class="cap">Cross-platform connectors<span class="sm">Beyond one ecosystem</span></span></td>
             <td class="glean-col"><span class="verdict"><span class="m m-yes"></span>150+</span><span class="vtext">Native, managed, incl. Teamcenter, SAP &amp; Salesforce</span></td>
             <td><span class="verdict"><span class="m m-part"></span>Partial</span><span class="vtext">3rd-party connectors for non-O365</span></td>
+            <td><span class="verdict"><span class="m m-part"></span>Via MCP</span><span class="vtext">You build &amp; host each connector</span></td>
             <td><span class="verdict"><span class="m m-no"></span>Code-scoped</span><span class="vtext">Repos and IDE context only</span></td>
             <td><span class="verdict"><span class="m m-no"></span>Build-it-yourself</span><span class="vtext">Every connector is an engineering project</span></td>
           </tr>
@@ -264,6 +267,7 @@
             <td><span class="cap">Model flexibility<span class="sm">No lock-in</span></span></td>
             <td class="glean-col"><span class="verdict"><span class="m m-yes"></span>35+ LLMs</span><span class="vtext">Auto-select, incl. OpenAI, Gemini &amp; Anthropic</span></td>
             <td><span class="verdict"><span class="m m-part"></span>OpenAI-based</span><span class="vtext">Tied to Microsoft/OpenAI</span></td>
+            <td><span class="verdict"><span class="m m-no"></span>Anthropic only</span><span class="vtext">Single model family</span></td>
             <td><span class="verdict"><span class="m m-part"></span>OpenAI-based</span><span class="vtext">Bounded to Copilot models</span></td>
             <td><span class="verdict"><span class="m m-part"></span>DIY orchestration</span><span class="vtext">You maintain the routing layer</span></td>
           </tr>
@@ -271,6 +275,7 @@
             <td><span class="cap">Governance, audit &amp; IP protection<span class="sm">Built for proprietary designs</span></span></td>
             <td class="glean-col"><span class="verdict"><span class="m m-yes"></span>Enterprise-grade</span><span class="vtext">Firewalled, SOC 2, ISO 27001/42001, audit trails</span></td>
             <td><span class="verdict"><span class="m m-yes"></span>Strong</span><span class="vtext">Microsoft compliance stack</span></td>
+            <td><span class="verdict"><span class="m m-part"></span>Model-level</span><span class="vtext">Strong model controls, no governed index</span></td>
             <td><span class="verdict"><span class="m m-part"></span>Code-level</span><span class="vtext">Repo permissions, not enterprise-wide</span></td>
             <td><span class="verdict"><span class="m m-part"></span>Your burden</span><span class="vtext">Controls only as mature as you build</span></td>
           </tr>
@@ -278,6 +283,7 @@
             <td><span class="cap">Whole-stack reach<span class="sm">Every employee, every app</span></span></td>
             <td class="glean-col"><span class="verdict"><span class="m m-yes"></span>Yes</span><span class="vtext">Horizontal across the enterprise</span></td>
             <td><span class="verdict"><span class="m m-part"></span>M365 users</span><span class="vtext">Bounded to the suite</span></td>
+            <td><span class="verdict"><span class="m m-no"></span>Assistant</span><span class="vtext">No enterprise-wide deployment layer</span></td>
             <td><span class="verdict"><span class="m m-no"></span>Developers</span><span class="vtext">Bounded to engineering</span></td>
             <td><span class="verdict"><span class="m m-no"></span>Narrow</span><span class="vtext">A few pilots, rarely scaled</span></td>
           </tr>
@@ -285,6 +291,7 @@
             <td><span class="cap">Engineering &amp; dealer knowledge layer<span class="sm">Ready for product dev &amp; the field</span></span></td>
             <td class="glean-col"><span class="verdict"><span class="m m-yes"></span>Yes</span><span class="vtext">Governed answers across PLM, schematics, code &amp; tickets</span></td>
             <td><span class="verdict"><span class="m m-part"></span>Partial</span><span class="vtext">Best inside Microsoft surfaces</span></td>
+            <td><span class="verdict"><span class="m m-no"></span>Not grounded</span><span class="vtext">No PLM, code or dealer context</span></td>
             <td><span class="verdict"><span class="m m-part"></span>Code only</span><span class="vtext">No PLM, specs or dealer context</span></td>
             <td><span class="verdict"><span class="m m-no"></span>Rare</span><span class="vtext">Seldom reaches production</span></td>
           </tr>
