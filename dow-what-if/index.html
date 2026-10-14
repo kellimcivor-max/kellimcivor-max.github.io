@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dow × Glean — Enterprise AI Journey</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+  :root{
+    --artifact-bg:#f4f6f8;
+    --artifact-surface:#ffffff;
+    --artifact-plum:#e80033;        /* Dow Red */
+    --artifact-plum-deep:#415364;   /* Dow Slate Gray */
+    --artifact-plum-soft:#fce8ed;
+    --artifact-accent:#00b2a9;      /* Dow Teal */
+    --artifact-accent-deep:#008f87;
+    --artifact-ink:#26323b;
+    --artifact-muted:#5b6770;
+    --artifact-line:#dfe4e8;
+    --artifact-good:#e80033;
+    --artifact-limited:#829995;
+    --artifact-no:#cbc5b5;
+    --artifact-card-shadow:0 10px 30px rgba(65,83,100,0.09);
+    --artifact-card-shadow-lg:0 24px 60px rgba(65,83,100,0.14);
+  }
+  html[data-theme='dark']{ --artifact-card-shadow:0 10px 30px rgba(0,0,0,0.4); }
+  *{box-sizing:border-box}
+  body{
+    margin:0;font-family:"Helvetica Neue",Arial,system-ui,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 100% -10%, rgba(232,0,51,0.08), transparent 60%),
+      radial-gradient(900px 500px at -10% 20%, rgba(0,178,169,0.07), transparent 55%),
+      var(--artifact-bg);
+    color:var(--artifact-ink);line-height:1.55;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  .eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;font-weight:800;color:var(--artifact-plum)}
+  .eyebrow.gold{color:var(--artifact-accent-deep)}
+  h1,h2,h3,h4{margin:0;font-weight:800;letter-spacing:-.01em;color:var(--artifact-plum-deep)}
+  section{padding:64px 0;border-top:1px solid var(--artifact-line)}
+  section:first-of-type{border-top:none}
+  .sec-head{margin-bottom:34px;max-width:760px}
+  .sec-head h2{font-size:clamp(26px,3.6vw,40px);line-height:1.08;margin-bottom:12px}
+  .sec-head p{color:var(--artifact-muted);font-size:16px;margin:0}
+
+  /* ---------- brand bar ---------- */
+  .brandbar{background:var(--artifact-plum-deep);color:#fff}
+  .brandbar .wrap{display:flex;align-items:center;justify-content:space-between;padding-top:16px;padding-bottom:16px}
+  .logo{display:flex;align-items:center;gap:12px}
+  .logo .word{font-weight:900;font-size:30px;letter-spacing:.04em;color:#fff;text-transform:uppercase}
+  .logo .word b{color:var(--artifact-accent)}
+  .brandbar .tag{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.72);font-weight:700}
+  .x-glean{display:flex;align-items:center;gap:10px;font-weight:800;font-size:13px;color:#fff}
+  .x-glean .dot{width:8px;height:8px;border-radius:50%;background:var(--artifact-accent)}
+
+  /* ---------- hero ---------- */
+  .hero{background:linear-gradient(160deg,var(--artifact-plum-deep),var(--artifact-plum) 70%);color:#fff;position:relative;overflow:hidden}
+  .hero:before{content:"";position:absolute;right:-140px;top:-120px;width:520px;height:520px;border-radius:50%;
+    background:radial-gradient(circle at center, rgba(0,178,169,.24), transparent 62%)}
+  .hero .wrap{position:relative;padding:72px 24px 66px}
+  .hero .kick{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--artifact-accent);font-weight:800;margin-bottom:18px}
+  .hero h1{color:#fff;font-size:clamp(34px,5.2vw,60px);line-height:1.02;max-width:900px}
+  .hero .lead{margin:22px 0 10px;font-size:clamp(18px,2.2vw,23px);color:#f4f6f8;max-width:820px;font-weight:600}
+  .hero .sub{color:rgba(255,255,255,.82);max-width:820px;font-size:16px}
+  .pills{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22);
+    padding:9px 15px;border-radius:999px;font-size:13px;font-weight:700;color:#fff}
+  .pill .b{width:7px;height:7px;border-radius:50%;background:var(--artifact-accent)}
+
+  /* ---------- stat tiles ---------- */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .stat{background:var(--artifact-surface);border:1px solid var(--artifact-line);border-radius:16px;padding:24px;box-shadow:var(--artifact-card-shadow);position:relative;overflow:hidden}
+  .stat:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--artifact-accent)}
+  .stat .v{font-size:clamp(30px,4vw,44px);font-weight:900;color:var(--artifact-plum);line-height:1}
+  .stat .l{margin-top:10px;color:var(--artifact-muted);font-size:14px;font-weight:600}
+
+  /* ---------- cards & charts ---------- */
+  .card{background:var(--artifact-surface);border:1px solid var(--artifact-line);border-radius:18px;padding:26px;box-shadow:var(--artifact-card-shadow)}
+  .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .chart-title{font-size:15px;font-weight:800;color:var(--artifact-plum-deep);margin-bottom:2px}
+  .chart-sub{font-size:13px;color:var(--artifact-muted);margin-bottom:8px}
+  .chart{width:100%;height:320px}
+
+  /* ---------- comparison table ---------- */
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--artifact-line);border-radius:18px;box-shadow:var(--artifact-card-shadow);background:var(--artifact-surface);margin-top:22px}
+  table.cmp{border-collapse:collapse;width:100%;min-width:820px}
+  table.cmp th,table.cmp td{padding:16px 16px;text-align:left;vertical-align:top;border-bottom:1px solid var(--artifact-line)}
+  table.cmp thead th{position:sticky;top:0;background:var(--artifact-plum-deep);color:#fff;font-size:13px;letter-spacing:.02em}
+  table.cmp thead th.glean{background:var(--artifact-plum)}
+  table.cmp thead th .sm{display:block;font-weight:600;color:rgba(255,255,255,.75);font-size:11px;margin-top:2px}
+  table.cmp tbody tr:last-child td{border-bottom:none}
+  .cap{font-weight:800;color:var(--artifact-plum-deep);font-size:14px}
+  .cap .sm{display:block;font-weight:600;color:var(--artifact-muted);font-size:12px;margin-top:2px}
+  .verdict{font-weight:800;font-size:13px;display:inline-flex;align-items:center;gap:7px}
+  .verdict .m{width:9px;height:9px;border-radius:50%;flex:none}
+  .m-yes{background:var(--artifact-good)} .m-part{background:var(--artifact-accent-deep)} .m-no{background:var(--artifact-no)}
+  .vtext{color:var(--artifact-muted);font-size:12px;display:block;margin-top:3px;font-weight:600}
+  td.glean-col{background:var(--artifact-plum-soft)}
+
+  /* ---------- landscape cards ---------- */
+  .land-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}
+  .land{background:var(--artifact-surface);border:1px solid var(--artifact-line);border-radius:16px;padding:22px;box-shadow:var(--artifact-card-shadow)}
+  .land h4{font-size:17px;margin-bottom:2px}
+  .land .role{font-size:12px;text-transform:uppercase;letter-spacing:.12em;font-weight:800;color:var(--artifact-accent-deep);margin-bottom:10px}
+  .land p{margin:0;color:var(--artifact-muted);font-size:14px}
+
+  /* ---------- levers ---------- */
+  .levers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px}
+  .lever{background:var(--artifact-surface);border:1px solid var(--artifact-line);border-radius:16px;padding:22px;box-shadow:var(--artifact-card-shadow)}
+  .lever .ic{width:38px;height:38px;border-radius:10px;background:var(--artifact-plum-soft);color:var(--artifact-plum);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;margin-bottom:12px}
+  .lever h4{font-size:15px;margin-bottom:6px}
+  .lever p{margin:0;color:var(--artifact-muted);font-size:13.5px}
+
+  /* ---------- journey ---------- */
+  .phase{display:grid;grid-template-columns:88px 1fr;gap:22px;padding:26px 0;border-bottom:1px dashed var(--artifact-line)}
+  .phase:last-child{border-bottom:none}
+  .phase .num{font-size:44px;font-weight:900;color:var(--artifact-accent);line-height:1;font-variant-numeric:tabular-nums}
+  .phase .ptag{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:var(--artifact-plum);margin-bottom:6px}
+  .phase h3{font-size:20px;margin-bottom:10px}
+  .phase .whatif{font-style:italic;color:var(--artifact-ink);font-weight:600;font-size:16px;margin-bottom:14px;border-left:3px solid var(--artifact-accent);padding-left:14px}
+  .phase ul{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+  .phase li{position:relative;padding-left:22px;color:var(--artifact-muted);font-size:14px}
+  .phase li:before{content:"";position:absolute;left:0;top:8px;width:8px;height:8px;border-radius:50%;background:var(--artifact-plum)}
+
+  /* ---------- architecture ---------- */
+  .arch{display:grid;gap:14px}
+  .layer{border-radius:16px;padding:22px;border:1px solid var(--artifact-line);box-shadow:var(--artifact-card-shadow)}
+  .layer .lh{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;margin-bottom:14px}
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{padding:9px 14px;border-radius:10px;font-size:13px;font-weight:700}
+  .layer.exp{background:var(--artifact-surface)} .layer.exp .lh{color:var(--artifact-muted)} .layer.exp .chip{background:var(--artifact-plum-soft);color:var(--artifact-plum-deep)}
+  .layer.glean{background:linear-gradient(150deg,var(--artifact-plum-deep),var(--artifact-plum));color:#fff;border:none}
+  .layer.glean .lh{color:var(--artifact-accent)}
+  .layer.glean .glean-name{font-size:26px;font-weight:900;margin-bottom:12px}
+  .layer.glean .chip{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.24)}
+  .layer.glean .note{margin-top:14px;color:rgba(255,255,255,.82);font-size:13.5px;max-width:820px}
+  .layer.data{background:var(--artifact-surface)} .layer.data .lh{color:var(--artifact-muted)} .layer.data .chip{background:#f4f6f8;color:var(--artifact-plum-deep);border:1px solid var(--artifact-line)}
+  .arrow{text-align:center;color:var(--artifact-plum);font-size:20px;line-height:1}
+
+  /* ---------- principles ---------- */
+  .prin{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  .pr{background:var(--artifact-surface);border:1px solid var(--artifact-line);border-radius:14px;padding:20px;box-shadow:var(--artifact-card-shadow);display:flex;gap:14px}
+  .pr .ic{width:34px;height:34px;flex:none;border-radius:9px;background:var(--artifact-accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900}
+  .pr p{margin:0;font-size:14px;color:var(--artifact-ink);font-weight:600}
+
+  /* ---------- closing ---------- */
+  .close{background:linear-gradient(160deg,var(--artifact-plum),var(--artifact-plum-deep));color:#fff;text-align:center}
+  .close .wrap{padding:80px 24px}
+  .close h2{color:#fff;font-size:clamp(26px,4vw,44px);max-width:900px;margin:0 auto;line-height:1.1}
+  .close .mark{color:var(--artifact-accent)}
+  .close .foot{margin-top:26px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.72);font-weight:700}
+
+  @media (max-width:820px){
+    .stats,.land-grid,.levers,.chart-grid,.prin{grid-template-columns:1fr}
+    .brandbar .wrap{gap:12px;flex-wrap:wrap}
+    .brandbar .tag{font-size:9px;letter-spacing:.08em}
+    .phase{grid-template-columns:1fr;gap:8px}
+  }
+
+  @media print{
+    body{margin:0;padding:0.35in 0.5in;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+    .wrap{max-width:100%!important}
+    section{break-inside:avoid;padding:22px 0}
+    .card,.stat,.land,.lever,.layer,.pr,.tbl-wrap{break-inside:avoid;box-shadow:none!important}
+    .chart{height:260px!important}
+    thead th[style*="sticky"],table.cmp thead th{position:static!important}
+    *,*::before,*::after{animation:none!important;transition:none!important}
+    button,[role="button"]{display:none!important}
+  }
+</style>
+</head>
+<body>
+
+<!-- brand bar -->
+<div class="brandbar" data-glean-id="brandbar">
+  <div class="wrap">
+    <div class="logo">
+      <span class="word">DOW</span>
+    </div>
+    <span class="tag">Enterprise AI Journey</span>
+    <div class="x-glean"><span class="dot"></span>with Glean</div>
+  </div>
+</div>
+
+<!-- hero -->
+<header class="hero" data-glean-id="hero">
+  <div class="wrap">
+    <div class="kick">Imagine If · Dow × Glean</div>
+    <h1>What if every Dow team could ask a question of the entire enterprise — and get a trusted, permission-aware answer in seconds?</h1>
+    <p class="lead">One governed knowledge layer that sits alongside your Microsoft and ServiceNow investments — not another silo.</p>
+    <p class="sub">A phased path to a single, governed intelligence layer that connects the systems Dow already runs on — ServiceNow, Microsoft, SAP, and Workday — and carries every user's existing access through to every answer. Built to complement your AI control tower and governance framework, so AI adoption strengthens trust and cost control instead of straining them.</p>
+    <div class="pills">
+      <span class="pill"><span class="b"></span>Governed by design</span>
+      <span class="pill"><span class="b"></span>Complements Microsoft &amp; ServiceNow</span>
+      <span class="pill"><span class="b"></span>Value proven in phases</span>
+    </div>
+  </div>
+</header>
+
+<!-- prize -->
+<section data-glean-id="prize">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow gold">The Prize · Documented Impact</div>
+      <h2>What one governed knowledge layer can deliver</h2>
+      <p>Averages drawn from Glean enterprise deployments — the outcomes each phase of this journey is designed to compound toward.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="v">110 hrs</div><div class="l">Productivity gained per employee, per year</div></div>
+      <div class="stat"><div class="v">141%</div><div class="l">Average ROI on Glean deployments</div></div>
+      <div class="stat"><div class="v">&lt;6 mo</div><div class="l">Typical payback period</div></div>
+      <div class="stat"><div class="v">70%</div><div class="l">Faster time-to-information for non-technical users</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- landscape -->
+<section data-glean-id="landscape">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">The Landscape · A Complementary AI Layer</div>
+      <h2>Glean alongside Dow's AI and service ecosystem</h2>
+      <p>Dow is advancing employee self-service with Microsoft, ServiceNow Now Assist within Copilot, and an AI control tower and governance framework. Glean is a permission-aware enterprise context layer that works alongside those investments — connecting knowledge across every source while Dow decides where each existing platform remains the right experience.</p>
+    </div>
+
+    <div class="chart-grid">
+      <div class="card" data-glean-id="chart-radar-card">
+        <div class="chart-title">Capability coverage across the journey</div>
+        <div class="chart-sub">Higher is stronger across the six capabilities this journey depends on.</div>
+        <div id="radar" class="chart"></div>
+      </div>
+      <div class="card" data-glean-id="chart-composite-card">
+        <div class="chart-title">Directional fit as an enterprise knowledge layer</div>
+        <div class="chart-sub">Composite of the six capabilities, indexed to Glean = 100.</div>
+        <div id="composite" class="chart"></div>
+      </div>
+    </div>
+
+    <div class="tbl-wrap" data-glean-id="landscape-table">
+      <table class="cmp">
+        <thead>
+          <tr>
+            <th style="min-width:220px">Capability the journey needs</th>
+            <th class="glean">Glean</th>
+            <th>Microsoft Copilot<span class="sm">M365 Suite</span></th>
+            <th>Custom / point solutions<span class="sm">Build + workflow tools</span></th>
+            <th>Claude<span class="sm">Anthropic</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="cap">Enterprise knowledge graph<span class="sm">Permissions-aware unified index</span></span></td>
+            <td class="glean-col"><span class="verdict"><span class="m m-yes"></span>Yes</span><span class="vtext">Purpose-built across 100+ sources</span></td>
+            <td><span class="verdict"><span class="m m-part"></span>Limited</span><span class="vtext">Microsoft Graph, M365-centric</span></td>
+            <td><span class="verdict"><span class="m m-part"></span>Varies</span><span class="vtext">Requires custom design, ownership, and evaluation</span></td>
+            <td><span class="verdict"><span class="m m-no"></span>No</span><span class="vtext">Model, not a knowledge index</span></td>
+          </tr>
+          <tr>
+            <td><span class="cap">Cross-platform connectors<span class="sm">Beyond one ecosystem</span></span></td>
+            <td class="glean-col"><span class="verdict"><span class="m m-yes"></span>100+</span><span class="vtext">Native, managed, permission-aware</span></td>
+            <td><span class="verdict"><span class="m m-part"></span>Partial</span><span class="vtext">3rd-party connectors for non-O365</span></td>
+            <td><span class="verdict"><span class="m m-no"></span>Build-it-yourself</span><span class="vtext">Every connector is an engineering project</span></td>
+            <td><span class="verdict"><span class="m m-part"></span>Partial</span><span class="vtext">Developer-assembled via MCP</span></td>
+          </tr>
+          <tr>
+            <td><span class="cap">Model flexibility<span class="sm">No lock-in</span></span></td>
+            <td class="glean-col"><span class="verdict"><span class="m m-yes"></span>35+ LLMs</span><span class="vtext">Auto-select, bring your own key</span></td>
+            <td><span class="verdict"><span class="m m-part"></span>OpenAI-based</span><span class="vtext">Tied to Microsoft/OpenAI</span></td>
+            <td><span class="verdict"><span class="m m-part"></span>DIY orchestration</span><span class="vtext">You maintain the routing layer</span></td>
+            <td><span class="verdict"><span class="m m-no"></span>Anthropic only</span><span class="vtext">Claude family</span></td>
+          </tr>
+          <tr>
+            <td><span class="cap">Governance, audit &amp; compliance<span class="sm">Enterprise access &amp; audit</span></span></td>
+            <td class="glean-col"><span class="verdict"><span class="m m-yes"></span>Enterprise-grade</span><span class="vtext">SOC 2, ISO 27001/42001, audit trails</span></td>
+            <td><span class="verdict"><span class="m m-yes"></span>Strong</span><span class="vtext">Microsoft compliance stack</span></td>
+            <td><span class="verdict"><span class="m m-part"></span>Your burden</span><span class="vtext">Controls only as mature as you build</span></td>
+            <td><span class="verdict"><span class="m m-part"></span>Maturing</span><span class="vtext">Enterprise controls emerging</span></td>
+          </tr>
+          <tr>
+            <td><span class="cap">Whole-stack reach<span class="sm">Every employee, every app</span></span></td>
+            <td class="glean-col"><span class="verdict"><span class="m m-yes"></span>Yes</span><span class="vtext">Horizontal across the enterprise</span></td>
+            <td><span class="verdict"><span class="m m-part"></span>M365 users</span><span class="vtext">Bounded to the suite</span></td>
+            <td><span class="verdict"><span class="m m-no"></span>Narrow</span><span class="vtext">Coverage depends on build scope and ownership</span></td>
+            <td><span class="verdict"><span class="m m-part"></span>Knowledge workers</span><span class="vtext">Per-seat agent adoption</span></td>
+          </tr>
+          <tr>
+            <td><span class="cap">Employee knowledge layer<span class="sm">Self-service &amp; IT support</span></span></td>
+            <td class="glean-col"><span class="verdict"><span class="m m-yes"></span>Yes</span><span class="vtext">Governed answers behind any UI</span></td>
+            <td><span class="verdict"><span class="m m-part"></span>Partial</span><span class="vtext">Best inside Microsoft surfaces</span></td>
+            <td><span class="verdict"><span class="m m-no"></span>No</span><span class="vtext">Production readiness depends on scope</span></td>
+            <td><span class="verdict"><span class="m m-no"></span>No</span><span class="vtext">Not a shared knowledge backbone</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="land-grid">
+      <div class="land" data-glean-id="land-copilot">
+        <h4>Microsoft Copilot &amp; ServiceNow</h4>
+        <div class="role">Employee self-service &amp; IT workflows</div>
+        <p>As Dow advances Microsoft employee self-service and ServiceNow Now Assist within Copilot, Glean adds a complementary context layer across every enterprise source — with each user's access carried through — while Dow's existing platforms remain the experience of choice where they fit best.</p>
+      </div>
+      <div class="land" data-glean-id="land-inhouse">
+        <h4>Custom &amp; point solutions</h4>
+        <div class="role">The total cost to operate</div>
+        <p>Custom workflows can solve a single use case, but each one carries its own integration, permissions, evaluation, and maintenance burden. Glean delivers that capability as a managed, permission-aware platform — one governed layer instead of many point builds to own.</p>
+      </div>
+      <div class="land" data-glean-id="land-claude">
+        <h4>Claude &amp; standalone assistants</h4>
+        <div class="role">Agentic assistants</div>
+        <p>Powerful assistants for individuals, but agent-first rather than a shared enterprise index. Glean grounds any assistant in one governed knowledge base, so every tool answers from the same trusted source of truth across Dow.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- efficiency -->
+<section data-glean-id="efficiency">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">The Economics · Token Efficiency</div>
+      <h2>Make every AI interaction more efficient</h2>
+      <p>As AI scales across Dow, token consumption becomes the meter running on every query. Glean's architecture is built to keep that meter low — through better context, the right model for each task, and reuse across workflows.</p>
+    </div>
+
+    <div class="levers">
+      <div class="lever" data-glean-id="lever-context">
+        <div class="ic">C</div>
+        <h4>Context — reduce wasted tokens</h4>
+        <p>Glean grounds each response in the relevant enterprise context, so every model call focuses on the task instead of repeatedly rebuilding background from scattered sources.</p>
+      </div>
+      <div class="lever" data-glean-id="lever-models">
+        <div class="ic">M</div>
+        <h4>Models — match model to task</h4>
+        <p>Glean auto-selects across 35+ models, reserving higher-cost frontier models for the work that needs them and routing routine retrieval to efficient ones.</p>
+      </div>
+      <div class="lever" data-glean-id="lever-reuse">
+        <div class="ic">R</div>
+        <h4>Reuse — build context once</h4>
+        <p>One shared enterprise context layer powers search, assistants, and agents across tools — so teams never repay tokens to rediscover the same facts, and usage stays measurable across workflows.</p>
+      </div>
+    </div>
+
+    <div class="card" data-glean-id="efficiency-card">
+      <div class="chart-title">Relative tokens per enterprise task</div>
+      <div class="chart-sub">Illustrative of the architectural approach — Glean = 1.0×. Shared context, model routing, and reuse reduce the tokens an enterprise task consumes versus assistants that rebuild context on every call.</div>
+      <div id="tokens" class="chart"></div>
+    </div>
+  </div>
+</section>
+
+<!-- journey -->
+<section data-glean-id="journey">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">The Journey · Five Phases</div>
+      <h2>From governed foundation to broader operational value</h2>
+      <p>Start with a measurable service-management use case, prove governance and cost outcomes, then expand only where value is confirmed. Each phase complements Dow's existing Microsoft and ServiceNow investments.</p>
+    </div>
+
+    <div class="card" style="padding:8px 26px">
+      <div class="phase" data-glean-id="phase-01">
+        <div class="num">01</div>
+        <div>
+          <div class="ptag">Phase 01 · Foundation</div>
+          <h3>Connect priority sources and controls</h3>
+          <div class="whatif">What if Dow could connect priority enterprise knowledge to AI workflows while preserving each user's existing access?</div>
+          <ul>
+            <li>Connect the sources Dow runs on today — ServiceNow, Microsoft, SAP, and Workday — with source-level permissions carried through to every answer.</li>
+            <li>A governed retrieval layer that fits alongside Dow's AI control tower and architecture standards.</li>
+            <li>Define permissions, ownership, and a measurable baseline before expanding scope.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="phase" data-glean-id="phase-02">
+        <div class="num">02</div>
+        <div>
+          <div class="ptag">Phase 02 · IT Service Management</div>
+          <h3>Support the global service desk and IT teams</h3>
+          <div class="whatif">What if service teams could find trusted answers across ITIL knowledge, tickets, asset information, and runbooks without searching system by system?</div>
+          <ul>
+            <li>Begin with the workflows at the center of the IT remit: the ITIL platform, technology governance, asset management, and the global service desk.</li>
+            <li>Grounded answers drawn from Dow's real service requests and approved knowledge.</li>
+            <li>Measure resolution support, time-to-information, and answer quality from day one.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="phase" data-glean-id="phase-03">
+        <div class="num">03</div>
+        <div>
+          <div class="ptag">Phase 03 · Employee Self-Service</div>
+          <h3>Ground employee answers across existing tools</h3>
+          <div class="whatif">What if employees could resolve common questions through the familiar Microsoft and ServiceNow experiences they already use, with answers grounded in approved Dow knowledge?</div>
+          <ul>
+            <li>Works alongside Dow's Microsoft self-service rollout and ServiceNow Now Assist-in-Copilot initiatives.</li>
+            <li>Permission-aware answers with source citations and a clear path back to the system of record.</li>
+            <li>Keeps the experience in the tools Dow chooses, adding a shared knowledge layer beneath them.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="phase" data-glean-id="phase-04">
+        <div class="num">04</div>
+        <div>
+          <div class="ptag">Phase 04 · Governance &amp; Cost Control</div>
+          <h3>Fit the AI control tower and cost model</h3>
+          <div class="whatif">What if every AI workflow could be reviewed for access, answer quality, governance, and cost before it scales?</div>
+          <ul>
+            <li>Aligns with Dow's AI control tower, architecture, data-management, and security standards.</li>
+            <li>Preserves source permissions and traces every answer to the approved source of record.</li>
+            <li>Tracks usage and cost by workflow, so value is clear before anything expands.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="phase" data-glean-id="phase-05">
+        <div class="num">05</div>
+        <div>
+          <div class="ptag">Phase 05 · Expand Where Validated</div>
+          <h3>Extend trusted knowledge to more of the enterprise</h3>
+          <div class="whatif">What if proven service-management patterns could extend to other Dow teams — wherever business owners confirm the use case and the value?</div>
+          <ul>
+            <li>Expand to adjacent operational knowledge needs based on stakeholder priorities.</li>
+            <li>Opportunities such as equipment inspection and maintenance planning can be explored with the relevant operations owners as value is proven.</li>
+            <li>Each expansion carries its own success measures, governance, and cost controls.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- architecture -->
+<section data-glean-id="architecture">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">The Knowledge · Architecture</div>
+      <h2>One governed context layer across Dow's AI environment</h2>
+      <p>Glean connects the experiences teams use with the approved enterprise sources behind them — preserving source permissions and governance at every step.</p>
+    </div>
+    <div class="arch">
+      <div class="layer exp" data-glean-id="arch-experience">
+        <div class="lh">Experience Layer — where questions are asked</div>
+        <div class="chips">
+          <span class="chip">Microsoft employee self-service</span>
+          <span class="chip">ServiceNow Now Assist</span>
+          <span class="chip">Global service desk workflows</span>
+          <span class="chip">IT operations &amp; asset management</span>
+          <span class="chip">Copilot &amp; Teams</span>
+          <span class="chip">Governed agents and assistants</span>
+        </div>
+      </div>
+      <div class="arrow">▲</div>
+      <div class="layer glean" data-glean-id="arch-glean">
+        <div class="lh">Knowledge &amp; Intelligence Layer — powered by Glean</div>
+        <div class="glean-name">Glean</div>
+        <div class="chips">
+          <span class="chip">Permission-aware retrieval</span>
+          <span class="chip">Governance &amp; audit</span>
+          <span class="chip">Context &amp; grounding</span>
+          <span class="chip">Open APIs</span>
+          <span class="chip">Citations on every answer</span>
+        </div>
+        <div class="note">A governed enterprise context layer that works alongside Dow's existing Microsoft, ServiceNow, and AI governance investments — connecting experiences to data while enforcing permissions, governance, and traceability.</div>
+      </div>
+      <div class="arrow">▲</div>
+      <div class="layer data" data-glean-id="arch-data">
+        <div class="lh">Enterprise Data Layer — the source of truth</div>
+        <div class="chips">
+          <span class="chip">ServiceNow ITIL knowledge &amp; tickets</span>
+          <span class="chip">Microsoft content &amp; collaboration</span>
+          <span class="chip">SAP enterprise information</span>
+          <span class="chip">Workday knowledge</span>
+          <span class="chip">Asset-management information</span>
+          <span class="chip">Approved governance and operations content</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- principles -->
+<section data-glean-id="principles">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow gold">Why This Works · Principles</div>
+      <h2>Built for Dow's standards</h2>
+    </div>
+    <div class="prin">
+      <div class="pr"><div class="ic">✓</div><p><b>Governed by design.</b> Every answer respects source permissions and traces back to approved information.</p></div>
+      <div class="pr"><div class="ic">✓</div><p><b>Cited &amp; traceable.</b> Responses link to the source of record — auditable by design.</p></div>
+      <div class="pr"><div class="ic">✓</div><p><b>Complements your stack.</b> A context layer alongside Microsoft, ServiceNow, and the AI control tower — additive, not a replacement.</p></div>
+      <div class="pr"><div class="ic">✓</div><p><b>Value in every phase.</b> Start with service-management workflows and expand only where value is proven.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- closing -->
+<section class="close" data-glean-id="closing">
+  <div class="wrap">
+    <h2>What if the answer to "where do I find this?" was always: <span class="mark">ask Glean.</span></h2>
+    <div class="foot">Dow × Glean · Enterprise AI Journey Map</div>
+  </div>
+</section>
+
+<script>
+  var glean='#e80033', copilot='#415364', inhouse='#829995', claude='#cbc5b5', accent='#00b2a9';
+  function mk(id){var el=document.getElementById(id);return echarts.init(el,null,{renderer:'svg'});}
+  var baseText={color:'#5b6770',fontFamily:'Helvetica Neue, Arial, sans-serif'};
+
+  // radar
+  mk('radar').setOption({
+    tooltip:{},
+    legend:{bottom:0,itemWidth:10,itemHeight:10,textStyle:baseText,data:['Glean','Copilot (M365)','Custom / point solutions','Claude']},
+    radar:{
+      radius:'62%',center:['50%','46%'],
+      splitLine:{lineStyle:{color:'#e3e7ea'}},splitArea:{areaStyle:{color:['#fff','#f7f8f9']}},
+      axisLine:{lineStyle:{color:'#e3e7ea'}},
+      name:{textStyle:{color:'#5b6770',fontSize:11}},
+      indicator:[
+        {name:'Knowledge graph',max:100},{name:'Connectors',max:100},{name:'Model flexibility',max:100},
+        {name:'Governance',max:100},{name:'Whole-stack reach',max:100},{name:'Employee layer',max:100}
+      ]
+    },
+    series:[{type:'radar',symbolSize:4,areaStyle:{opacity:.12},data:[
+      {value:[96,98,96,94,95,95],name:'Glean',lineStyle:{color:glean,width:2.5},itemStyle:{color:glean},areaStyle:{color:glean,opacity:.18}},
+      {value:[55,50,45,80,52,55],name:'Copilot (M365)',lineStyle:{color:copilot},itemStyle:{color:copilot}},
+      {value:[40,35,45,45,30,25],name:'Custom / point solutions',lineStyle:{color:inhouse},itemStyle:{color:inhouse}},
+      {value:[32,48,35,52,50,20],name:'Claude',lineStyle:{color:claude},itemStyle:{color:claude}}
+    ]}]
+  });
+
+  // composite bar
+  mk('composite').setOption({
+    grid:{left:8,right:24,top:16,bottom:8,containLabel:true},
+    tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+    xAxis:{type:'value',max:100,axisLabel:baseText,splitLine:{lineStyle:{color:'#edf0f2'}}},
+    yAxis:{type:'category',inverse:true,axisLabel:{color:'#26323b',fontWeight:700},data:['Glean','Copilot (M365)','Custom / point solutions','Claude'],axisLine:{show:false},axisTick:{show:false}},
+    series:[{type:'bar',barWidth:'52%',
+      label:{show:true,position:'right',color:'#26323b',fontWeight:700},
+      data:[
+        {value:100,itemStyle:{color:glean,borderRadius:[0,6,6,0]}},
+        {value:58,itemStyle:{color:copilot,borderRadius:[0,6,6,0]}},
+        {value:40,itemStyle:{color:inhouse,borderRadius:[0,6,6,0]}},
+        {value:40,itemStyle:{color:'#cbc5b5',borderRadius:[0,6,6,0]}}
+      ]}]
+  });
+
+  // tokens (directional, no pricing)
+  mk('tokens').setOption({
+    grid:{left:8,right:30,top:20,bottom:30,containLabel:true},
+    tooltip:{trigger:'axis',axisPointer:{type:'shadow'},valueFormatter:function(v){return v+'×';}},
+    xAxis:{type:'category',data:['Glean','Copilot (M365)','Custom / point solutions','Claude'],axisLabel:{color:'#26323b',fontWeight:700}},
+    yAxis:{type:'value',name:'Relative tokens / task',nameTextStyle:baseText,axisLabel:{formatter:'{value}×',color:'#5b6770'},splitLine:{lineStyle:{color:'#edf0f2'}}},
+    series:[{type:'bar',barWidth:'46%',
+      label:{show:true,position:'top',formatter:'{c}×',color:'#26323b',fontWeight:800},
+      data:[
+        {value:1.0,itemStyle:{color:glean,borderRadius:[6,6,0,0]}},
+        {value:1.9,itemStyle:{color:copilot,borderRadius:[6,6,0,0]}},
+        {value:2.3,itemStyle:{color:inhouse,borderRadius:[6,6,0,0]}},
+        {value:2.5,itemStyle:{color:'#cbc5b5',borderRadius:[6,6,0,0]}}
+      ]}]
+  });
+
+  window.addEventListener('resize',function(){
+    ['radar','composite','tokens'].forEach(function(id){
+      var c=echarts.getInstanceByDom(document.getElementById(id)); if(c)c.resize();
+    });
+  });
+</script>
+
+<script>
+  window.GleanBridge && window.GleanBridge.postMessage({
+    actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}
+  });
+  window.GleanBridge && window.GleanBridge.onMessage('action',function(data){
+    if(data.actionId==='export-pdf') window.print();
+  });
+  function prepareChartsForPrint(){
+    document.querySelectorAll('[_echarts_instance_]').forEach(function(el){
+      var chart=echarts.getInstanceByDom(el); if(!chart)return;
+      var img=new Image(); img.src=chart.getDataURL({type:'png',pixelRatio:2}); img.className='print-chart-img';
+      img.style.cssText='width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';
+      el.dataset.prevPosition=el.style.position; el.style.position='relative'; el.appendChild(img);
+    });
+  }
+  function cleanUpAfterPrint(){
+    document.querySelectorAll('[_echarts_instance_]').forEach(function(el){
+      var img=el.querySelector('.print-chart-img'); if(!img)return;
+      img.remove(); el.style.position=el.dataset.prevPosition||''; delete el.dataset.prevPosition;
+    });
+  }
+  window.addEventListener('beforeprint',prepareChartsForPrint);
+  window.addEventListener('afterprint',cleanUpAfterPrint);
+</script>
+<style>@page { size: auto !important; }</style>
+</body>
+</html>
