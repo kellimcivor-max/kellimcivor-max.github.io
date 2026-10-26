@@ -9,7 +9,7 @@
 <meta property="og:title" content="AI Cyber Threats? Glean keeps your Enterprise Systems Safe.">
 <meta property="og:description" content="Launch simulated AI-era threats and watch which Glean security layer stops each one.">
 <meta property="og:type" content="website">
-<meta name="twitter:card" content="summary">
+<meta name="robots" content="noindex">
 <title>AI Cyber Threats? Glean keeps your Enterprise Systems Safe.</title>
 <style>
 :root{
@@ -118,7 +118,7 @@ h1 .h1-safe{display:block}
 .signal p{margin:0;color:var(--artifact-muted);font-size:16px}
 
 /* ============ PROOF ============ */
-.proof-section{padding-top:0}
+.proof-section{padding-bottom:48px}
 .proof{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
 .stat{background:var(--artifact-surface);color:var(--artifact-ink);border:1px solid var(--artifact-line);border-radius:20px;padding:26px 24px;display:flex;flex-direction:column;gap:14px}
 .gauge{position:relative;width:96px;height:96px}
@@ -324,33 +324,6 @@ h1 .h1-safe{display:block}
   </div>
 </section>
 
-<section class="section proof-section" data-glean-id="proof-section">
-  <div class="wrap">
-    <div class="section-head reveal" data-glean-id="proof-head">
-      <p class="kicker">Built for enterprise</p>
-      <h2>Security you can measure</h2>
-    </div>
-    <div class="proof" id="proof" data-glean-id="proof-stats">
-      <div class="stat reveal" data-glean-id="stat-prompt-injection">
-        <div class="gauge"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="42"/><circle class="fill" cx="50" cy="50" r="42" data-pct="97.8"/></svg><span class="gv" data-count="97.8" data-dec="1" data-suffix="%">97.8%</span></div>
-        <p class="l">Prompt injection detection on leading benchmarks</p>
-      </div>
-      <div class="stat reveal" data-glean-id="stat-malicious-code">
-        <div class="gauge"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="42"/><circle class="fill" cx="50" cy="50" r="42" data-pct="94.3"/></svg><span class="gv" data-count="94.3" data-dec="1" data-suffix="%">94.3%</span></div>
-        <p class="l">Malicious code detection on leading benchmarks</p>
-      </div>
-      <div class="stat reveal" data-glean-id="stat-connectors">
-        <p class="v" data-count="275" data-dec="0" data-suffix="+">275+</p>
-        <p class="l">Permission-aware enterprise app connectors</p>
-      </div>
-      <div class="stat reveal" data-glean-id="stat-governance">
-        <p class="v" data-count="100" data-dec="0" data-suffix="+">100+</p>
-        <p class="l">Sources covered by sensitive content governance</p>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section class="band sim-band" id="sim-section" data-glean-id="map-section">
   <div class="wrap">
     <div class="section-head reveal" data-glean-id="map-head">
@@ -468,6 +441,33 @@ h1 .h1-safe{display:block}
         <span class="chip">Rubrik</span>
         <span class="chip">Tines</span>
         <span class="chip more">And many more</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section proof-section" data-glean-id="proof-section">
+  <div class="wrap">
+    <div class="section-head reveal" data-glean-id="proof-head">
+      <p class="kicker">Built for enterprise</p>
+      <h2>Security you can measure</h2>
+    </div>
+    <div class="proof" id="proof" data-glean-id="proof-stats">
+      <div class="stat reveal" data-glean-id="stat-prompt-injection">
+        <div class="gauge"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="42"/><circle class="fill" cx="50" cy="50" r="42" data-pct="97.8"/></svg><span class="gv" data-count="97.8" data-dec="1" data-suffix="%">97.8%</span></div>
+        <p class="l">Prompt injection detection on leading benchmarks</p>
+      </div>
+      <div class="stat reveal" data-glean-id="stat-malicious-code">
+        <div class="gauge"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="42"/><circle class="fill" cx="50" cy="50" r="42" data-pct="94.3"/></svg><span class="gv" data-count="94.3" data-dec="1" data-suffix="%">94.3%</span></div>
+        <p class="l">Malicious code detection on leading benchmarks</p>
+      </div>
+      <div class="stat reveal" data-glean-id="stat-connectors">
+        <p class="v" data-count="275" data-dec="0" data-suffix="+">275+</p>
+        <p class="l">Permission-aware enterprise app connectors</p>
+      </div>
+      <div class="stat reveal" data-glean-id="stat-governance">
+        <p class="v" data-count="100" data-dec="0" data-suffix="+">100+</p>
+        <p class="l">Sources covered by sensitive content governance</p>
       </div>
     </div>
   </div>
