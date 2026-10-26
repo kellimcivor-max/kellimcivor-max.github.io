@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="glean-artifact-type" content="visual_content">
+<meta name="glean-artifact-type" content="web_design">
+<meta name="description" content="As AI makes cyber threats more serious, see how Glean's layered, permission-aware controls keep enterprise systems safe. Try the interactive attack simulator.">
+<meta property="og:title" content="AI Cyber Threats? Glean keeps your Enterprise Systems Safe.">
+<meta property="og:description" content="Launch simulated AI-era threats and watch which Glean security layer stops each one.">
+<meta property="og:type" content="website">
+<meta name="robots" content="noindex">
+<title>AI Cyber Threats? Glean keeps your Enterprise Systems Safe.</title>
+<style>
+:root{
+  --artifact-bg:#F6F3EB;
+  --artifact-surface:#FFFFFF;
+  --artifact-ink:#14152B;
+  --artifact-muted:#5E5F6E;
+  --artifact-line:#E2DDD0;
+  --artifact-blue:#343CED;
+  --artifact-blue-deep:#1017B1;
+  --artifact-blue-tint:#E7E8FD;
+  --artifact-threat:#E8622F;
+  --artifact-threat-tint:#FCE9DF;
+  --artifact-safe:#00B207;
+  /* brand bands: fixed in both themes */
+  --artifact-night:#080B36;
+  --artifact-band-a:#0B0F4A;
+  --artifact-band-b:#1E2287;
+  --artifact-band-c:#343CED;
+  --artifact-band-ink:#F6F3EB;
+  --artifact-band-muted:#B9BCF5;
+  --artifact-band-line:rgba(185,188,245,.22);
+  --artifact-band-panel:rgba(255,255,255,.05);
+  --artifact-band-threat:#FF7E4C;
+  --artifact-band-safe:#4ADE52;
+  --artifact-band-glow:#8A90FF;
+  --artifact-card-blue:#343CED;
+  --artifact-on-card-blue:#FFFFFF;
+  --artifact-on-card-blue-muted:#D3D5FD;
+  --artifact-shadow:0 18px 40px -22px rgba(8,11,54,.45);
+}
+html[data-theme='dark']{
+  --artifact-bg:#0F1026;
+  --artifact-surface:#1A1B33;
+  --artifact-ink:#F2F0EA;
+  --artifact-muted:#A6A7BA;
+  --artifact-line:#2D2E4A;
+  --artifact-blue:#6C72F5;
+  --artifact-blue-deep:#343CED;
+  --artifact-blue-tint:#23265A;
+  --artifact-threat:#FF9A6E;
+  --artifact-threat-tint:#3A2420;
+  --artifact-safe:#4ADE52;
+  --artifact-shadow:0 18px 40px -22px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--artifact-bg);color:var(--artifact-ink);font-family:"DM Sans","Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.wrap{max-width:1100px;margin:0 auto;padding:0 32px}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--artifact-blue);margin:0 0 14px}
+h2{font-size:clamp(28px,3.6vw,42px);line-height:1.08;letter-spacing:-.025em;font-weight:600;margin:0 0 12px}
+.section{padding:96px 0}
+.section-head{max-width:680px;margin-bottom:44px}
+.section-head p{color:var(--artifact-muted);font-size:18px;margin:0}
+.btn{font:inherit;font-size:15px;font-weight:600;border-radius:999px;padding:12px 20px;cursor:pointer;border:1px solid transparent;transition:transform .2s ease,background .2s ease,color .2s ease,border-color .2s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn:focus-visible{outline:2px solid var(--artifact-band-glow);outline-offset:3px}
+
+/* ============ HERO ============ */
+.band{background:linear-gradient(150deg,var(--artifact-band-a) 0%,var(--artifact-band-b) 60%,var(--artifact-band-c) 130%);color:var(--artifact-band-ink);position:relative;overflow:hidden}
+.hero-band{padding:84px 0 92px}
+.radar{position:absolute;right:-220px;top:50%;width:900px;height:900px;transform:translateY(-50%);pointer-events:none;opacity:.55}
+.radar .ring{position:absolute;inset:0;border-radius:50%;border:1px solid var(--artifact-band-line)}
+.radar .ring:nth-child(2){inset:110px}.radar .ring:nth-child(3){inset:220px}.radar .ring:nth-child(4){inset:330px}
+.radar .sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,transparent 300deg,var(--artifact-band-glow) 360deg);opacity:.22;animation:spin 9s linear infinite;-webkit-mask:radial-gradient(circle,transparent 0,#000 1px);mask:radial-gradient(circle,transparent 0,#000 1px)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero{position:relative;display:grid;grid-template-columns:1.2fr 1fr;gap:56px;align-items:center}
+.hero .kicker{color:var(--artifact-band-muted)}
+.live{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--artifact-band-ink);border:1px solid var(--artifact-band-line);border-radius:999px;padding:6px 12px 6px 10px;margin-bottom:22px;background:var(--artifact-band-panel)}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--artifact-band-threat);box-shadow:0 0 0 0 var(--artifact-band-threat);animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,126,76,.6)}70%{box-shadow:0 0 0 10px rgba(255,126,76,0)}100%{box-shadow:0 0 0 0 rgba(255,126,76,0)}}
+h1{font-size:clamp(40px,5.6vw,68px);line-height:1.02;letter-spacing:-.03em;font-weight:600;margin:0 0 24px;color:var(--artifact-band-ink)}
+h1 .h1-threat{display:block;color:var(--artifact-band-threat)}
+h1 .h1-safe{display:block}
+.lede{font-size:19px;color:var(--artifact-band-muted);max-width:560px;margin:0 0 32px}
+.hero-ctas{display:flex;flex-wrap:wrap;gap:12px}
+.btn-primary{background:var(--artifact-band-ink);color:var(--artifact-band-a)}
+.btn-ghost{background:transparent;color:var(--artifact-band-ink);border-color:var(--artifact-band-line)}
+.btn-ghost:hover{border-color:var(--artifact-band-muted)}
+.hero-side{display:flex;flex-direction:column;gap:14px}
+.signal-card{background:var(--artifact-card-blue);color:var(--artifact-on-card-blue);border-radius:24px;padding:36px 34px;position:relative;overflow:hidden;box-shadow:0 30px 60px -30px rgba(0,0,0,.6),0 0 0 1px rgba(138,144,255,.5)}
+.signal-card .eyebrow{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--artifact-on-card-blue-muted);margin:0 0 16px;font-weight:700}
+.signal-card .big{font-size:clamp(30px,3.4vw,40px);line-height:1.08;letter-spacing:-.025em;font-weight:600;margin:0 0 16px;color:var(--artifact-on-card-blue)}
+.signal-card .who{font-size:15px;color:var(--artifact-on-card-blue-muted);margin:0;position:relative}
+.signal-rings{position:absolute;right:-60px;bottom:-60px;width:220px;height:220px;border-radius:50%;border:1px solid var(--artifact-on-card-blue-muted);opacity:.35}
+.signal-rings::before,.signal-rings::after{content:"";position:absolute;inset:30px;border-radius:50%;border:1px solid var(--artifact-on-card-blue-muted)}
+.signal-rings::after{inset:62px}
+.voice{display:grid;grid-template-columns:1fr;gap:12px}
+.voice blockquote{margin:0;padding:18px 22px 18px 50px;border-radius:16px;background:var(--artifact-surface);color:var(--artifact-ink);position:relative;box-shadow:var(--artifact-shadow)}
+.voice blockquote::before{content:"\201C";position:absolute;left:18px;top:6px;font-size:44px;line-height:1;color:var(--artifact-blue);font-weight:700}
+.voice blockquote p{margin:0;font-size:16px;line-height:1.45}
+
+/* ============ SIGNALS ============ */
+.signals{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.signal{background:var(--artifact-surface);color:var(--artifact-ink);border:1px solid var(--artifact-line);border-radius:20px;padding:28px 26px 30px;position:relative;overflow:hidden;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
+.signal:hover{transform:translateY(-4px);box-shadow:var(--artifact-shadow);border-color:var(--artifact-blue)}
+.signal .bignum{position:absolute;right:16px;top:-6px;font-size:96px;font-weight:700;letter-spacing:-.05em;line-height:1;color:transparent;-webkit-text-stroke:1.5px var(--artifact-line);pointer-events:none}
+.signal .ico{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:22px}
+.signal .ico svg{width:24px;height:24px}
+.signal.threat .ico{background:var(--artifact-threat-tint);color:var(--artifact-threat)}
+.signal.mandate .ico{background:var(--artifact-blue-tint);color:var(--artifact-blue)}
+.signal .num{font-size:13px;font-weight:700;letter-spacing:.1em;margin:0 0 10px}
+.signal.threat .num{color:var(--artifact-threat)}
+.signal.mandate .num{color:var(--artifact-blue)}
+.signal h3{font-size:22px;line-height:1.2;margin:0 0 8px;font-weight:600}
+.signal p{margin:0;color:var(--artifact-muted);font-size:16px}
+
+/* ============ PROOF ============ */
+.proof-section{padding-bottom:48px}
+.proof{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.stat{background:var(--artifact-surface);color:var(--artifact-ink);border:1px solid var(--artifact-line);border-radius:20px;padding:26px 24px;display:flex;flex-direction:column;gap:14px}
+.gauge{position:relative;width:96px;height:96px}
+.gauge svg{width:96px;height:96px;transform:rotate(-90deg)}
+.gauge .track{stroke:var(--artifact-blue-tint);fill:none;stroke-width:9}
+.gauge .fill{stroke:var(--artifact-blue);fill:none;stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1)}
+.gauge .gv,.stat .v{font-weight:700;letter-spacing:-.03em;color:var(--artifact-blue)}
+.gauge .gv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px}
+.stat .v{font-size:56px;line-height:96px;height:96px;margin:0}
+.stat .l{font-size:15px;color:var(--artifact-muted);margin:0}
+
+/* ============ SIMULATOR ============ */
+.sim-band{padding:96px 0}
+.sim-band .kicker{color:var(--artifact-band-muted)}
+.sim-band h2{color:var(--artifact-band-ink)}
+.sim-band .section-head p{color:var(--artifact-band-muted)}
+.sim{display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:start}
+.stage{position:sticky;top:20px}
+.stage-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.toggle{display:inline-flex;align-items:center;gap:10px;font:inherit;font-size:14px;font-weight:600;color:var(--artifact-band-ink);background:var(--artifact-band-panel);border:1px solid var(--artifact-band-line);border-radius:999px;padding:6px 14px 6px 6px;cursor:pointer}
+.toggle .knob{width:40px;height:22px;border-radius:999px;background:var(--artifact-band-safe);position:relative;transition:background .25s}
+.toggle .knob::after{content:"";position:absolute;top:3px;left:21px;width:16px;height:16px;border-radius:50%;background:var(--artifact-band-ink);transition:left .25s}
+.toggle[aria-pressed="false"] .knob{background:var(--artifact-band-threat)}
+.toggle[aria-pressed="false"] .knob::after{left:3px}
+.counter{font-size:14px;color:var(--artifact-band-muted)}
+.counter b{font-size:22px;color:var(--artifact-band-ink);font-weight:700;margin-right:4px}
+.shield{width:100%;height:auto;display:block}
+.shield .r{fill:none;stroke:var(--artifact-band-glow);stroke-opacity:.35;stroke-width:1.5;transition:stroke .3s,stroke-opacity .3s,stroke-width .3s}
+.shield .rfill{fill:var(--artifact-band-glow);fill-opacity:0;transition:fill-opacity .35s}
+.shield .rl{fill:var(--artifact-band-muted);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.shield .layer.hit .r{stroke:var(--artifact-band-safe);stroke-opacity:1;stroke-width:4}
+.shield .layer.hit .rfill{fill-opacity:.08}
+.shield .layer.hit .rl{fill:var(--artifact-band-safe)}
+.shield .layer.focus .r{stroke-opacity:.9;stroke-width:2.5}
+.shield .layer.focus .rl{fill:var(--artifact-band-ink)}
+.shield.off .r{stroke-dasharray:3 7;stroke-opacity:.18}
+.shield.off .rl{fill-opacity:.35}
+.shield .core{fill:var(--artifact-band-c);transition:fill .3s}
+.shield .core-t{fill:var(--artifact-band-ink);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.shield .core-g{fill:var(--artifact-band-glow);fill-opacity:.25}
+.shield.breach .core{fill:var(--artifact-band-threat)}
+.shield .dot{fill:var(--artifact-band-threat)}
+.shield .trail{stroke:var(--artifact-band-threat);stroke-width:2;stroke-linecap:round}
+.shield .burst{fill:none;stroke:var(--artifact-band-safe);stroke-width:2}
+.shield .burst.bad{stroke:var(--artifact-band-threat)}
+.readout{margin-top:6px;border:1px solid var(--artifact-band-line);background:var(--artifact-band-panel);border-radius:16px;padding:16px 18px;min-height:86px}
+.readout .ro-tag{margin:0 0 4px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--artifact-band-safe)}
+.readout.bad .ro-tag{color:var(--artifact-band-threat)}
+.readout .ro-main{margin:0;font-size:17px;font-weight:600;color:var(--artifact-band-ink)}
+.readout .ro-sub{margin:2px 0 0;font-size:14px;color:var(--artifact-band-muted)}
+.cards{display:flex;flex-direction:column;gap:12px}
+.cards-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:2px}
+.cards-top span{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--artifact-band-muted)}
+.btn-launch{background:var(--artifact-band-threat);color:var(--artifact-night)}
+.tcard{border:1px solid var(--artifact-band-line);background:var(--artifact-band-panel);color:var(--artifact-band-ink);border-radius:18px;padding:18px 20px;transition:border-color .25s,background .25s,transform .25s}
+.tcard:hover{border-color:var(--artifact-band-muted)}
+.tcard.active{border-color:var(--artifact-band-safe);background:rgba(74,222,82,.08)}
+.tcard.active.bad{border-color:var(--artifact-band-threat);background:rgba(255,126,76,.1)}
+.tc-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
+.tc-risk-tag{margin:0 0 4px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--artifact-band-threat)}
+.tcard h4{margin:0 0 4px;font-size:17px;line-height:1.3;font-weight:600;color:var(--artifact-band-ink)}
+.tc-risk-p{margin:0;font-size:14px;color:var(--artifact-band-muted)}
+.tc-arrow{display:flex;align-items:center;gap:10px;margin:14px 0 10px;color:var(--artifact-band-glow);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.tc-arrow::after{content:"";flex:1;height:1px;background:var(--artifact-band-line)}
+.tc-ctrl-tag{margin:0 0 4px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--artifact-band-safe)}
+.tc-ctrl-p{margin:0;font-size:14px;color:var(--artifact-band-muted)}
+.btn-sim{font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:8px 14px;cursor:pointer;background:transparent;color:var(--artifact-band-ink);border:1px solid var(--artifact-band-line);white-space:nowrap;transition:background .2s,border-color .2s}
+.btn-sim:hover{border-color:var(--artifact-band-threat);background:rgba(255,126,76,.12)}
+
+/* ============ FLOW ============ */
+.flow-wrap{background:var(--artifact-surface);color:var(--artifact-ink);border:1px solid var(--artifact-line);border-radius:24px;padding:44px 32px 36px}
+.flow{position:relative;display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.flow::before{content:"";position:absolute;left:8%;right:8%;top:29px;height:3px;border-radius:3px;background:var(--artifact-line)}
+.flow .rail{position:absolute;left:8%;top:29px;height:3px;border-radius:3px;width:0;background:var(--artifact-blue);transition:width .35s linear}
+.flow .packet{position:absolute;top:22px;left:8%;width:17px;height:17px;border-radius:50%;background:var(--artifact-blue);box-shadow:0 0 0 6px var(--artifact-blue-tint);transform:translateX(-50%);transition:left .35s linear;opacity:0}
+.flow.playing .packet{opacity:1}
+.step{position:relative;text-align:center;padding:0 4px}
+.dot{width:60px;height:60px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;background:var(--artifact-surface);border:2px solid var(--artifact-line);color:var(--artifact-muted);font-weight:700;font-size:17px;position:relative;z-index:1;transition:all .3s ease}
+.step.lit .dot{border-color:var(--artifact-blue);color:var(--artifact-blue);background:var(--artifact-blue-tint);transform:scale(1.08)}
+.step.start.lit .dot{background:var(--artifact-ink);border-color:var(--artifact-ink);color:var(--artifact-bg)}
+.step.end.lit .dot{background:var(--artifact-safe);border-color:var(--artifact-safe);color:var(--artifact-surface)}
+.step h4{font-size:16px;margin:0 0 6px;line-height:1.25;font-weight:600}
+.step p{font-size:14px;color:var(--artifact-muted);margin:0}
+.flow-foot{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:30px;flex-wrap:wrap}
+.flow-note{font-size:15px;color:var(--artifact-muted);margin:0;max-width:640px}
+.btn-replay{background:var(--artifact-blue);color:var(--artifact-surface)}
+
+/* ============ CLOSE ============ */
+.close-band{padding:88px 0}
+.close{display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:end;position:relative}
+.close h2{color:var(--artifact-band-ink);font-size:clamp(30px,4vw,48px);margin:0 0 16px}
+.close p{color:var(--artifact-band-muted);font-size:18px;margin:0}
+.close .stack-label{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--artifact-band-muted);margin:0 0 12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:14px;padding:8px 15px;border-radius:999px;border:1px solid var(--artifact-band-line);color:var(--artifact-band-ink);background:var(--artifact-band-panel)}
+.chip.more{border-style:dashed;color:var(--artifact-band-muted)}
+.source{font-size:13px;color:var(--artifact-muted);padding:22px 0 36px;margin:0}
+
+/* motion */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  .reveal{opacity:1;transform:none;transition:none}
+  .radar .sweep,.live i{animation:none}
+  .gauge .fill,.flow .rail,.flow .packet,.step .dot{transition:none}
+}
+
+@media screen and (max-width:900px){
+  .wrap{padding:0 20px}
+  .hero,.sim,.close{grid-template-columns:1fr}
+  .hero-band{padding:56px 0 64px}
+  .stage{position:relative;top:0}
+  .signals{grid-template-columns:1fr}
+  .proof{grid-template-columns:1fr 1fr}
+  .flow{grid-template-columns:1fr 1fr;row-gap:28px}
+  .flow::before,.flow .rail,.flow .packet{display:none}
+  .section,.sim-band{padding:64px 0}
+}
+
+@media print{
+  @page{size:auto !important}
+  :root,html[data-theme='dark']{
+    --artifact-bg:#FFFFFF;--artifact-surface:#FFFFFF;--artifact-ink:#14152B;--artifact-muted:#5E5F6E;--artifact-line:#E2DDD0;
+    --artifact-band-a:#FFFFFF;--artifact-band-b:#FFFFFF;--artifact-band-c:#FFFFFF;--artifact-band-ink:#14152B;--artifact-band-muted:#5E5F6E;
+    --artifact-band-line:#E2DDD0;--artifact-band-panel:#FFFFFF;--artifact-band-glow:#343CED;--artifact-band-safe:#00B207;--artifact-band-threat:#E8622F;
+  }
+  body{margin:0;padding:.4in .6in;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .wrap{max-width:100% !important;padding:0 !important}
+  .radar{display:none}
+  .shield .core{fill:#343CED}
+  .shield .core-t{fill:#FFFFFF}
+  .stage{position:static}
+  .section,.sim-band,.close-band,.hero-band{padding:20px 0 !important}
+  .hero,.sim,.close{grid-template-columns:1fr !important}
+  .signal,.stat,.tcard,.step,.signal-card,.voice blockquote,.flow-wrap{break-inside:avoid;box-shadow:none !important}
+  .reveal{opacity:1 !important;transform:none !important}
+  .flow .rail{width:84% !important}
+  .flow .packet{display:none}
+  *,*::before,*::after{animation:none !important;transition:none !important}
+  button,[role="button"],.interactive-only{display:none !important}
+  @page{size:auto !important}
+}
+</style>
+</head>
+<body>
+
+<header class="band hero-band" data-glean-id="hero-section">
+  <div class="radar" aria-hidden="true"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="sweep"></div></div>
+  <div class="wrap hero">
+    <div class="reveal" data-glean-id="hero-copy">
+      <div class="live"><i aria-hidden="true"></i><span>Enterprise AI security</span></div>
+      <h1 data-glean-id="hero-title"><span class="h1-threat">AI Cyber Threats?</span><span class="h1-safe">Glean keeps your Enterprise Systems Safe.</span></h1>
+      <p class="lede">As advanced AI models make cyber threats more serious, leaders are being asked to tighten identity, contain critical systems, and act now. Glean was built so AI can only reach what each person is already allowed to see.</p>
+      <div class="hero-ctas">
+        <button type="button" class="btn btn-primary" data-jump="sim-section">Launch the attack simulator ↓</button>
+        <button type="button" class="btn btn-ghost" data-jump="flow-section">Follow one AI request</button>
+      </div>
+    </div>
+    <div class="hero-side">
+      <div class="signal-card reveal" data-glean-id="hero-signal-card">
+        <p class="eyebrow">The headline risk</p>
+        <p class="big">Advancing AI models are the biggest risk, by far.</p>
+        <p class="who">Jamie Dimon on cybersecurity at JPMorgan Chase, as reported by The Wall Street Journal.</p>
+        <div class="signal-rings" aria-hidden="true"></div>
+      </div>
+      <div class="voice reveal" data-glean-id="voice-quotes">
+        <blockquote data-glean-id="voice-governance"><p>Strong governance, access controls, and continuous risk assessment need to be part of broader business strategy.</p></blockquote>
+        <blockquote data-glean-id="voice-intervention"><p>Detecting a threat is not the same as having authority to stop it.</p></blockquote>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="section" data-glean-id="signals-section">
+  <div class="wrap">
+    <div class="section-head reveal" data-glean-id="signals-head">
+      <p class="kicker">New and more Advanced AI Models = Cyber attacks @ Unprecedented scale</p>
+      <h2>Three signals every AI program should take seriously</h2>
+    </div>
+    <div class="signals" data-glean-id="signals-list">
+      <div class="signal threat reveal" data-glean-id="signal-scale">
+        <span class="bignum" aria-hidden="true">01</span>
+        <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+        <p class="num">01 · THREAT</p>
+        <h3>AI scales the attack</h3>
+        <p>More powerful AI tools could help attackers uncover vulnerabilities and target sensitive systems at unprecedented scale.</p>
+      </div>
+      <div class="signal mandate reveal" data-glean-id="signal-identity">
+        <span class="bignum" aria-hidden="true">02</span>
+        <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+        <p class="num">02 · MANDATE</p>
+        <h3>Identity is the front line</h3>
+        <p>The call is to act immediately by tightening identity and access controls.</p>
+      </div>
+      <div class="signal mandate reveal" data-glean-id="signal-containment">
+        <span class="bignum" aria-hidden="true">03</span>
+        <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg></div>
+        <p class="num">03 · CONTAIN</p>
+        <h3>Contain the blast radius</h3>
+        <p>Isolate critical systems to reduce the damage if an attack gets through.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band sim-band" id="sim-section" data-glean-id="map-section">
+  <div class="wrap">
+    <div class="section-head reveal" data-glean-id="map-head">
+      <p class="kicker">From risk to control</p>
+      <h2>How Glean answers each challenge</h2>
+      <p>Security is designed into the platform, so teams can scale AI without opening new paths to sensitive data.</p>
+    </div>
+    <div class="sim" data-glean-id="risk-control-map">
+      <div class="stage reveal" data-glean-id="shield-simulator">
+        <div class="stage-top">
+          <button type="button" class="toggle" id="toggle" aria-pressed="true"><span class="knob" aria-hidden="true"></span><span id="toggleLabel">Glean protection on</span></button>
+          <span class="counter"><b id="count">0</b>threats stopped</span>
+        </div>
+        <svg class="shield" id="shield" viewBox="-40 -40 480 480" role="img" aria-label="Layered Glean defenses around enterprise systems">
+          <defs>
+            <path id="arc0" d="M 25 200 A 175 175 0 0 1 375 200"/>
+            <path id="arc1" d="M 55 200 A 145 145 0 0 1 345 200"/>
+            <path id="arc2" d="M 85 200 A 115 115 0 0 1 315 200"/>
+            <path id="arc3" d="M 115 200 A 85 85 0 0 1 285 200"/>
+            <path id="arc4" d="M 145 200 A 55 55 0 0 1 255 200"/>
+          </defs>
+          <g class="layer" data-ring="0"><circle class="rfill" cx="200" cy="200" r="185"/><circle class="r" cx="200" cy="200" r="185"/><text class="rl"><textPath href="#arc0" startOffset="50%" text-anchor="middle">Central policy &amp; audit</textPath></text></g>
+          <g class="layer" data-ring="1"><circle class="rfill" cx="200" cy="200" r="155"/><circle class="r" cx="200" cy="200" r="155"/><text class="rl"><textPath href="#arc1" startOffset="50%" text-anchor="middle">AI security guardrails</textPath></text></g>
+          <g class="layer" data-ring="2"><circle class="rfill" cx="200" cy="200" r="125"/><circle class="r" cx="200" cy="200" r="125"/><text class="rl"><textPath href="#arc2" startOffset="50%" text-anchor="middle">Permission-aware</textPath></text></g>
+          <g class="layer" data-ring="3"><circle class="rfill" cx="200" cy="200" r="95"/><circle class="r" cx="200" cy="200" r="95"/><text class="rl"><textPath href="#arc3" startOffset="50%" text-anchor="middle">Data governance</textPath></text></g>
+          <g class="layer" data-ring="4"><circle class="rfill" cx="200" cy="200" r="65"/><circle class="r" cx="200" cy="200" r="65"/><text class="rl"><textPath href="#arc4" startOffset="50%" text-anchor="middle">Contained</textPath></text></g>
+          <circle class="core-g" cx="200" cy="200" r="46"/>
+          <circle class="core" cx="200" cy="200" r="38"/>
+          <text class="core-t" x="200" y="196" text-anchor="middle">Your</text>
+          <text class="core-t" x="200" y="210" text-anchor="middle">systems</text>
+          <g id="fx"></g>
+        </svg>
+        <div class="readout" id="readout" aria-live="polite">
+          <p class="ro-tag" id="roTag">Ready</p>
+          <p class="ro-main" id="roMain">Pick a threat and watch which layer stops it.</p>
+          <p class="ro-sub" id="roSub">Then switch protection off to see the difference.</p>
+        </div>
+      </div>
+
+      <div class="cards" data-glean-id="threat-cards">
+        <div class="cards-top"><span>Challenge → Glean control</span><button type="button" class="btn btn-launch" id="launchAll">Launch all threats</button></div>
+
+        <div class="tcard reveal" data-key="identity" data-glean-id="map-row-identity">
+          <div class="tc-row"><div><p class="tc-risk-tag">Identity &amp; access</p><h4>AI that sees more than the user should</h4><p class="tc-risk-p">Broad AI access can quietly widen who sees what.</p></div><button type="button" class="btn-sim" data-sim="identity">Simulate ▶</button></div>
+          <div class="tc-arrow" aria-hidden="true">Glean control</div>
+          <p class="tc-ctrl-tag">Permission-aware by design</p><h4>Permissions enforced at retrieval, before a model sees data</h4><p class="tc-ctrl-p">Glean inherits source-system permissions across Search, Assistant, and Agents, so every answer reflects what that person is authorized to access.</p>
+        </div>
+
+        <div class="tcard reveal" data-key="isolation" data-glean-id="map-row-isolation">
+          <div class="tc-row"><div><p class="tc-risk-tag">Isolation</p><h4>Critical systems exposed to a wide blast radius</h4><p class="tc-risk-p">One compromised step can cascade across connected tools.</p></div><button type="button" class="btn-sim" data-sim="isolation">Simulate ▶</button></div>
+          <div class="tc-arrow" aria-hidden="true">Glean control</div>
+          <p class="tc-ctrl-tag">Contained by default</p><h4>Single-tenant deployment, sandboxed agents</h4><p class="tc-ctrl-p">Single-tenant SaaS or VPC keeps data where your security team wants it. Agent Sandbox isolates execution, with fine-grained controls over actions and agents.</p>
+        </div>
+
+        <div class="tcard reveal" data-key="attacks" data-glean-id="map-row-attacks">
+          <div class="tc-row"><div><p class="tc-risk-tag">AI-powered attacks</p><h4>Prompt injection, jailbreaks, malicious code</h4><p class="tc-risk-p">Attackers target the AI itself, through prompts and poisoned content.</p></div><button type="button" class="btn-sim" data-sim="attacks">Simulate ▶</button></div>
+          <div class="tc-arrow" aria-hidden="true">Glean control</div>
+          <p class="tc-ctrl-tag">AI security guardrails</p><h4>Every prompt, document, and response inspected</h4><p class="tc-ctrl-p">Glean Protect+ guardrails check user prompts, retrieved content, and model responses, then block or flag threats across Assistant and agents.</p>
+        </div>
+
+        <div class="tcard reveal" data-key="oversharing" data-glean-id="map-row-oversharing">
+          <div class="tc-row"><div><p class="tc-risk-tag">Data exposure</p><h4>Sensitive data overshared across apps</h4><p class="tc-risk-p">Security through obscurity breaks once AI can find everything.</p></div><button type="button" class="btn-sim" data-sim="oversharing">Simulate ▶</button></div>
+          <div class="tc-arrow" aria-hidden="true">Glean control</div>
+          <p class="tc-ctrl-tag">Active data governance</p><h4>Find and hide overshared content automatically</h4><p class="tc-ctrl-p">Glean scans connected sources for overshared sensitive data and auto-hides it from AI results, with triage and remediation workflows.</p>
+        </div>
+
+        <div class="tcard reveal" data-key="oversight" data-glean-id="map-row-oversight">
+          <div class="tc-row"><div><p class="tc-risk-tag">Oversight</p><h4>Seeing a threat but lacking authority to act</h4><p class="tc-risk-p">Risk assessment has to be continuous and enforceable.</p></div><button type="button" class="btn-sim" data-sim="oversight">Simulate ▶</button></div>
+          <div class="tc-arrow" aria-hidden="true">Glean control</div>
+          <p class="tc-ctrl-tag">Central policy &amp; audit</p><h4>Enforceable policies, complete audit trail</h4><p class="tc-ctrl-p">Admins set where policies apply and whether to block or flag. Centralized audit logs cover queries, actions, agents, and admin activity.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="flow-section" data-glean-id="flow-section">
+  <div class="wrap">
+    <div class="section-head reveal" data-glean-id="flow-head">
+      <p class="kicker">Defense in depth</p>
+      <h2>One AI request, checked at every layer</h2>
+      <p>Follow a single question through Glean. Each step adds a control, so no one layer has to do it all.</p>
+    </div>
+    <div class="flow-wrap reveal" data-glean-id="request-flow-panel">
+      <div class="flow" id="flow" data-glean-id="request-flow">
+        <div class="rail" id="rail" aria-hidden="true"></div>
+        <div class="packet" id="packet" aria-hidden="true"></div>
+        <div class="step start" data-glean-id="flow-step-ask"><div class="dot">?</div><h4>Employee or agent asks</h4><p>Authenticated through your identity provider</p></div>
+        <div class="step" data-glean-id="flow-step-prompt-scan"><div class="dot">1</div><h4>Prompt screened</h4><p>Injection and jailbreak attempts caught</p></div>
+        <div class="step" data-glean-id="flow-step-permissions"><div class="dot">2</div><h4>Permissions enforced</h4><p>Only content this user can access is retrieved</p></div>
+        <div class="step" data-glean-id="flow-step-sensitive"><div class="dot">3</div><h4>Sensitive data held back</h4><p>Overshared content stays hidden</p></div>
+        <div class="step" data-glean-id="flow-step-response-scan"><div class="dot">4</div><h4>Response checked</h4><p>Malicious code and harmful content flagged</p></div>
+        <div class="step end" data-glean-id="flow-step-audit"><div class="dot">✓</div><h4>Answered and logged</h4><p>Full audit trail for security teams</p></div>
+      </div>
+      <div class="flow-foot">
+        <p class="flow-note">Glean adds a governed AI layer to your existing identity, network, and security stack. It doesn't replace them.</p>
+        <button type="button" class="btn btn-replay" id="replay">▶ Replay the request</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band close-band" data-glean-id="closing-section">
+  <div class="wrap close reveal">
+    <div data-glean-id="closing-copy">
+      <h2>Embrace AI innovation without compromising security or trust.</h2>
+      <p>Let's map these controls to your environment and define what a governed, permission-aware AI rollout looks like for your teams.</p>
+    </div>
+    <div data-glean-id="closing-ecosystem">
+      <p class="stack-label">Works with your security stack</p>
+      <div class="chips">
+        <span class="chip">Palo Alto Networks</span>
+        <span class="chip">Cisco</span>
+        <span class="chip">BigID</span>
+        <span class="chip">Rubrik</span>
+        <span class="chip">Tines</span>
+        <span class="chip more">And many more</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section proof-section" data-glean-id="proof-section">
+  <div class="wrap">
+    <div class="section-head reveal" data-glean-id="proof-head">
+      <p class="kicker">Built for enterprise</p>
+      <h2>Security you can measure</h2>
+    </div>
+    <div class="proof" id="proof" data-glean-id="proof-stats">
+      <div class="stat reveal" data-glean-id="stat-prompt-injection">
+        <div class="gauge"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="42"/><circle class="fill" cx="50" cy="50" r="42" data-pct="97.8"/></svg><span class="gv" data-count="97.8" data-dec="1" data-suffix="%">97.8%</span></div>
+        <p class="l">Prompt injection detection on leading benchmarks</p>
+      </div>
+      <div class="stat reveal" data-glean-id="stat-malicious-code">
+        <div class="gauge"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="42"/><circle class="fill" cx="50" cy="50" r="42" data-pct="94.3"/></svg><span class="gv" data-count="94.3" data-dec="1" data-suffix="%">94.3%</span></div>
+        <p class="l">Malicious code detection on leading benchmarks</p>
+      </div>
+      <div class="stat reveal" data-glean-id="stat-connectors">
+        <p class="v" data-count="275" data-dec="0" data-suffix="+">275+</p>
+        <p class="l">Permission-aware enterprise app connectors</p>
+      </div>
+      <div class="stat reveal" data-glean-id="stat-governance">
+        <p class="v" data-count="100" data-dec="0" data-suffix="+">100+</p>
+        <p class="l">Sources covered by sensitive content governance</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap"><p class="source" data-glean-id="source-note">Article context: "JPMorgan CEO Warns of Growing Cyber Threats with AI," citing The Wall Street Journal. AI security guardrails are available with Glean Protect+.</p></div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var NS = 'http://www.w3.org/2000/svg';
+
+  /* ---------- in-page jumps ---------- */
+  document.querySelectorAll('[data-jump]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var t = document.getElementById(b.getAttribute('data-jump'));
+      if (t) t.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block: 'start'});
+    });
+  });
+
+  /* ---------- reveal ---------- */
+  var reveals = document.querySelectorAll('.reveal');
+  function showAll(){ reveals.forEach(function(e){ e.classList.add('in'); }); }
+  var io = null;
+  if (reduce || !('IntersectionObserver' in window)) { showAll(); }
+  else {
+    io = new IntersectionObserver(function(es){
+      es.forEach(function(en){ if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target);} });
+    }, {threshold: 0.12});
+    reveals.forEach(function(e, i){ e.style.transitionDelay = (i % 3) * 80 + 'ms'; io.observe(e); });
+    setTimeout(showAll, 3000);
+  }
+
+  /* ---------- proof: gauges + count-up ---------- */
+  var C = 2 * Math.PI * 42;
+  var fills = document.querySelectorAll('.gauge .fill');
+  fills.forEach(function(f){ f.style.strokeDasharray = C; f.style.strokeDashoffset = reduce ? C * (1 - f.dataset.pct/100) : C; });
+  var counted = false;
+  function runCounts(){
+    if (counted) return; counted = true;
+    fills.forEach(function(f){ f.style.strokeDashoffset = C * (1 - f.dataset.pct/100); });
+    if (reduce) return;
+    document.querySelectorAll('[data-count]').forEach(function(el){
+      var target = parseFloat(el.dataset.count), dec = +el.dataset.dec, suf = el.dataset.suffix, t0 = null;
+      function tick(ts){ if(!t0) t0 = ts; var p = Math.min((ts - t0)/1400, 1), e = 1 - Math.pow(1-p, 3);
+        el.textContent = (target*e).toFixed(dec) + suf; if (p < 1) requestAnimationFrame(tick); else el.textContent = target.toFixed(dec) + suf; }
+      requestAnimationFrame(tick);
+    });
+  }
+  var proof = document.getElementById('proof');
+  if (reduce || !('IntersectionObserver' in window)) runCounts();
+  else { new IntersectionObserver(function(es, o){ if (es[0].isIntersecting){ runCounts(); o.disconnect(); } }, {threshold:.3}).observe(proof); }
+
+  /* ---------- shield simulator ---------- */
+  var shield = document.getElementById('shield'), fx = document.getElementById('fx');
+  var layers = shield.querySelectorAll('.layer');
+  var R = [185,155,125,95,65];
+  var T = {
+    identity:    {ring:2, name:'Over-permissioned request', layer:'Permission-aware retrieval', ok:'Only content this user can access is retrieved.', bad:'AI pulls content the user was never authorized to see.'},
+    isolation:   {ring:4, name:'Lateral move toward critical systems', layer:'Contained by default', ok:'Held inside the single-tenant, sandboxed boundary.', bad:'One compromised step cascades into connected systems.'},
+    attacks:     {ring:1, name:'Prompt injection in a poisoned document', layer:'AI security guardrails', ok:'Flagged and blocked before it can steer the model.', bad:'Hidden instructions hijack the AI and its actions.'},
+    oversharing: {ring:3, name:'Overshared sensitive file', layer:'Active data governance', ok:'Sensitive content auto-hidden from AI results.', bad:'Sensitive data surfaces in an AI answer.'},
+    oversight:   {ring:0, name:'Unsanctioned agent action', layer:'Central policy & audit', ok:'Blocked by policy and recorded in the audit trail.', bad:'The action runs with no policy check and no record.'}
+  };
+  var order = ['attacks','identity','oversharing','isolation','oversight'];
+  var on = true, count = 0, userActed = false, inView = false;
+  var toggle = document.getElementById('toggle'), toggleLabel = document.getElementById('toggleLabel');
+  var roBox = document.getElementById('readout'), roTag = document.getElementById('roTag'), roMain = document.getElementById('roMain'), roSub = document.getElementById('roSub');
+  var countEl = document.getElementById('count');
+  var cards = document.querySelectorAll('.tcard');
+
+  toggle.addEventListener('click', function(){
+    on = !on; userActed = true;
+    toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+    toggleLabel.textContent = on ? 'Glean protection on' : 'Glean protection off';
+    shield.classList.toggle('off', !on);
+    roBox.classList.toggle('bad', !on);
+    roTag.textContent = on ? 'Protection on' : 'Protection off';
+    roMain.textContent = on ? 'Every layer is active.' : 'Layers disabled. Try a threat now.';
+    roSub.textContent = on ? 'Launch a threat to see where it stops.' : 'See what reaches your systems without governed AI.';
+  });
+
+  function el(tag, attrs){ var n = document.createElementNS(NS, tag); for (var k in attrs) n.setAttribute(k, attrs[k]); return n; }
+  function focusLayer(i){ layers.forEach(function(l){ l.classList.toggle('focus', +l.dataset.ring === i); }); }
+  function setCard(key, bad){ cards.forEach(function(c){ var a = c.dataset.key === key; c.classList.toggle('active', a); c.classList.toggle('bad', a && bad); }); }
+
+  function burst(x, y, bad){
+    var b = el('circle', {cx:x, cy:y, r:4, 'class':'burst' + (bad ? ' bad' : '')}); fx.appendChild(b);
+    if (reduce){ setTimeout(function(){ b.remove(); }, 900); return; }
+    var t0 = null; (function grow(ts){ if(!t0) t0 = ts; var p = Math.min((ts-t0)/600,1);
+      b.setAttribute('r', 4 + p*26); b.setAttribute('stroke-opacity', 1-p); if (p<1) requestAnimationFrame(grow); else b.remove(); })(performance.now());
+  }
+
+  function launch(key, quiet){
+    var t = T[key]; if (!t) return;
+    var a = Math.random() * Math.PI * 2, start = 238, stop = on ? R[t.ring] + 7 : 40;
+    var cx = 200, cy = 200;
+    var sx = cx + Math.cos(a)*start, sy = cy + Math.sin(a)*start;
+    var trail = el('line', {x1:sx, y1:sy, x2:sx, y2:sy, 'class':'trail', 'stroke-opacity':.5});
+    var dot = el('circle', {cx:sx, cy:sy, r:6, 'class':'dot'});
+    fx.appendChild(trail); fx.appendChild(dot);
+    if (!quiet){ setCard(key, !on); focusLayer(on ? t.ring : -1);
+      roBox.classList.remove('bad'); roTag.textContent = 'Incoming threat'; roMain.textContent = t.name; roSub.textContent = 'Approaching your enterprise systems...'; }
+    function land(){
+      var x = cx + Math.cos(a)*stop, y = cy + Math.sin(a)*stop;
+      dot.remove(); setTimeout(function(){ trail.remove(); }, 250);
+      burst(x, y, !on);
+      if (on){
+        var L = layers[t.ring]; L.classList.add('hit'); setTimeout(function(){ L.classList.remove('hit'); }, 900);
+        count++; countEl.textContent = count;
+        if (!quiet){ roBox.classList.remove('bad'); roTag.textContent = 'Stopped by ' + t.layer; roMain.textContent = t.name; roSub.textContent = t.ok; }
+      } else {
+        shield.classList.add('breach'); setTimeout(function(){ shield.classList.remove('breach'); }, 900);
+        if (!quiet){ roBox.classList.add('bad'); roTag.textContent = 'Breach: no governed layer'; roMain.textContent = t.name; roSub.textContent = t.bad; }
+      }
+    }
+    if (reduce){ land(); return; }
+    var t0 = null, dur = 1000;
+    requestAnimationFrame(function step(ts){
+      if (!t0) t0 = ts; var p = Math.min((ts-t0)/dur, 1), e = p*p*(3-2*p);
+      var r = start + (stop - start)*e, x = cx + Math.cos(a)*r, y = cy + Math.sin(a)*r;
+      var tr = start + (stop - start)*Math.max(e-0.22, 0);
+      dot.setAttribute('cx', x); dot.setAttribute('cy', y);
+      trail.setAttribute('x1', cx + Math.cos(a)*tr); trail.setAttribute('y1', cy + Math.sin(a)*tr);
+      trail.setAttribute('x2', x); trail.setAttribute('y2', y);
+      if (p < 1) requestAnimationFrame(step); else land();
+    });
+  }
+
+  document.querySelectorAll('[data-sim]').forEach(function(b){
+    b.addEventListener('click', function(){ userActed = true; launch(b.dataset.sim); });
+  });
+  document.getElementById('launchAll').addEventListener('click', function(){
+    userActed = true;
+    order.forEach(function(k, i){ setTimeout(function(){ launch(k, i < order.length - 1); }, i * 260); });
+    setTimeout(function(){
+      setCard(null); focusLayer(-1);
+      roBox.classList.toggle('bad', !on);
+      roTag.textContent = on ? 'All five threats stopped' : 'All five threats got through';
+      roMain.textContent = on ? 'Each one met the layer built for it.' : 'Without governed AI, nothing stood in the way.';
+      roSub.textContent = on ? 'Defense in depth: no single control has to do it all.' : 'Switch protection back on and launch again.';
+    }, order.length * 260 + 1100);
+  });
+
+  /* ambient demo while visible, until the viewer takes over */
+  var demoIdx = 0;
+  if (!reduce && 'IntersectionObserver' in window){
+    new IntersectionObserver(function(es){ inView = es[0].isIntersecting; }, {threshold:.35}).observe(shield);
+    setInterval(function(){ if (inView && !userActed && on){ launch(order[demoIdx % order.length]); demoIdx++; } }, 2600);
+  }
+
+  /* ---------- request flow ---------- */
+  var flow = document.getElementById('flow'), rail = document.getElementById('rail'), packet = document.getElementById('packet');
+  var steps = flow.querySelectorAll('.step'), playing = false, timers = [];
+  function setStatic(){ steps.forEach(function(s){ s.classList.add('lit'); }); rail.style.width = '84%'; }
+  function play(){
+    if (playing) return; playing = true;
+    timers.forEach(clearTimeout); timers = [];
+    steps.forEach(function(s){ s.classList.remove('lit'); }); rail.style.width = '0'; packet.style.left = '8%';
+    flow.classList.add('playing');
+    steps.forEach(function(s, i){
+      timers.push(setTimeout(function(){
+        var pct = 8 + (84 * i / (steps.length - 1));
+        rail.style.width = (pct - 8) + '%'; packet.style.left = pct + '%';
+        s.classList.add('lit');
+        if (i === steps.length - 1){ setTimeout(function(){ flow.classList.remove('playing'); playing = false; }, 500); }
+      }, 200 + i * 520));
+    });
+  }
+  document.getElementById('replay').addEventListener('click', function(){ if (reduce) setStatic(); else play(); });
+  if (reduce || !('IntersectionObserver' in window)) setStatic();
+  else new IntersectionObserver(function(es, o){ if (es[0].isIntersecting){ play(); o.disconnect(); } }, {threshold:.4}).observe(flow);
+
+  window.__gleanShowAll = function(){ showAll(); setStatic(); runCounts(); };
+})();
+</script>
+<script>
+  if (window.GleanBridge) {
+    window.GleanBridge.postMessage({
+      actionId: 'export-pdf',
+      type: 'glean-add-menu',
+      metadata: { label: 'Export as PDF', icon: 'export' }
+    });
+    window.GleanBridge.onMessage('action', function(data) {
+      if (data.actionId === 'export-pdf') window.print();
+    });
+  }
+  function prepareChartsForPrint() {
+    if (typeof echarts === 'undefined') return;
+    document.querySelectorAll('[_echarts_instance_]').forEach(function(el) {
+      var chart = echarts.getInstanceByDom(el);
+      if (!chart) return;
+      var img = new Image();
+      img.src = chart.getDataURL({ type: 'png', pixelRatio: 2 });
+      img.className = 'print-chart-img';
+      img.style.cssText = 'width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:10;';
+      el.dataset.prevPosition = el.style.position;
+      el.style.position = 'relative';
+      el.appendChild(img);
+    });
+  }
+  function cleanUpAfterPrint() {
+    document.querySelectorAll('[_echarts_instance_]').forEach(function(el) {
+      var img = el.querySelector('.print-chart-img');
+      if (!img) return;
+      img.remove();
+      el.style.position = el.dataset.prevPosition || '';
+      delete el.dataset.prevPosition;
+    });
+  }
+  window.addEventListener('beforeprint', function(){ if (window.__gleanShowAll) window.__gleanShowAll(); prepareChartsForPrint(); });
+  window.addEventListener('afterprint', cleanUpAfterPrint);
+</script>
+</body>
+</html>
