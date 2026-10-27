@@ -151,6 +151,7 @@ p{margin:0}
 .quote{font-family:Georgia,serif;font-size:1.6rem;line-height:1.25;letter-spacing:-.01em}
 .quote::before{content:"“";color:var(--artifact-primary-brand)}
 .quote::after{content:"”";color:var(--artifact-primary-brand)}
+.hero-quotes{margin-top:32px;padding-bottom:8px}
 .qsrc{margin-top:12px;font-size:13px;color:var(--artifact-text-secondary)}
 /* value */
 .tag{display:inline-block;font-family:"SF Mono",Consolas,monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:6px}
@@ -273,6 +274,11 @@ footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
   <div class="wrap">
     <div class="eyebrow" data-glean-id="hero-eyebrow">Customer story · Medical devices · October 2026</div>
     <h1 data-glean-id="hero-title" style="margin-top:18px">How Medtronic gave its sellers <em>one front door</em> to every system they work in</h1>
+    <div class="quotes hero-quotes" data-glean-id="quotes">
+      <div data-glean-id="quote-easy"><div class="quote">It's very easy.</div><div class="qsrc">Medtronic user</div></div>
+      <div data-glean-id="quote-love"><div class="quote">I love Glean.</div><div class="qsrc">Medtronic user</div></div>
+      <div data-glean-id="quote-copilot"><div class="quote">I have not used Copilot in weeks since I got Glean.</div><div class="qsrc">Medtronic user</div></div>
+    </div>
     <p class="lede" data-glean-id="hero-lede">Medtronic uses Glean as a permission-aware context and workflow layer across Salesforce, Microsoft 365, Snowflake, ServiceNow and approved product content. The aim is to give sellers less time navigating systems and more time with customers, in the OR, and covering territory.</p>
     <div class="prepared" data-glean-id="hero-prepared">
       <span><i class="dot"></i>Prepared for Zimmer Biomet</span>
@@ -390,11 +396,6 @@ footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
       <div data-glean-id="growth-runs"><div class="metric">1.1K → 40.0K</div><div class="lbl">Weekly runs, Jun 1 week → Oct 5 week (38×)</div></div>
       <div data-glean-id="growth-people"><div class="metric">62 → 1,703</div><div class="lbl">People per week (27×). Runs per person rose from 17.0 to 23.5 a week</div></div>
       <div data-glean-id="growth-drafting"><div class="metric">+20.2K</div><div class="lbl">Drafting runs added per month, June → September, the biggest increase of any work type</div></div>
-    </div>
-    <div class="quotes" data-glean-id="quotes">
-      <div data-glean-id="quote-easy"><div class="quote">It's very easy.</div><div class="qsrc">Medtronic user</div></div>
-      <div data-glean-id="quote-love"><div class="quote">I love Glean.</div><div class="qsrc">Medtronic user</div></div>
-      <div data-glean-id="quote-copilot"><div class="quote">I have not used Copilot in weeks since I got Glean.</div><div class="qsrc">Medtronic user</div></div>
     </div>
     <p class="note" style="margin-top:24px" data-glean-id="adoption-demand">Organic demand: 200–400 Medtronic employees request Glean access every week.</p>
   </div>
