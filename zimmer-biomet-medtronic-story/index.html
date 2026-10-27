@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="glean-artifact-type" content="customer_proposal">
+<meta name="glean-artifact-type" content="visual_content">
+<meta name="robots" content="noindex, nofollow">
+<title>Medtronic × Glean | A customer story for Zimmer Biomet</title>
+<style>
+:root{
+  --artifact-background:#ffffff;
+  --artifact-background-light:#f4f3f1;
+  --artifact-border-light:#e6e3de;
+  --artifact-border-dark:#cfc9bf;
+  --artifact-primary-brand:#1f3f6e;
+  --artifact-primary-soft:#e9eef6;
+  --artifact-primary-hover:#2c5492;
+  --artifact-on-brand:#ffffff;
+  --artifact-text-primary:#1c1a17;
+  --artifact-text-secondary:#6b675e;
+  --artifact-positive:#3f7d4f;
+  --artifact-positive-background:#edf2ea;
+  --artifact-hypo:#8a6a2b;
+  --artifact-hypo-background:#f6efe0;
+  --artifact-bar:#1f3f6e;
+  --artifact-bar-soft:#b9c7dd;
+  --artifact-shadow:0 1px 2px rgba(28,26,23,.06);
+}
+html[data-theme='dark']{
+  --artifact-background:#17181b;
+  --artifact-background-light:#202227;
+  --artifact-border-light:#33363d;
+  --artifact-border-dark:#454952;
+  --artifact-primary-brand:#9db7e0;
+  --artifact-primary-soft:#24324a;
+  --artifact-primary-hover:#bcd0ee;
+  --artifact-on-brand:#111317;
+  --artifact-text-primary:#f1efea;
+  --artifact-text-secondary:#a7a398;
+  --artifact-positive:#86b98f;
+  --artifact-positive-background:#1f2b21;
+  --artifact-hypo:#e0c27e;
+  --artifact-hypo-background:#33291a;
+  --artifact-bar:#9db7e0;
+  --artifact-bar-soft:#3d4f6d;
+  --artifact-shadow:0 1px 2px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--artifact-background);color:var(--artifact-text-primary);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-size:16px;line-height:1.6;}
+.serif,h1,h2,h3{font-family:Georgia,"Times New Roman",Times,serif;font-weight:400;letter-spacing:-.02em;line-height:1.08;margin:0}
+h1{font-size:clamp(2.4rem,5.6vw,4.2rem)}
+h2{font-size:clamp(1.8rem,3.6vw,2.6rem)}
+h3{font-size:1.3rem;line-height:1.25}
+.mono,.eyebrow,.metric{font-family:"SF Mono","IBM Plex Mono","Cascadia Code",Consolas,monospace}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--artifact-text-secondary);font-weight:500}
+.wrap{max-width:1100px;margin:0 auto;padding:0 28px}
+section{padding:84px 0;border-top:1px solid var(--artifact-border-light)}
+p{margin:0}
+.lede{font-size:1.15rem;color:var(--artifact-text-secondary);max-width:720px}
+.accent{color:var(--artifact-primary-brand)}
+/* top bar */
+.topbar{position:sticky;top:0;z-index:20;background:var(--artifact-background);border-bottom:1px solid var(--artifact-border-light)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:56px;gap:16px}
+.brandline{font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-family:"SF Mono",Consolas,monospace;white-space:nowrap}
+.nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{font-size:13px;color:var(--artifact-text-secondary);text-decoration:none;padding:6px 10px;border-radius:999px;white-space:nowrap}
+.nav a.on,.nav a:hover{color:var(--artifact-primary-brand);background:var(--artifact-primary-soft)}
+/* hero */
+.hero{padding:88px 0 72px;border-top:0}
+.hero h1 em{font-style:italic;color:var(--artifact-primary-brand)}
+.hero .lede{margin-top:24px}
+.prepared{margin-top:28px;display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--artifact-text-secondary)}
+.prepared span{display:inline-flex;gap:8px;align-items:center}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--artifact-primary-brand);display:inline-block}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:56px;border-top:1px solid var(--artifact-border-dark)}
+.kpi{padding:22px 20px 0 0}
+.kpi+.kpi{padding-left:20px;border-left:1px solid var(--artifact-border-light)}
+.metric{font-size:clamp(2rem,4.2vw,3rem);line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.kpi .lbl{margin-top:10px;font-size:14px;color:var(--artifact-text-secondary);max-width:220px}
+/* section heads */
+.shead{display:grid;grid-template-columns:200px 1fr;gap:32px;margin-bottom:44px}
+.shead .num{font-family:"SF Mono",Consolas,monospace;font-size:12px;letter-spacing:.14em;color:var(--artifact-primary-brand);text-transform:uppercase;padding-top:10px}
+.shead .lede{margin-top:16px}
+/* why grid */
+.why{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--artifact-border-light);border:1px solid var(--artifact-border-light);border-radius:14px;overflow:hidden}
+.why div.cell{background:var(--artifact-background);padding:28px}
+.why .k{font-family:"SF Mono",Consolas,monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--artifact-primary-brand)}
+.why h3{margin:10px 0 10px}
+.why p{color:var(--artifact-text-secondary)}
+.callout{margin-top:28px;display:flex;align-items:center;gap:28px;padding:28px;border-radius:14px;background:var(--artifact-primary-soft);color:var(--artifact-text-primary)}
+.callout .metric{color:var(--artifact-primary-brand);white-space:nowrap}
+/* day stepper */
+.day{display:grid;grid-template-columns:280px 1fr;gap:28px}
+.steps{display:flex;flex-direction:column;gap:6px}
+.step{all:unset;cursor:pointer;display:grid;grid-template-columns:62px 1fr;gap:10px;padding:14px 16px;border-radius:12px;border:1px solid transparent;color:var(--artifact-text-primary)}
+.step .t{font-family:"SF Mono",Consolas,monospace;font-size:12px;color:var(--artifact-text-secondary);padding-top:2px}
+.step .n{font-weight:600;font-size:15px}
+.step:hover{background:var(--artifact-background-light)}
+.step[aria-selected="true"]{border-color:var(--artifact-border-dark);background:var(--artifact-background)}
+.step[aria-selected="true"] .t{color:var(--artifact-primary-brand)}
+.step:focus-visible{outline:2px solid var(--artifact-primary-brand);outline-offset:2px}
+.panel{border:1px solid var(--artifact-border-light);border-radius:16px;padding:32px;min-height:340px;background:var(--artifact-background)}
+.panel[hidden]{display:none}
+.panel .agent{display:inline-block;font-size:12px;font-family:"SF Mono",Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--artifact-positive-background);color:var(--artifact-positive)}
+.panel h3{font-size:1.7rem;margin:16px 0 12px}
+.panel p.d{color:var(--artifact-text-secondary);max-width:620px}
+.flow{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0}
+.flow span{font-size:13px;padding:6px 12px;border-radius:8px;border:1px solid var(--artifact-border-light);color:var(--artifact-text-primary)}
+.flow span.out{border-color:var(--artifact-primary-brand);color:var(--artifact-primary-brand)}
+.pstats{display:flex;gap:40px;flex-wrap:wrap;margin-top:22px;padding-top:22px;border-top:1px solid var(--artifact-border-light)}
+.pstats .metric{font-size:2.2rem}
+.pstats .lbl{font-size:13px;color:var(--artifact-text-secondary);margin-top:6px}
+.fade-in{animation:fi .35s ease both}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* live table */
+.live{width:100%;border-collapse:collapse;margin-top:40px}
+.live th{font-family:"SF Mono",Consolas,monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--artifact-text-secondary);text-align:left;font-weight:500;padding:0 12px 12px 0;border-bottom:1px solid var(--artifact-border-dark)}
+.live td{padding:16px 12px 16px 0;border-bottom:1px solid var(--artifact-border-light);vertical-align:top;font-size:15px}
+.live td.n{font-family:"SF Mono",Consolas,monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+.live td .s{color:var(--artifact-text-secondary);font-size:14px}
+.trend{color:var(--artifact-positive);font-family:"SF Mono",Consolas,monospace;font-size:13px}
+.tblwrap{overflow-x:auto}
+/* adoption */
+.adopt{display:grid;grid-template-columns:1.25fr 1fr;gap:28px}
+.card{border:1px solid var(--artifact-border-light);border-radius:16px;padding:28px;background:var(--artifact-background)}
+.card .eyebrow{margin-bottom:6px}
+.card h3{margin-bottom:20px}
+.bars{display:flex;align-items:flex-end;gap:14px;height:220px;padding-top:20px;border-bottom:1px solid var(--artifact-border-dark)}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:8px}
+.bar .v{font-family:"SF Mono",Consolas,monospace;font-size:13px}
+.bar .col{width:100%;max-width:64px;background:var(--artifact-bar);border-radius:6px 6px 0 0;transform-origin:bottom;animation:grow .6s ease both}
+.bar .col.partial{background:var(--artifact-bar-soft)}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.barx{display:flex;gap:14px;margin-top:10px}
+.barx div{flex:1;text-align:center;font-size:12px;color:var(--artifact-text-secondary)}
+.barx b{display:block;font-family:"SF Mono",Consolas,monospace;font-weight:500;color:var(--artifact-text-primary);font-size:12px}
+.note{font-size:12px;color:var(--artifact-text-secondary);margin-top:14px}
+.mix{display:flex;flex-direction:column;gap:16px}
+.mixrow .top{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}
+.mixrow .top b{font-family:"SF Mono",Consolas,monospace;font-weight:500}
+.track{height:10px;border-radius:999px;background:var(--artifact-background-light);overflow:hidden}
+.fill{height:100%;background:var(--artifact-bar);border-radius:999px}
+.growth{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:28px}
+.growth .metric{font-size:2.2rem}
+.growth .lbl{font-size:14px;color:var(--artifact-text-secondary);margin-top:8px}
+.quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:56px}
+.quote{font-family:Georgia,serif;font-size:1.6rem;line-height:1.25;letter-spacing:-.01em}
+.quote::before{content:"“";color:var(--artifact-primary-brand)}
+.quote::after{content:"”";color:var(--artifact-primary-brand)}
+.qsrc{margin-top:12px;font-size:13px;color:var(--artifact-text-secondary)}
+/* value */
+.tag{display:inline-block;font-family:"SF Mono",Consolas,monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:6px}
+.tag.m{background:var(--artifact-positive-background);color:var(--artifact-positive)}
+.tag.h{background:var(--artifact-hypo-background);color:var(--artifact-hypo)}
+.tag.s{background:var(--artifact-primary-soft);color:var(--artifact-primary-brand)}
+.cap{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--artifact-border-light);border-radius:16px;overflow:hidden}
+.cap div.c{padding:24px;border-right:1px solid var(--artifact-border-light)}
+.cap div.c:last-child{border-right:0}
+.cap .metric{font-size:2.1rem;margin-top:12px}
+.cap .lbl{font-size:14px;color:var(--artifact-text-secondary);margin-top:8px}
+.ramp{margin-top:28px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.ramp div.r{padding:22px;border-radius:14px;border:1px solid var(--artifact-border-light)}
+.ramp div.r.y3{background:var(--artifact-primary-soft);border-color:transparent}
+.ramp .metric{font-size:2rem;margin:10px 0 4px}
+.ramp .lbl{font-size:14px;color:var(--artifact-text-secondary)}
+.calc{margin-top:56px;border:1px solid var(--artifact-border-dark);border-radius:18px;overflow:hidden}
+.ctabs{display:flex;border-bottom:1px solid var(--artifact-border-light);overflow-x:auto}
+.ctab{all:unset;cursor:pointer;padding:18px 22px;font-size:14px;color:var(--artifact-text-secondary);border-bottom:2px solid transparent;white-space:nowrap}
+.ctab[aria-selected="true"]{color:var(--artifact-primary-brand);border-bottom-color:var(--artifact-primary-brand);font-weight:600}
+.ctab:focus-visible{outline:2px solid var(--artifact-primary-brand);outline-offset:-2px}
+.cbody{display:grid;grid-template-columns:1.2fr 1fr;gap:0}
+.cbody[hidden]{display:none}
+.inputs{padding:28px;display:flex;flex-direction:column;gap:20px;border-right:1px solid var(--artifact-border-light)}
+.inp .row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px;margin-bottom:6px}
+.inp .row b{font-family:"SF Mono",Consolas,monospace;font-weight:500;font-size:15px;white-space:nowrap}
+.inp input[type=range]{width:100%;accent-color:var(--artifact-primary-brand)}
+.result{padding:28px;display:flex;flex-direction:column;justify-content:space-between;gap:20px;background:var(--artifact-background-light)}
+.result .metric{font-size:clamp(2.6rem,5vw,3.6rem);color:var(--artifact-primary-brand)}
+.result .formula{font-family:"SF Mono",Consolas,monospace;font-size:12.5px;line-height:1.7;color:var(--artifact-text-secondary)}
+.btn{all:unset;cursor:pointer;font-size:13px;padding:8px 14px;border-radius:999px;border:1px solid var(--artifact-border-dark);color:var(--artifact-text-primary);align-self:flex-start}
+.btn:hover{border-color:var(--artifact-primary-brand);color:var(--artifact-primary-brand)}
+.btn:focus-visible{outline:2px solid var(--artifact-primary-brand);outline-offset:2px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:18px;font-size:13px;color:var(--artifact-text-secondary);align-items:center}
+/* orion */
+.orion{display:grid;grid-template-columns:1fr 1.35fr;gap:36px;align-items:start}
+.olist{display:flex;flex-direction:column;gap:18px;margin-top:8px}
+.olist div.o{display:grid;grid-template-columns:28px 1fr;gap:12px}
+.olist .i{font-family:"SF Mono",Consolas,monospace;font-size:12px;color:var(--artifact-primary-brand);padding-top:3px}
+.olist p{color:var(--artifact-text-secondary);font-size:15px}
+.olist b{color:var(--artifact-text-primary);font-weight:600}
+.app{border:1px solid var(--artifact-border-dark);border-radius:16px;overflow:hidden;background:var(--artifact-background);box-shadow:var(--artifact-shadow)}
+.appbar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--artifact-border-light);font-size:12px}
+.appbar .sim{font-family:"SF Mono",Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--artifact-hypo);background:var(--artifact-hypo-background);padding:3px 8px;border-radius:6px;font-size:10.5px}
+.atabs{display:flex;gap:2px;padding:8px;border-bottom:1px solid var(--artifact-border-light);overflow-x:auto}
+.atab{all:unset;cursor:pointer;font-size:13px;padding:7px 12px;border-radius:8px;color:var(--artifact-text-secondary);white-space:nowrap}
+.atab[aria-selected="true"]{background:var(--artifact-primary-brand);color:var(--artifact-on-brand)}
+.atab:focus-visible{outline:2px solid var(--artifact-primary-brand);outline-offset:2px}
+.apane{padding:18px;min-height:300px}
+.apane[hidden]{display:none}
+.item{display:grid;grid-template-columns:54px 1fr auto;gap:12px;padding:14px 0;border-bottom:1px solid var(--artifact-border-light);font-size:14px}
+.item:last-child{border-bottom:0}
+.item .tm{font-family:"SF Mono",Consolas,monospace;font-size:12px;color:var(--artifact-text-secondary);padding-top:2px}
+.item .h{font-weight:600}
+.item .s{color:var(--artifact-text-secondary);font-size:13px;margin-top:2px}
+.pill{font-size:11px;font-family:"SF Mono",Consolas,monospace;padding:3px 8px;border-radius:999px;height:fit-content;white-space:nowrap}
+.pill.ok{background:var(--artifact-positive-background);color:var(--artifact-positive)}
+.pill.risk{background:var(--artifact-hypo-background);color:var(--artifact-hypo)}
+.pill.act{background:var(--artifact-primary-soft);color:var(--artifact-primary-brand)}
+.chat{margin-top:14px;padding:12px 14px;border-radius:12px;border:1px dashed var(--artifact-border-dark);font-size:13px;color:var(--artifact-text-secondary)}
+.stages{display:flex;gap:6px;margin:8px 0 16px}
+.stages div{flex:1;text-align:center;font-size:12px;padding:10px 4px;border-radius:8px;background:var(--artifact-background-light);color:var(--artifact-text-secondary)}
+.stages div b{display:block;font-family:"SF Mono",Consolas,monospace;font-size:18px;color:var(--artifact-text-primary);font-weight:500}
+/* zimmer */
+.map{width:100%;border-collapse:collapse}
+.map th{font-family:"SF Mono",Consolas,monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--artifact-text-secondary);text-align:left;font-weight:500;padding:0 16px 12px 0;border-bottom:1px solid var(--artifact-border-dark)}
+.map td{padding:20px 16px 20px 0;border-bottom:1px solid var(--artifact-border-light);vertical-align:top;font-size:15px}
+.map td:first-child{font-family:Georgia,serif;font-size:1.15rem;width:22%}
+.map td.zb{color:var(--artifact-primary-brand)}
+.next{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:44px}
+.next div.x{padding:24px;border-radius:14px;border:1px solid var(--artifact-border-light)}
+.next .k{font-family:"SF Mono",Consolas,monospace;font-size:12px;color:var(--artifact-primary-brand);letter-spacing:.1em}
+.next h3{margin:10px 0 8px;font-size:1.2rem}
+.next p{color:var(--artifact-text-secondary);font-size:15px}
+footer{padding:40px 0 64px;border-top:1px solid var(--artifact-border-light);font-size:13px;color:var(--artifact-text-secondary)}
+footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+@media screen and (max-width:900px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .kpi:nth-child(3){padding-left:0;border-left:0}
+  .shead{grid-template-columns:1fr;gap:8px}
+  .why,.adopt,.orion,.cbody,.day{grid-template-columns:1fr}
+  .inputs{border-right:0;border-bottom:1px solid var(--artifact-border-light)}
+  .cap{grid-template-columns:repeat(2,1fr)}
+  .cap div.c:nth-child(2){border-right:0}
+  .cap div.c:nth-child(-n+2){border-bottom:1px solid var(--artifact-border-light)}
+  .quotes,.growth,.ramp,.next{grid-template-columns:1fr}
+  .steps{flex-direction:row;overflow-x:auto}
+  .step{grid-template-columns:1fr;min-width:150px}
+  .brandline{display:none}
+}
+@media print{
+  @page{size:auto !important}
+  body{margin:0;padding:.4in .6in;background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .topbar{display:none}
+  .wrap{max-width:100%!important;padding:0}
+  section{padding:28px 0;break-inside:auto}
+  .card,.cap,.calc,.app,.why,.next div.x,.ramp div.r{break-inside:avoid;box-shadow:none!important}
+  .panel[hidden],.apane[hidden],.cbody[hidden]{display:grid!important}
+  .apane[hidden]{display:block!important}
+  .panel[hidden]{display:block!important;margin-top:12px}
+  .steps,.ctabs,.atabs,.btn{display:none!important}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .fade-in{opacity:1!important;transform:none!important}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandline">Medtronic × Glean</div>
+    <nav class="nav" aria-label="Sections">
+      <a href="#why">Why Glean</a><a href="#day">A seller's day</a><a href="#adoption">Adoption</a><a href="#value">Value</a><a href="#next">What's next</a><a href="#zb">For Zimmer Biomet</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="hero" data-glean-id="hero">
+  <div class="wrap">
+    <div class="eyebrow" data-glean-id="hero-eyebrow">Customer story · Medical devices · October 2026</div>
+    <h1 data-glean-id="hero-title" style="margin-top:18px">How Medtronic gave its sellers <em>one front door</em> to every system they work in</h1>
+    <p class="lede" data-glean-id="hero-lede">Medtronic uses Glean as a permission-aware context and workflow layer across Salesforce, Microsoft 365, Snowflake, ServiceNow and approved product content. The aim is to give sellers less time navigating systems and more time with customers, in the OR, and covering territory.</p>
+    <div class="prepared" data-glean-id="hero-prepared">
+      <span><i class="dot"></i>Prepared for Zimmer Biomet</span>
+      <span><i class="dot"></i>Data: June 1 – October 17, 2026</span>
+      <span><i class="dot"></i>Shared with Medtronic's permission</span>
+    </div>
+    <div class="kpis" data-glean-id="hero-kpis">
+      <div class="kpi" data-glean-id="kpi-weekly-runs"><div class="metric">38×</div><div class="lbl">growth in weekly Assistant and agent runs, 1.1K → 40.0K (Jun 1 → Oct 5 weeks)</div></div>
+      <div class="kpi" data-glean-id="kpi-weekly-people"><div class="metric">1,703</div><div class="lbl">people using Glean each week, up from 62 at contract start (27×)</div></div>
+      <div class="kpi" data-glean-id="kpi-agents"><div class="metric">586</div><div class="lbl">agents built by Medtronic teams since June, with 18,386 agent runs</div></div>
+      <div class="kpi" data-glean-id="kpi-build-speed"><div class="metric">45 min</div><div class="lbl">to build an agent that took more than 10 days in their CRM platform</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="why" data-glean-id="section-why">
+  <div class="wrap">
+    <div class="shead">
+      <div class="num">01 · Why Glean</div>
+      <div><h2 data-glean-id="why-title">The problem wasn't a lack of AI. It was too many systems.</h2>
+      <p class="lede" data-glean-id="why-lede">Medtronic's sellers, specialists and operations teams work across many systems and data domains. Leadership wanted one layer that pulls context together and gets work done, without asking reps to stitch every source together by hand.</p></div>
+    </div>
+    <div class="why" data-glean-id="why-grid">
+      <div class="cell" data-glean-id="why-fragmentation"><div class="k">Fragmentation</div><h3>One harmonizing layer</h3><p>Glean connects Salesforce, Microsoft 365, Snowflake, ServiceNow and approved product content so one question returns grounded context from all of them.</p></div>
+      <div class="cell" data-glean-id="why-capacity"><div class="k">Seller capacity</div><h3>More time selling, not searching</h3><p>Medtronic was clear that Glean doesn't replace reps. It takes on admin and self-service desk work so reps can cover more territory, convert more business and help more patients.</p></div>
+      <div class="cell" data-glean-id="why-speed"><div class="k">Speed</div><h3>Faster than CRM customization</h3><p>Teams can test and tailor workflows in hours, not sprints, so the business shapes the tools instead of waiting in an IT queue.</p></div>
+      <div class="cell" data-glean-id="why-trust"><div class="k">Trust &amp; openness</div><h3>Permissions, security, no data lock-in</h3><p>Answers respect each person's existing access. Glean works across multiple AI front doors and third-party agents, and Medtronic keeps ownership of its data.</p></div>
+    </div>
+    <div class="callout" data-glean-id="why-callout">
+      <div class="metric">45 min vs. 10+ days</div>
+      <p>An equivalent agent took about 45 minutes to build in Glean, compared with more than 10 days in their CRM platform. That proof point gave Medtronic a much faster way to test and tailor seller workflows.</p>
+    </div>
+  </div>
+</section>
+
+<section id="day" data-glean-id="section-day">
+  <div class="wrap">
+    <div class="shead">
+      <div class="num">02 · A seller's day</div>
+      <div><h2 data-glean-id="day-title">What Medtronic's field teams do with Glean today</h2>
+      <p class="lede" data-glean-id="day-lede">Medtronic has clinical sellers in the OR, enterprise account sellers and service engineers, and about 90% of its contracts are recurring. A generic opportunity dashboard doesn't fit that, so the workflows follow the rep's actual day. Select a moment to see it.</p></div>
+    </div>
+    <div class="day" data-glean-id="day-stepper">
+      <div class="steps" role="tablist" aria-label="Moments in a seller's day">
+        <button class="step" role="tab" id="st-plan" aria-controls="pn-plan" aria-selected="true" data-glean-id="step-plan"><span class="t">7:30</span><span class="n">Plan the day</span></button>
+        <button class="step" role="tab" id="st-call" aria-controls="pn-call" aria-selected="false" data-glean-id="step-call"><span class="t">9:00</span><span class="n">Prep the call</span></button>
+        <button class="step" role="tab" id="st-or" aria-controls="pn-or" aria-selected="false" data-glean-id="step-or"><span class="t">11:30</span><span class="n">Support the case in the OR</span></button>
+        <button class="step" role="tab" id="st-order" aria-controls="pn-order" aria-selected="false" data-glean-id="step-order"><span class="t">14:15</span><span class="n">Fix an order issue</span></button>
+        <button class="step" role="tab" id="st-terr" aria-controls="pn-terr" aria-selected="false" data-glean-id="step-terr"><span class="t">16:30</span><span class="n">Prioritize the territory</span></button>
+      </div>
+      <div>
+        <div class="panel fade-in" role="tabpanel" id="pn-plan" aria-labelledby="st-plan" data-glean-id="panel-plan">
+          <span class="agent">Live · Personal agents</span>
+          <h3>The day arrives already organized</h3>
+          <p class="d">Meeting, inbox and daily-brief agents gather the calendar, open threads and account updates into one morning brief, so the rep starts with priorities instead of a pile of tabs.</p>
+          <div class="flow"><span>Calendar</span><span>Email</span><span>Teams</span><span>Account updates</span><span class="out">→ Daily brief</span></div>
+          <div class="pstats"><div><div class="metric">4,506</div><div class="lbl">runs since June 1</div></div><div><div class="metric">149</div><div class="lbl">people using them</div></div><div><div class="metric">+63%</div><div class="lbl">runs in the last 28 days vs. prior 28</div></div></div>
+        </div>
+        <div class="panel fade-in" role="tabpanel" id="pn-call" aria-labelledby="st-call" data-glean-id="panel-call" hidden>
+          <span class="agent">Live · Pre-Call Planning Specialist</span>
+          <h3>A brief before every customer call</h3>
+          <p class="d">Before a hospital, surgeon or enterprise-account meeting, the agent turns account history, pipeline, calendar, email and meeting context into one brief: what changed, what's open, and what to ask.</p>
+          <div class="flow"><span>Salesforce account history</span><span>Pipeline</span><span>Calendar</span><span>Email</span><span class="out">→ Pre-call brief</span></div>
+          <div class="pstats"><div><div class="metric">473</div><div class="lbl">briefs by 40 reps in 28 days</div></div><div><div class="metric">+373%</div><div class="lbl">vs. the prior 28 days</div></div><div><div class="metric">6,166</div><div class="lbl">briefs a year at today's pace</div></div></div>
+        </div>
+        <div class="panel fade-in" role="tabpanel" id="pn-or" aria-labelledby="st-or" data-glean-id="panel-or" hidden>
+          <span class="agent">Live · ARIA surgical robotics assistant</span>
+          <h3>Answers in the OR, cited from approved manuals</h3>
+          <p class="d">Clinical specialists supporting robotic-assisted surgery get an answer drawn only from approved eManuals, with the cited excerpt, or a clear "not found." The goal is fewer escalations and cases that stay on schedule.</p>
+          <div class="flow"><span>Approved eManuals</span><span>Product content</span><span class="out">→ Cited answer</span></div>
+          <div class="pstats"><div><div class="metric">965</div><div class="lbl">answers to 26 specialists in 28 days</div></div><div><div class="metric">3,064</div><div class="lbl">runs since June 1</div></div><div><div class="metric">+64%</div><div class="lbl">vs. the prior 28 days</div></div></div>
+        </div>
+        <div class="panel fade-in" role="tabpanel" id="pn-order" aria-labelledby="st-order" data-glean-id="panel-order" hidden>
+          <span class="agent">Live · Order agent + Supply-chain navigator</span>
+          <h3>Order status, shipments and backorders in one answer</h3>
+          <p class="d">Customer care and field teams ask about a PO, shipment or backorder in plain language. Operations teams get direct answers from supply-chain SOPs, so it's faster to find the root cause on a late order.</p>
+          <div class="flow"><span>Purchase orders</span><span>Shipments</span><span>Supply-chain SOPs</span><span class="out">→ Status + next step</span></div>
+          <div class="pstats"><div><div class="metric">759</div><div class="lbl">order-agent runs by 39 people in 28 days</div></div><div><div class="metric">76%</div><div class="lbl">positive feedback on the order agent</div></div><div><div class="metric">920</div><div class="lbl">supply-chain questions by 27 people</div></div></div>
+        </div>
+        <div class="panel fade-in" role="tabpanel" id="pn-terr" aria-labelledby="st-terr" data-glean-id="panel-terr" hidden>
+          <span class="agent">Live · Opportunity &amp; Territory Priorities</span>
+          <h3>Where to spend tomorrow</h3>
+          <p class="d">The agent flags stalled opportunities, account risk and territory priorities. Reps can draft follow-ups and create or update Salesforce records just by typing what they need.</p>
+          <div class="flow"><span>Pipeline</span><span>Account signals</span><span>Territory</span><span class="out">→ Ranked priorities</span><span class="out">→ Salesforce update</span></div>
+          <div class="pstats"><div><div class="metric">233</div><div class="lbl">runs by 9 reps in 28 days</div></div><div><div class="metric">New</div><div class="lbl">launched this quarter</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="adoption" data-glean-id="section-adoption">
+  <div class="wrap">
+    <div class="shead">
+      <div class="num">03 · Adoption</div>
+      <div><h2 data-glean-id="adoption-title">Usage grew fast, and moved from finding things to doing work</h2>
+      <p class="lede" data-glean-id="adoption-lede">Since the contract started on June 1, Medtronic has run more than 280,000 Assistant and agent tasks. In the last 28 days, 2,297 people used Assistant chat.</p></div>
+    </div>
+    <div class="adopt">
+      <div class="card" data-glean-id="chart-agent-runs">
+        <div class="eyebrow">Agent runs per month</div>
+        <h3>Agent usage up about 7.5× in three months</h3>
+        <div class="bars" id="bars"></div>
+        <div class="barx" id="barx"></div>
+        <p class="note">October covers the 1st–17th only (shown lighter). Labels under each bar show distinct people running agents that month.</p>
+      </div>
+      <div class="card" data-glean-id="chart-work-mix">
+        <div class="eyebrow">What people use it for · October</div>
+        <h3>Creating is now the biggest use</h3>
+        <div class="mix" id="mix"></div>
+        <p class="note">Share of classified Assistant and agent runs. Data analysis grew 26.9× from June to September, the fastest-growing type of work.</p>
+      </div>
+    </div>
+    <div class="growth" data-glean-id="adoption-growth">
+      <div data-glean-id="growth-runs"><div class="metric">1.1K → 40.0K</div><div class="lbl">Weekly runs, Jun 1 week → Oct 5 week (38×)</div></div>
+      <div data-glean-id="growth-people"><div class="metric">62 → 1,703</div><div class="lbl">People per week (27×). Runs per person rose from 17.0 to 23.5 a week</div></div>
+      <div data-glean-id="growth-drafting"><div class="metric">+20.2K</div><div class="lbl">Drafting runs added per month, June → September, the biggest increase of any work type</div></div>
+    </div>
+    <div class="quotes" data-glean-id="quotes">
+      <div data-glean-id="quote-easy"><div class="quote">It's very easy.</div><div class="qsrc">Medtronic user</div></div>
+      <div data-glean-id="quote-love"><div class="quote">I love Glean.</div><div class="qsrc">Medtronic user</div></div>
+      <div data-glean-id="quote-copilot"><div class="quote">I have not used Copilot in weeks since I got Glean.</div><div class="qsrc">Medtronic user</div></div>
+    </div>
+    <p class="note" style="margin-top:24px" data-glean-id="adoption-demand">Organic demand: 200–400 Medtronic employees request Glean access every week.</p>
+  </div>
+</section>
+
+<section id="value" data-glean-id="section-value">
+  <div class="wrap">
+    <div class="shead">
+      <div class="num">04 · Value</div>
+      <div><h2 data-glean-id="value-title">Measured capacity today, plus a P&amp;L framework to validate</h2>
+      <p class="lede" data-glean-id="value-lede">Medtronic's value program separates two things: time returned to people (measured from usage), and revenue or cost outcomes (hypotheses Medtronic is validating against its own baselines).</p>
+      <div class="legend"><span><span class="tag m">Measured</span> from Glean usage data</span><span><span class="tag s">Sourced</span> from Medtronic's FY26 10-K</span><span><span class="tag h">Hypothesis</span> to be confirmed by Medtronic</span></div></div>
+    </div>
+
+    <div class="cap" data-glean-id="value-capacity">
+      <div class="c" data-glean-id="cap-hours"><span class="tag m">Measured</span><div class="metric">47.9 h</div><div class="lbl">saved per seat a year, based on 154 chat sessions per seat × 18.6 min credited per session</div></div>
+      <div class="c" data-glean-id="cap-counted"><span class="tag m">Conservative</span><div class="metric">12.9 h</div><div class="lbl">counted per seat a year after a 0.27 realization and risk haircut</div></div>
+      <div class="c" data-glean-id="cap-seat-value"><span class="tag m">Measured</span><div class="metric">$1,034</div><div class="lbl">capacity value per seat a year, at Medtronic's $80/hour loaded rate</div></div>
+      <div class="c" data-glean-id="cap-fte"><span class="tag m">Measured</span><div class="metric">7.8</div><div class="lbl">FTEs of capacity created per 1,000 seats</div></div>
+    </div>
+    <div class="ramp" data-glean-id="value-ramp">
+      <div class="r" data-glean-id="ramp-y1"><div class="eyebrow">Year 1 · 4,250 seats · on pace</div><div class="metric">$3.36M</div><div class="lbl">25.2 FTEs of capacity</div></div>
+      <div class="r" data-glean-id="ramp-y2"><div class="eyebrow">Year 2 · 8,500 seats</div><div class="metric">$8.79M</div><div class="lbl">66.0 FTEs of capacity</div></div>
+      <div class="r y3" data-glean-id="ramp-y3"><div class="eyebrow">Year 3 · 12,500 seats</div><div class="metric accent">$12.93M</div><div class="lbl">97.1 FTEs of capacity, assuming today's usage mix</div></div>
+    </div>
+
+    <div class="calc" data-glean-id="value-calculator">
+      <div class="ctabs" role="tablist" aria-label="P&amp;L hypotheses">
+        <button class="ctab" role="tab" id="ct-call" aria-controls="cb-call" aria-selected="true" data-glean-id="calc-tab-call">Field call preparation · $1.2M</button>
+        <button class="ctab" role="tab" id="ct-back" aria-controls="cb-back" aria-selected="false" data-glean-id="calc-tab-back">Backorder resolution · $4.0M</button>
+        <button class="ctab" role="tab" id="ct-tend" aria-controls="cb-tend" aria-selected="false" data-glean-id="calc-tab-tend">Hospital tender response · $4.9M</button>
+      </div>
+
+      <div class="cbody" role="tabpanel" id="cb-call" aria-labelledby="ct-call" data-glean-id="calc-call">
+        <div class="inputs">
+          <p class="note" style="margin:0">More prepared calls → more opportunities advance → more revenue. Inputs start at Medtronic's values. Adjust them to see how the math changes.</p>
+          <div class="inp"><div class="row"><span>Briefed calls a year <span class="tag m">Measured</span></span><b id="o-c1"></b></div><input type="range" id="c1" min="1000" max="60000" step="100" value="6166" aria-label="Briefed calls a year"></div>
+          <div class="inp"><div class="row"><span>More calls that advance an opportunity <span class="tag h">Hypothesis</span></span><b id="o-c2"></b></div><input type="range" id="c2" min="0.25" max="5" step="0.25" value="1" aria-label="Lift in calls that advance, points"></div>
+          <div class="inp"><div class="row"><span>Win rate on advanced opportunities <span class="tag h">Hypothesis</span></span><b id="o-c3"></b></div><input type="range" id="c3" min="5" max="60" step="1" value="30" aria-label="Win rate percent"></div>
+          <div class="inp"><div class="row"><span>Average opportunity value <span class="tag h">Hypothesis</span></span><b id="o-c4"></b></div><input type="range" id="c4" min="10000" max="500000" step="5000" value="100000" aria-label="Average opportunity value"></div>
+          <div class="inp"><div class="row"><span>Gross margin <span class="tag s">Sourced</span></span><b id="o-c5"></b></div><input type="range" id="c5" min="40" max="80" step="1" value="65" aria-label="Gross margin percent"></div>
+        </div>
+        <div class="result">
+          <div><div class="eyebrow">Gross margin a year</div><div class="metric" id="r-call"></div><p class="note" id="r-call-rev"></p></div>
+          <div class="formula" id="f-call"></div>
+          <button class="btn" type="button" data-reset="call">Reset to Medtronic inputs</button>
+        </div>
+      </div>
+
+      <div class="cbody" role="tabpanel" id="cb-back" aria-labelledby="ct-back" data-glean-id="calc-back" hidden>
+        <div class="inputs">
+          <p class="note" style="margin:0">Finding the root cause faster → shorter backorders → fewer lost orders and less expedited freight. Inputs start at Medtronic's values.</p>
+          <div class="inp"><div class="row"><span>Backordered revenue (1% of sales) <span class="tag h">Hypothesis</span></span><b id="o-b1"></b></div><input type="range" id="b1" min="20" max="1000" step="2" value="364" aria-label="Backordered revenue, millions"></div>
+          <div class="inp"><div class="row"><span>Share lost to cancellation or switching <span class="tag h">Hypothesis</span></span><b id="o-b2"></b></div><input type="range" id="b2" min="1" max="30" step="1" value="10" aria-label="Share lost percent"></div>
+          <div class="inp"><div class="row"><span>Fewer losses from faster root cause <span class="tag h">Hypothesis</span></span><b id="o-b3"></b></div><input type="range" id="b3" min="1" max="30" step="1" value="10" aria-label="Fewer losses percent"></div>
+          <div class="inp"><div class="row"><span>Expedited freight spend <span class="tag h">Hypothesis</span></span><b id="o-b4"></b></div><input type="range" id="b4" min="2" max="100" step="1" value="32" aria-label="Expedite freight, millions"></div>
+          <div class="inp"><div class="row"><span>Share of expedites avoided <span class="tag h">Hypothesis</span></span><b id="o-b5"></b></div><input type="range" id="b5" min="1" max="20" step="1" value="5" aria-label="Expedites avoided percent"></div>
+        </div>
+        <div class="result">
+          <div><div class="eyebrow">Operating profit a year</div><div class="metric" id="r-back"></div><p class="note" id="r-back-split"></p></div>
+          <div class="formula" id="f-back"></div>
+          <button class="btn" type="button" data-reset="back">Reset to Medtronic inputs</button>
+        </div>
+      </div>
+
+      <div class="cbody" role="tabpanel" id="cb-tend" aria-labelledby="ct-tend" data-glean-id="calc-tend" hidden>
+        <div class="inputs">
+          <p class="note" style="margin:0">Reusing approved answers and evidence for each bid → higher win rate on hospital tenders. This is the next horizon: Medtronic teams draft in Assistant today, and a dedicated tender agent is planned.</p>
+          <div class="inp"><div class="row"><span>Tender pipeline <span class="tag s">Business case</span></span><b id="o-t1"></b></div><input type="range" id="t1" min="100" max="5000" step="50" value="1500" aria-label="Tender pipeline, millions"></div>
+          <div class="inp"><div class="row"><span>Win-rate lift <span class="tag h">Hypothesis</span></span><b id="o-t2"></b></div><input type="range" id="t2" min="0.25" max="3" step="0.25" value="0.5" aria-label="Win rate lift points"></div>
+          <div class="inp"><div class="row"><span>Gross margin <span class="tag s">Sourced</span></span><b id="o-t3"></b></div><input type="range" id="t3" min="40" max="80" step="1" value="65" aria-label="Gross margin percent"></div>
+        </div>
+        <div class="result">
+          <div><div class="eyebrow">Gross margin a year</div><div class="metric" id="r-tend"></div><p class="note" id="r-tend-rev"></p></div>
+          <div class="formula" id="f-tend"></div>
+          <button class="btn" type="button" data-reset="tend">Reset to Medtronic inputs</button>
+        </div>
+      </div>
+    </div>
+    <p class="note" data-glean-id="value-disclaimer">P&amp;L figures are hypotheses for Medtronic to confirm with its own baselines (deal value, win rate, backordered revenue, tender outcomes). They are not added together or counted as realized value. Capacity figures assume today's usage per seat and exclude the agent hypotheses.</p>
+  </div>
+</section>
+
+<section id="next" data-glean-id="section-next">
+  <div class="wrap">
+    <div class="shead">
+      <div class="num">05 · What's next</div>
+      <div><h2 data-glean-id="next-title">Orion: a single workspace for the seller's whole day</h2>
+      <p class="lede" data-glean-id="next-lede">With the core workflows live, Medtronic and Glean's forward deployed engineering team are prototyping a seller command center. It doesn't recreate a complex analytics dashboard. It's built around the rep's day and turns insight into action, on mobile and by voice.</p></div>
+    </div>
+    <div class="orion">
+      <div class="olist" data-glean-id="orion-ingredients">
+        <div class="o"><span class="i">01</span><p><b>Commercial insights</b> from Medtronic's existing Snowflake Cortex agents, now in the flow of the rep's day.</p></div>
+        <div class="o"><span class="i">02</span><p><b>Glean agents</b> gather context, recommend next steps and take action, including creating Salesforce records by text.</p></div>
+        <div class="o"><span class="i">03</span><p><b>Account pages</b> written by agents for each account and each seller, drawing on everything Glean connects to.</p></div>
+        <div class="o"><span class="i">04</span><p><b>Mobile and voice</b> for reps moving between hospitals: dictate post-visit notes or ask about a deal while on the move.</p></div>
+        <div class="o"><span class="i">05</span><p><b>A phased rollout</b> that starts with enterprise accounts, where data is most ready, then expands.</p></div>
+      </div>
+      <div class="app" data-glean-id="orion-preview">
+        <div class="appbar"><span class="mono">Orion · Commercial workspace</span><span class="sim">Illustrative · simulated data</span></div>
+        <div class="atabs" role="tablist" aria-label="Orion views">
+          <button class="atab" role="tab" id="at-week" aria-controls="ap-week" aria-selected="true" data-glean-id="orion-tab-week">My Week</button>
+          <button class="atab" role="tab" id="at-radar" aria-controls="ap-radar" aria-selected="false" data-glean-id="orion-tab-radar">Radar</button>
+          <button class="atab" role="tab" id="at-life" aria-controls="ap-life" aria-selected="false" data-glean-id="orion-tab-life">Lifecycle</button>
+          <button class="atab" role="tab" id="at-quote" aria-controls="ap-quote" aria-selected="false" data-glean-id="orion-tab-quote">Quotes</button>
+          <button class="atab" role="tab" id="at-ful" aria-controls="ap-ful" aria-selected="false" data-glean-id="orion-tab-ful">Fulfillment</button>
+        </div>
+        <div class="apane" role="tabpanel" id="ap-week" aria-labelledby="at-week" data-glean-id="orion-week">
+          <div class="item"><span class="tm">09:00</span><div><div class="h">Jacobs Medical Center</div><div class="s">Large cardiac-rhythm account with reorder gaps and a contract amendment waiting on commercial terms. Pre-call brief ready.</div></div><span class="pill risk">Watch</span></div>
+          <div class="item"><span class="tm">11:30</span><div><div class="h">Naval Medical Center San Diego</div><div class="s">Shape a respiratory-monitoring expansion before the competitor trial begins. 18 min drive.</div></div><span class="pill ok">Healthy</span></div>
+          <div class="item"><span class="tm">14:15</span><div><div class="h">North Park Community Hospital</div><div class="s">Recover an overdue cardiac-rhythm quote and contain a service escalation. 8 min drive.</div></div><span class="pill risk">At risk</span></div>
+          <div class="chat">🎙 "Summarize Jacobs before I walk in, and log my notes when I'm done."</div>
+        </div>
+        <div class="apane" role="tabpanel" id="ap-radar" aria-labelledby="at-radar" data-glean-id="orion-radar" hidden>
+          <div class="item"><span class="tm">Risk</span><div><div class="h">Reorder gap on a top-10 account</div><div class="s">Sales are 18% under the account's 20-day average. Suggested action: confirm inventory and par levels with materials management.</div></div><span class="pill act">Act</span></div>
+          <div class="item"><span class="tm">Signal</span><div><div class="h">Competitor trial starting next month</div><div class="s">Seen in recent meeting notes and email. Suggested action: bring a clinical evidence summary to Thursday's visit.</div></div><span class="pill act">Act</span></div>
+          <div class="item"><span class="tm">Renewal</span><div><div class="h">Recurring contract renews in 60 days</div><div class="s">Kept separate from procedural case work, so renewals don't get buried.</div></div><span class="pill ok">On track</span></div>
+        </div>
+        <div class="apane" role="tabpanel" id="ap-life" aria-labelledby="at-life" data-glean-id="orion-life" hidden>
+          <div class="stages"><div><b>14</b>Prospect</div><div><b>9</b>Evaluate</div><div><b>6</b>Propose</div><div><b>4</b>Contract</div><div><b>31</b>Recurring</div></div>
+          <div class="item"><span class="tm">Stalled</span><div><div class="h">Capital equipment evaluation</div><div class="s">No activity in 21 days. The agent drafted a follow-up from the last meeting summary.</div></div><span class="pill risk">Nudge</span></div>
+          <div class="item"><span class="tm">Moved</span><div><div class="h">Expansion opportunity → Propose</div><div class="s">Stage updated in Salesforce from a typed request.</div></div><span class="pill ok">Updated</span></div>
+        </div>
+        <div class="apane" role="tabpanel" id="ap-quote" aria-labelledby="at-quote" data-glean-id="orion-quote" hidden>
+          <div class="item"><span class="tm">Q-2291</span><div><div class="h">Cardiac rhythm, 3-year agreement</div><div class="s">Above the margin floor. Waiting on regional director approval. Signature tracking on.</div></div><span class="pill risk">Approval</span></div>
+          <div class="item"><span class="tm">Q-2304</span><div><div class="h">Surgical stapling, blanket order</div><div class="s">Pricing within approval guardrails. Sent for signature.</div></div><span class="pill ok">Sent</span></div>
+          <div class="chat">💬 "Where is the North Park quote stuck, and who needs to approve it?"</div>
+        </div>
+        <div class="apane" role="tabpanel" id="ap-ful" aria-labelledby="at-ful" data-glean-id="orion-ful" hidden>
+          <div class="item"><span class="tm">PO</span><div><div class="h">Open blanket order: 3 lines</div><div class="s">2 shipped, 1 blocked on availability. Estimated date pulled from supply-chain SOPs.</div></div><span class="pill risk">Backorder</span></div>
+          <div class="item"><span class="tm">Ship</span><div><div class="h">Replenishment for Thursday's cases</div><div class="s">Delivered to central sterile, confirmed this morning.</div></div><span class="pill ok">Delivered</span></div>
+          <div class="chat">💬 "Which of my accounts have backorders that affect next week's cases?"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="zb" data-glean-id="section-zimmer">
+  <div class="wrap">
+    <div class="shead">
+      <div class="num">06 · For Zimmer Biomet</div>
+      <div><h2 data-glean-id="zb-title">Where Medtronic's playbook maps to Zimmer Biomet</h2>
+      <p class="lede" data-glean-id="zb-lede">Both companies have the same medtech shape: clinical reps in the OR, robotic-assisted surgery, complex contracting and pricing, and supply that has to match case schedules. Here's how each Medtronic workflow would carry over.</p></div>
+    </div>
+    <div class="tblwrap">
+    <table class="map" data-glean-id="zb-map">
+      <thead><tr><th>Workflow</th><th>Medtronic today</th><th>Zimmer Biomet equivalent</th></tr></thead>
+      <tbody>
+        <tr data-glean-id="zb-row-precall"><td>Field call preparation</td><td>473 pre-call briefs by 40 reps in 28 days, from Salesforce, email and calendar context.</td><td class="zb">Briefs for surgeon, ASC and IDN meetings across joint reconstruction, S.E.T. and dental reps.</td></tr>
+        <tr data-glean-id="zb-row-or"><td>Robotics case support</td><td>Cited answers from approved eManuals for surgical robotics specialists: 965 in 28 days.</td><td class="zb">ROSA® and case-coverage questions answered from approved IFUs and technique guides, with citations.</td></tr>
+        <tr data-glean-id="zb-row-pricing"><td>Quoting &amp; pricing approvals</td><td>Quote status, margin floors, approval guardrails and signature tracking in Orion.</td><td class="zb">Faster pricing approvals across a large SKU catalog, with each approver seeing only what their access allows.</td></tr>
+        <tr data-glean-id="zb-row-supply"><td>Orders &amp; backorders</td><td>Order agent (76% positive) and supply-chain navigator for PO, shipment and SOP answers.</td><td class="zb">Set and implant availability, loaner kits and backorders tied to upcoming case schedules.</td></tr>
+        <tr data-glean-id="zb-row-tender"><td>Contracts &amp; tenders</td><td>Drafting is the #1 use (31% of classified runs). A tender agent is next.</td><td class="zb">GPO and IDN contract responses that reuse approved answers, certificates and evidence.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="next" data-glean-id="zb-next">
+      <div class="x" data-glean-id="zb-step-1"><div class="k">STEP 1</div><h3>Choose two seller workflows</h3><p>Pick one rep-facing workflow (pre-call or case support) and one operations workflow (pricing approvals or backorders), each with a KPI owner.</p></div>
+      <div class="x" data-glean-id="zb-step-2"><div class="k">STEP 2</div><h3>Connect and baseline</h3><p>Connect CRM, Microsoft 365 and approved product content with existing permissions. Capture today's baseline for each KPI.</p></div>
+      <div class="x" data-glean-id="zb-step-3"><div class="k">STEP 3</div><h3>Measure like Medtronic</h3><p>Report measured capacity alongside a P&amp;L hypothesis framework, so leadership sees both time returned and the revenue at stake.</p></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer data-glean-id="footer">
+  <div class="wrap">
+    <span>Medtronic × Glean customer story · Prepared for Zimmer Biomet · October 2026</span>
+    <span>Shared with Medtronic's permission. Confidential, please don't redistribute.</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  /* ---------- tab helper ---------- */
+  function tabs(selector){
+    var btns=[].slice.call(document.querySelectorAll(selector));
+    function select(btn){
+      btns.forEach(function(b){
+        var on=b===btn; b.setAttribute('aria-selected',on?'true':'false'); b.tabIndex=on?0:-1;
+        var p=document.getElementById(b.getAttribute('aria-controls'));
+        if(p){ if(on){p.hidden=false; p.classList.remove('fade-in'); void p.offsetWidth; p.classList.add('fade-in');} else p.hidden=true; }
+      });
+    }
+    btns.forEach(function(b,i){
+      b.addEventListener('click',function(){select(b)});
+      b.addEventListener('keydown',function(e){
+        var k=e.key, j=null;
+        if(k==='ArrowRight'||k==='ArrowDown') j=(i+1)%btns.length;
+        if(k==='ArrowLeft'||k==='ArrowUp') j=(i-1+btns.length)%btns.length;
+        if(j!==null){e.preventDefault(); btns[j].focus(); select(btns[j]);}
+      });
+    });
+    return select;
+  }
+  var selStep=tabs('.step'), selCalc=tabs('.ctab'), selApp=tabs('.atab');
+
+  /* ---------- charts ---------- */
+  var months=[['Jun',862,40],['Jul',1400,76],['Aug',3400,116],['Sep',6500,290],['Oct*',6200,256]];
+  var max=7000, bars=document.getElementById('bars'), barx=document.getElementById('barx');
+  months.forEach(function(m,i){
+    var b=document.createElement('div'); b.className='bar'; b.dataset.gleanId='bar-'+m[0].replace('*','');
+    var lbl=m[1]>=1000?(m[1]/1000).toFixed(1)+'K':m[1];
+    b.innerHTML='<span class="v">'+lbl+'</span><div class="col'+(i===4?' partial':'')+'" style="height:'+(m[1]/max*100)+'%;animation-delay:'+(i*70)+'ms"></div>';
+    bars.appendChild(b);
+    var x=document.createElement('div'); x.innerHTML='<b>'+m[0]+'</b>'+m[2]+' people'; barx.appendChild(x);
+  });
+  var mix=[['Create (draft, summarize, ideate)',39.5],['Find & explain',33.9],['Judge & analyze',15.2],['Act & build (automate, troubleshoot, code)',11.4]];
+  var mixEl=document.getElementById('mix');
+  mix.forEach(function(r){
+    var d=document.createElement('div'); d.className='mixrow'; d.dataset.gleanId='mix-'+r[0].split(' ')[0].toLowerCase();
+    d.innerHTML='<div class="top"><span>'+r[0].replace('&','&amp;')+'</span><b>'+r[1]+'%</b></div><div class="track"><div class="fill" style="width:'+(r[1]/40*100)+'%"></div></div>';
+    mixEl.appendChild(d);
+  });
+
+  /* ---------- calculators ---------- */
+  function $(id){return document.getElementById(id)}
+  function money(v){ if(v>=1e9) return '$'+(v/1e9).toFixed(2)+'B'; if(v>=1e6) return '$'+(v/1e6).toFixed(2)+'M'; if(v>=1e3) return '$'+Math.round(v/1e3)+'K'; return '$'+Math.round(v); }
+  function num(v){return Math.round(v).toLocaleString('en-US')}
+  var defaults={call:{c1:6166,c2:1,c3:30,c4:100000,c5:65},back:{b1:364,b2:10,b3:10,b4:32,b5:5},tend:{t1:1500,t2:0.5,t3:65}};
+  function calc(){
+    var c1=+$('c1').value,c2=+$('c2').value,c3=+$('c3').value,c4=+$('c4').value,c5=+$('c5').value;
+    $('o-c1').textContent=num(c1); $('o-c2').textContent='+'+c2+' pt'; $('o-c3').textContent=c3+'%'; $('o-c4').textContent=money(c4); $('o-c5').textContent=c5+'%';
+    var adv=c1*c2/100, won=adv*c3/100, rev=won*c4, gm=rev*c5/100;
+    $('r-call').textContent=money(gm);
+    $('r-call-rev').textContent=money(rev)+' revenue uplift · '+num(adv)+' more opportunities advanced, '+num(won)+' won';
+    $('f-call').innerHTML=num(c1)+' briefed calls × '+c2+' pt more advance<br>× '+c3+'% win rate × '+money(c4)+' per deal<br>= '+money(rev)+' revenue × '+c5+'% margin';
+    var b1=+$('b1').value,b2=+$('b2').value,b3=+$('b3').value,b4=+$('b4').value,b5=+$('b5').value;
+    $('o-b1').textContent='$'+b1+'M'; $('o-b2').textContent=b2+'%'; $('o-b3').textContent=b3+'%'; $('o-b4').textContent='$'+b4+'M'; $('o-b5').textContent=b5+'%';
+    var kept=b1*1e6*b2/100*b3/100, km=kept*0.65, fr=b4*1e6*b5/100;
+    $('r-back').textContent=money(km+fr);
+    $('r-back-split').textContent=money(km)+' margin on '+money(kept)+' revenue kept + '+money(fr)+' expedited freight avoided';
+    $('f-back').innerHTML='$'+b1+'M backordered × '+b2+'% lost × '+b3+'% fewer losses<br>× 65% margin + $'+b4+'M expedited freight × '+b5+'% avoided';
+    var t1=+$('t1').value,t2=+$('t2').value,t3=+$('t3').value;
+    $('o-t1').textContent=t1>=1000?'$'+(t1/1000).toFixed(2)+'B':'$'+t1+'M'; $('o-t2').textContent='+'+t2+' pt'; $('o-t3').textContent=t3+'%';
+    var trev=t1*1e6*t2/100, tgm=trev*t3/100;
+    $('r-tend').textContent=money(tgm);
+    $('r-tend-rev').textContent=money(trev)+' revenue uplift a year';
+    $('f-tend').innerHTML=$('o-t1').textContent+' tender pipeline × '+t2+' pt win-rate lift<br>= '+money(trev)+' revenue × '+t3+'% margin';
+  }
+  document.querySelectorAll('.calc input[type=range]').forEach(function(i){i.addEventListener('input',calc)});
+  document.querySelectorAll('[data-reset]').forEach(function(b){b.addEventListener('click',function(){
+    var d=defaults[b.dataset.reset]; Object.keys(d).forEach(function(k){$(k).value=d[k]}); calc();
+  })});
+  calc();
+
+  /* ---------- nav highlight ---------- */
+  var links=[].slice.call(document.querySelectorAll('.nav a'));
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id)}); } })},{rootMargin:'-45% 0px -50% 0px'});
+    links.forEach(function(a){var s=document.querySelector(a.getAttribute('href')); if(s) io.observe(s);});
+  }
+
+  /* ---------- reveal hidden comment targets ---------- */
+  var map={
+    'panel-plan':['step','st-plan'],'panel-call':['step','st-call'],'panel-or':['step','st-or'],'panel-order':['step','st-order'],'panel-terr':['step','st-terr'],
+    'calc-call':['calc','ct-call'],'calc-back':['calc','ct-back'],'calc-tend':['calc','ct-tend'],
+    'orion-week':['app','at-week'],'orion-radar':['app','at-radar'],'orion-life':['app','at-life'],'orion-quote':['app','at-quote'],'orion-ful':['app','at-ful']
+  };
+  window.gleanArtifact=window.gleanArtifact||{};
+  window.gleanArtifact.revealElement=function(id){
+    var t=map[id]; if(!t) return Promise.resolve();
+    var btn=document.getElementById(t[1]); if(!btn) return Promise.resolve();
+    if(btn.getAttribute('aria-selected')!=='true'){ (t[0]==='step'?selStep:t[0]==='calc'?selCalc:selApp)(btn); }
+    return new Promise(function(r){setTimeout(r,380)});
+  };
+})();
+</script>
+<script>
+  if (window.GleanBridge) {
+    window.GleanBridge.postMessage({actionId:'export-pdf',type:'glean-add-menu',metadata:{label:'Export as PDF',icon:'export'}});
+    window.GleanBridge.onMessage('action',function(data){ if(data.actionId==='export-pdf') window.print(); });
+  }
+</script>
+</body>
+</html>
