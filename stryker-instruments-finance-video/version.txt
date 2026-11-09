@@ -1,0 +1,3 @@
+Stryker Instruments Finance — corrected opening and closing card images
+Version: 2026-11-09-finance-final
+Video SHA-256: 0396b4de852732578c815b2851599e31abbbebbbfee868f47896b9d47452fe74
