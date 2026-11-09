@@ -57,7 +57,7 @@ ol button.on .nm{color:#FFB502}
 </main>
 <script>
 (function(){
-  var N=4, v=document.getElementById('v'), ov=document.getElementById('ov'), msg=document.getElementById('msg'), pb=document.getElementById('pb'), dl=document.getElementById('dl');
+  var N=32, v=document.getElementById('v'), ov=document.getElementById('ov'), msg=document.getElementById('msg'), pb=document.getElementById('pb'), dl=document.getElementById('dl');
   var done=0, parts=new Array(N);
   function load(i){return fetch('video-part-'+(i+1)+'.b64.txt',{cache:'force-cache'}).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();}).then(function(t){parts[i]=t;done++;pb.style.width=(done/N*100)+'%';});}
   var jobs=[];for(var i=0;i<N;i++)jobs.push(load(i));
