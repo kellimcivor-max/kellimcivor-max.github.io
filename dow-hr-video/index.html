@@ -31,4 +31,5 @@ async function load(){
   return URL.createObjectURL(new Blob([u],{type:'video/mp4'}));}
 btn.onclick=async()=>{btn.disabled=true;try{url=url||await load();st.textContent='';v.src=url;v.hidden=false;
   document.getElementById('poster').hidden=true;btn.hidden=true;await v.play();}catch(e){st.textContent='Could not load the video. Please refresh and try again.';btn.disabled=false;}};
-</script></body></html>
+</script><!-- build 2 -->
+</body></html>
