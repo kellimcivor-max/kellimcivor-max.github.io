@@ -1,0 +1,150 @@
+{
+  "title": "Glean Protect \u2014 Put protection where work happens.",
+  "url": "https://kellimcivor-max.github.io/glean-protect-video-20261116/",
+  "version": "2026-11-16-approved-scene-2",
+  "video_bytes": 4989443,
+  "video_sha256": "4a16ca47f9075fc5e397149493d0b6edb8162e86d23d1a3be45bba15621ceb32",
+  "duration_seconds": 60,
+  "parts": [
+    {
+      "file": "video-part-01.b64.txt",
+      "bytes": 240000,
+      "sha256": "9939f484a59aea4e7c31cea1ecbfd5a360e623c99fccd6963c0a860ff025d5c2"
+    },
+    {
+      "file": "video-part-02.b64.txt",
+      "bytes": 240000,
+      "sha256": "319ecd92e7cebff536c0a635958dd47a08d8805089f60aab40873af3ae7a90cd"
+    },
+    {
+      "file": "video-part-03.b64.txt",
+      "bytes": 240000,
+      "sha256": "a8433fcf57224a139066554162ef2a8fd2bba1b19cba602d131e87de52e56ce5"
+    },
+    {
+      "file": "video-part-04.b64.txt",
+      "bytes": 240000,
+      "sha256": "9fd66f3592bd909a590fbdf36a3c93d2d9c79274633299eb02969ad7b5da6f19"
+    },
+    {
+      "file": "video-part-05.b64.txt",
+      "bytes": 240000,
+      "sha256": "81e023e416a5e2be6f5980490093b7452d2b2e945e72a91bfddd7559dd590d6b"
+    },
+    {
+      "file": "video-part-06.b64.txt",
+      "bytes": 240000,
+      "sha256": "b69616c7785db9e80824a13f85346918c2d90b01b6b6bcf009831f8676201950"
+    },
+    {
+      "file": "video-part-07.b64.txt",
+      "bytes": 240000,
+      "sha256": "75783a005e1a641fc6086fc0dd3e66f25d589a04c955cd5abc419cc7f0188f90"
+    },
+    {
+      "file": "video-part-08.b64.txt",
+      "bytes": 240000,
+      "sha256": "fe36f8a4f439ef29ee39af41d5914b4ace0c52973326947c5d1360681324a79f"
+    },
+    {
+      "file": "video-part-09.b64.txt",
+      "bytes": 240000,
+      "sha256": "3b755df750bae055f1609d3f421a43761cd98c8d6a38861abb482519530a9ef5"
+    },
+    {
+      "file": "video-part-10.b64.txt",
+      "bytes": 240000,
+      "sha256": "d0519e631a3b56b1617f7a4f745e81f7e3bbc3c531c82699e75d730297cc1b85"
+    },
+    {
+      "file": "video-part-11.b64.txt",
+      "bytes": 240000,
+      "sha256": "03269244bd8b136501b8554edcd71f293251bf964d7e0e749edf433a7540f365"
+    },
+    {
+      "file": "video-part-12.b64.txt",
+      "bytes": 240000,
+      "sha256": "0ba3695fde8edf5345eeab945bddfceb9a590b02c2380a20080698ffcd737fc5"
+    },
+    {
+      "file": "video-part-13.b64.txt",
+      "bytes": 240000,
+      "sha256": "d91499b278c2df937fab55c8877b1ebe0bba772c6ffef71cc9b3d3d9a9944a11"
+    },
+    {
+      "file": "video-part-14.b64.txt",
+      "bytes": 240000,
+      "sha256": "5fc0d3843ebe088b228093f91dab22a19e32a0dad2200f1dab3f405fe6853670"
+    },
+    {
+      "file": "video-part-15.b64.txt",
+      "bytes": 240000,
+      "sha256": "c77a486b6317a2b57cadce6debf7128ccd3c8c700231f059dc89f4d1dde3e9e2"
+    },
+    {
+      "file": "video-part-16.b64.txt",
+      "bytes": 240000,
+      "sha256": "37957045ab1ab43bcb953fad3568d9e07aa8efeef4f18568f541956aa3de7d9b"
+    },
+    {
+      "file": "video-part-17.b64.txt",
+      "bytes": 240000,
+      "sha256": "00701afc7af23f120f0b80cd91b242d55bc004e567e5e838274880c1d49c0861"
+    },
+    {
+      "file": "video-part-18.b64.txt",
+      "bytes": 240000,
+      "sha256": "6b6cab1b050e9e7bd03abea895da488bb7e815ea9ba221ab0c94ba65865d2abf"
+    },
+    {
+      "file": "video-part-19.b64.txt",
+      "bytes": 240000,
+      "sha256": "b2a7893b5a61ba4e24ced2e87fbb70e2388473851a443a87fc2f139da6c75334"
+    },
+    {
+      "file": "video-part-20.b64.txt",
+      "bytes": 240000,
+      "sha256": "7c7e6a15049c38a47b5769eba379810f9721d3e44492295e5458f365c82a1d40"
+    },
+    {
+      "file": "video-part-21.b64.txt",
+      "bytes": 240000,
+      "sha256": "ef08ea527b8f7d94bd0d9781abe3f59ff8208ec992439fa63303a69ad50e1955"
+    },
+    {
+      "file": "video-part-22.b64.txt",
+      "bytes": 240000,
+      "sha256": "e3936fc88f35c1d46ee9e2066b423f521820502d5d8c4ab8a864b4984d65df12"
+    },
+    {
+      "file": "video-part-23.b64.txt",
+      "bytes": 240000,
+      "sha256": "65210a42066bd5c1ab321024ddfce86cece309d75e81966c3c4bd5779cde8850"
+    },
+    {
+      "file": "video-part-24.b64.txt",
+      "bytes": 240000,
+      "sha256": "58ab67e887deb330178ddf46b72f03edffd5535735e7eb2d0c19d7537c0a9463"
+    },
+    {
+      "file": "video-part-25.b64.txt",
+      "bytes": 240000,
+      "sha256": "72492b5da1ee09de1627af59e4a3ff5679fcda0fc2e0636598062efcc2dd8075"
+    },
+    {
+      "file": "video-part-26.b64.txt",
+      "bytes": 240000,
+      "sha256": "99fe6929966283bc1170edf07924d4dd18b321d1956256e8a2729662f872f05f"
+    },
+    {
+      "file": "video-part-27.b64.txt",
+      "bytes": 240000,
+      "sha256": "0124eee3dfa820df4b3287ad1e2a458cde2d18e117c24302aa64a5f70c0dc978"
+    },
+    {
+      "file": "video-part-28.b64.txt",
+      "bytes": 172592,
+      "sha256": "27ad9e75b03c2ee9a61650a74feb62931d1d2537d77701924dad8aa8940499b2"
+    }
+  ]
+}
