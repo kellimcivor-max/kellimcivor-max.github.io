@@ -1,0 +1,32 @@
+name: fix-dow-hr-play
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-dow-hr-play.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch play overlay
+        run: |
+          python3 - <<'EOF'
+          p='dow-hr-video/index.html'
+          s=open(p,encoding='utf-8').read()
+          if '[hidden]{display:none!important}' not in s:
+              s=s.replace('#status{','[hidden]{display:none!important}\n#status{',1)
+          s=s.replace("btn.hidden=true;await v.play();","btn.hidden=true;btn.style.display='none';await v.play();",1)
+          s=s.replace('<!-- build 2 -->','<!-- build 3 -->')
+          open(p,'w',encoding='utf-8').write(s)
+          EOF
+          grep -c 'display:none!important' dow-hr-video/index.html
+      - name: Commit
+        run: |
+          git config user.name 'github-actions'
+          git config user.email 'github-actions@users.noreply.github.com'
+          git add dow-hr-video/index.html
+          git diff --cached --quiet || git commit -m 'Hide Dow HR play overlay during playback'
+          git push
