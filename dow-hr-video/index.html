@@ -9,6 +9,7 @@ h1{font-size:clamp(26px,4vw,40px);margin:10px 0 6px} p.sub{color:#c9d3e6;margin:
 .stage img,.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(11,22,48,.35);border:0;cursor:pointer;color:#fff}
 #play span{background:#E80033;color:#fff;font-weight:700;font-size:18px;padding:14px 26px;border-radius:999px}
+[hidden]{display:none!important}
 #status{color:#c9d3e6;font-size:14px;margin-top:12px;min-height:20px}
 .foot{margin-top:20px;color:#9fb0cf;font-size:13px;line-height:1.5}
 </style></head><body><div class="wrap">
@@ -30,6 +31,6 @@ async function load(){
   const bin=atob(out.join(''));const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
   return URL.createObjectURL(new Blob([u],{type:'video/mp4'}));}
 btn.onclick=async()=>{btn.disabled=true;try{url=url||await load();st.textContent='';v.src=url;v.hidden=false;
-  document.getElementById('poster').hidden=true;btn.hidden=true;await v.play();}catch(e){st.textContent='Could not load the video. Please refresh and try again.';btn.disabled=false;}};
-</script><!-- build 2 -->
+  document.getElementById('poster').hidden=true;btn.hidden=true;btn.style.display='none';await v.play();}catch(e){st.textContent='Could not load the video. Please refresh and try again.';btn.disabled=false;}};
+</script><!-- build 3 -->
 </body></html>
