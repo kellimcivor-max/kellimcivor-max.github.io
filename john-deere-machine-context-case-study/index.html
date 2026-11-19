@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="glean-artifact-type" content="visual_content">
+<meta name="glean-artifact-type" content="customer_proposal">
+<title>John Deere × Glean — Machine Context to Engineering Insight</title>
+<script>window.APP_DATA = {"metadata": {"title": "John Deere × Glean — Machine Context to Engineering Insight"}, "discovery_context": {"items": [{"id": "digital_twin", "title": "Equipment Digital Twin Context", "status": "Prioritized for pilot exploration", "evidence": "Steve P. called equipment digital twins and custom connectors a high-resonance use case, and participants agreed to explore parts and digital-twin connectors during the pilot.", "next_validation": "Evaluate feasibility across parts, options and digital twins, including data access permissions for equipment data."}, {"id": "field_service", "title": "Tractor Service and Software Updates", "status": "Further exploration planned", "evidence": "The discussion covered how service personnel and equipment users get machine-specific maintenance, diagnosis and software-update guidance, and right-to-repair also came up.", "next_validation": "Explore the tractor service use case further with Steve P. to evaluate potential Glean integrations for equipment maintenance and software updates."}, {"id": "test_triage", "title": "Test-Log and Defect Triage", "status": "Validation needed", "evidence": "Physical validation was described as costly, requiring real equipment and field time; the discussion highlighted triage needs for software defects and machine configurations to prevent harvest downtime.", "next_validation": "Confirm accessible test-log and defect systems, issue mapping to machine configurations and software versions, and current triage time and retest rate."}]}, "sources": []};</script>
+<style>
+:root{
+  --artifact-bg:#ffffff; --artifact-ink:#0d0f1a; --artifact-muted:#5b5f6e; --artifact-faint:#8a8d99;
+  --artifact-line:#e6e6ee; --artifact-card:#f7f7fa; --artifact-card-ink:#0d0f1a;
+  --artifact-indigo:#367c2b; --artifact-indigo-ink:#ffffff; --artifact-indigo-soft:#eef4ec; --artifact-indigo-line:#b8ceb0; --artifact-indigo-text:#275a22;
+  --artifact-periwinkle:#ffde00;
+  --artifact-navy:#172c1b; --artifact-navy-2:#25472a; --artifact-navy-3:#367c2b; --artifact-navy-ink:#ffffff; --artifact-navy-muted:#c3c6f2;
+  --artifact-lime:#ffde00; --artifact-lime-ink:#172c1b;
+  --artifact-beige:#f3efe6; --artifact-beige-2:#ebe5d7; --artifact-beige-ink:#2b2a26;
+  --artifact-green:#14a34a; --artifact-green-soft:#e4f6ea; --artifact-green-ink:#0e6b31;
+  --artifact-dark-card:#1b1d2a; --artifact-dark-card-ink:#f2f2f6; --artifact-dark-card-muted:#a6a9b8;
+  --sans:-apple-system,"Inter","Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--artifact-bg);color:var(--artifact-ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1100px;margin:0 auto;padding:0 32px}
+.page{padding:56px 0 64px;border-bottom:1px solid var(--artifact-line)}
+.runhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:34px;font-size:12px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.03em;color:var(--artifact-indigo)}
+.logo .sep{width:1px;height:16px;background:var(--artifact-line)}
+.logo .cs{font-family:var(--sans);font-weight:600;font-size:11px;letter-spacing:.22em;color:var(--artifact-muted)}
+.runhead .pg{font-family:var(--mono);letter-spacing:.06em;color:var(--artifact-muted)}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--artifact-indigo)}
+h2{font-size:36px;line-height:1.1;letter-spacing:-.025em;margin:10px 0 12px;font-weight:750;max-width:24ch}
+.lede{font-size:17px;color:var(--artifact-muted);max-width:66ch;margin:0}
+.mono{font-family:var(--mono)}
+.chip{display:inline-block;font-family:var(--mono);font-size:12px;padding:5px 10px;border:1px solid var(--artifact-line);border-radius:7px;background:var(--artifact-bg);color:var(--artifact-ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.card{background:var(--artifact-card);color:var(--artifact-card-ink);border:1px solid var(--artifact-line);border-radius:16px;padding:22px}
+.card.hi{background:var(--artifact-indigo-soft);border-color:var(--artifact-indigo-line)}
+.dark{background:linear-gradient(135deg,var(--artifact-navy) 0%,var(--artifact-navy-2) 100%);color:var(--artifact-navy-ink);border-radius:16px;padding:24px 26px}
+.dark .eyebrow{color:var(--artifact-lime);font-size:11px}
+.dark p{margin:8px 0 0;font-size:17px;color:var(--artifact-navy-ink)}
+.dark b{color:var(--artifact-navy-ink)}
+.ico{width:34px;height:34px;border-radius:9px;background:var(--artifact-indigo);color:var(--artifact-indigo-ink);display:grid;place-items:center;font-size:16px;margin-bottom:12px}
+
+/* COVER */
+.cover{background:radial-gradient(120% 80% at 90% 0%,var(--artifact-navy-3) 0%,transparent 55%),linear-gradient(170deg,var(--artifact-navy) 0%,var(--artifact-navy-2) 70%,var(--artifact-navy-3) 130%);color:var(--artifact-navy-ink);padding:30px 0 40px}
+.cover .logo{color:var(--artifact-navy-ink)}
+.cover .logo .sep{background:var(--artifact-navy-muted)}
+.cover .logo .cs{color:var(--artifact-navy-muted)}
+.fde-pill{font-size:11px;font-weight:700;letter-spacing:.2em;color:var(--artifact-lime);border:1.5px solid var(--artifact-lime);padding:7px 16px;border-radius:999px}
+.gy{font-weight:900;letter-spacing:.06em;color:var(--artifact-navy-ink);border-bottom:3px solid var(--artifact-lime);padding-bottom:1px;font-size:14px}
+.cover-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:44px;align-items:center;margin-top:26px}
+.cover .eyebrow{color:var(--artifact-lime);font-size:12px}
+.cover h1{font-size:54px;line-height:1.02;letter-spacing:-.035em;margin:14px 0 18px;font-weight:750}
+.cover h1 em{font-style:normal;color:var(--artifact-periwinkle)}
+.cover p.sub{font-size:17px;color:var(--artifact-navy-muted);margin:0}
+.cover p.sub b{color:var(--artifact-navy-ink)}
+.meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-top:34px}
+.meta span{display:block;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--artifact-navy-muted);font-weight:600}
+.meta b{display:block;font-size:14px;margin-top:6px;color:var(--artifact-navy-ink);font-weight:600;line-height:1.35}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:30px;border:1px solid rgba(255,255,255,.18);border-radius:16px;background:rgba(255,255,255,.05)}
+.stats div{padding:18px 20px}
+.stats div+div{border-left:1px solid rgba(255,255,255,.18)}
+.stats b{display:block;font-size:34px;font-weight:750;letter-spacing:-.02em;color:var(--artifact-navy-ink)}
+.stats b.l{color:var(--artifact-lime)}
+.stats span{font-size:13px;color:var(--artifact-navy-muted)}
+.stats-cap{display:flex;justify-content:space-between;margin-top:14px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--artifact-navy-muted)}
+
+/* 3D VIEWER */
+.viewer{background:var(--artifact-beige);color:var(--artifact-beige-ink);border-radius:14px;overflow:hidden;position:relative;box-shadow:0 24px 60px rgba(5,8,60,.35);background-image:linear-gradient(var(--artifact-beige-2) 1px,transparent 1px),linear-gradient(90deg,var(--artifact-beige-2) 1px,transparent 1px);background-size:28px 28px}
+.vbar{display:flex;align-items:center;gap:7px;padding:11px 14px;font-family:var(--mono);font-size:11.5px;color:var(--artifact-muted);position:relative;z-index:2}
+.dot{width:9px;height:9px;border-radius:50%}
+.dot.r{background:#ef5b4c}.dot.y{background:#f4b63f}.dot.g{background:#3fbf5f}
+.vcanvas{display:block;width:100%;height:340px;cursor:grab;touch-action:none}
+.vcanvas:active{cursor:grabbing}
+.vbig .vcanvas{height:470px}
+.ftag{position:absolute;z-index:3;display:flex;align-items:center;gap:7px;pointer-events:none;transform:translate(-9px,-9px);transition:opacity .25s}
+.ftag i{width:18px;height:18px;border-radius:50%;border:3px solid var(--artifact-lime);background:rgba(212,245,60,.25)}
+.ftag span{background:var(--artifact-lime);color:var(--artifact-lime-ink);font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:4px 8px;border-radius:4px}
+.vinfo{position:absolute;left:14px;bottom:14px;background:var(--artifact-dark-card);color:var(--artifact-dark-card-ink);border-radius:9px;padding:10px 14px;font-size:13px;z-index:2}
+.vinfo b{display:block;font-size:13.5px}
+.vinfo span{font-family:var(--mono);font-size:11px;color:var(--artifact-dark-card-muted)}
+.vctrl{position:absolute;right:12px;top:46px;display:grid;gap:8px;z-index:3}
+.vbtn{all:unset;cursor:pointer;width:32px;height:32px;display:grid;place-items:center;border-radius:8px;background:var(--artifact-bg);color:var(--artifact-ink);border:1px solid var(--artifact-line);font-size:15px;font-weight:600}
+.vbtn:hover,.vbtn:focus-visible{border-color:var(--artifact-indigo);color:var(--artifact-indigo)}
+.vbtn[aria-pressed="true"]{background:var(--artifact-indigo);color:var(--artifact-indigo-ink);border-color:var(--artifact-indigo)}
+.vcap{font-family:var(--mono);font-size:11.5px;color:var(--artifact-navy-muted);text-align:right;margin-top:10px}
+.hint{position:absolute;right:14px;bottom:12px;font-family:var(--mono);font-size:10.5px;color:var(--artifact-muted);z-index:2}
+
+/* EXEC */
+.exec{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:36px;margin-top:8px}
+.exec p{font-size:16px;margin:0 0 14px;color:var(--artifact-ink)}
+.dropcap::first-letter{float:left;font-size:58px;line-height:.9;font-weight:700;color:var(--artifact-indigo);padding:4px 8px 0 0}
+.glance{background:var(--artifact-beige);color:var(--artifact-beige-ink);border-radius:16px;padding:22px 24px}
+.glance .eyebrow{font-size:11px}
+.glance div{padding:12px 0;border-bottom:1px solid var(--artifact-beige-2)}
+.glance div:last-child{border-bottom:0}
+.glance b{display:block;font-size:30px;font-weight:750;letter-spacing:-.02em;color:var(--artifact-ink)}
+.glance b em{font-style:normal;color:var(--artifact-indigo)}
+.glance span{font-size:13px;color:var(--artifact-muted)}
+.rule-title{margin:46px 0 18px;padding-top:16px;border-top:2px solid var(--artifact-ink);font-size:12px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--artifact-indigo)}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px}
+.three .n{font-family:var(--mono);font-weight:700;color:var(--artifact-indigo);font-size:13px}
+.three h3{margin:8px 0 6px;font-size:17px}
+.three p{margin:0;font-size:14.5px;color:var(--artifact-muted)}
+
+/* CHALLENGE */
+.handoffs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:28px}
+.ho{background:var(--artifact-card);border:1px solid var(--artifact-line);border-radius:12px;padding:16px 14px;position:relative;transition:background .25s,border-color .25s,transform .25s;color:var(--artifact-card-ink)}
+.ho.bn{background:var(--artifact-indigo-soft);border:1.5px solid var(--artifact-indigo)}
+.ho.bn::before{content:"BOTTLENECK";position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--artifact-indigo);color:var(--artifact-indigo-ink);font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;padding:3px 8px;border-radius:4px}
+.ho .n{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--artifact-indigo)}
+.ho h4{margin:6px 0 6px;font-size:15px;line-height:1.2}
+.ho p{margin:0 0 10px;font-size:13px;color:var(--artifact-muted)}
+.ho .sys{font-family:var(--mono);font-size:11px;color:var(--artifact-faint);padding-bottom:8px;border-bottom:1px dashed var(--artifact-line);margin-bottom:8px}
+.ho .eg{font-size:12px;font-style:italic;color:var(--artifact-indigo-text)}
+.ho .t{display:block;font-family:var(--mono);font-size:11px;color:var(--artifact-muted);margin-top:10px}
+.ho.live{border-color:var(--artifact-indigo);transform:translateY(-3px)}
+.ho.dim{opacity:.35}
+.player{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-top:20px;padding:16px 18px;border:1px solid var(--artifact-line);border-radius:14px}
+.pbtn{all:unset;cursor:pointer;font-weight:700;font-size:14px;padding:10px 16px;border-radius:10px;background:var(--artifact-indigo);color:var(--artifact-indigo-ink)}
+.pbtn.alt{background:var(--artifact-lime);color:var(--artifact-lime-ink)}
+.pbtn:focus-visible{outline:2px solid var(--artifact-ink);outline-offset:2px}
+.pbtn[disabled]{opacity:.45;cursor:default}
+.clock{font-family:var(--mono);font-size:30px;font-weight:700;letter-spacing:-.02em;min-width:150px}
+.clock small{font-size:12px;color:var(--artifact-muted);font-weight:500;margin-left:6px}
+.track{flex:1;min-width:200px;height:10px;border-radius:99px;background:var(--artifact-card);overflow:hidden;border:1px solid var(--artifact-line)}
+.track i{display:block;height:100%;width:0;background:var(--artifact-indigo);transition:width .3s linear}
+.track i.g{background:var(--artifact-green)}
+.pnote{width:100%;font-size:12px;color:var(--artifact-muted)}
+.callout{display:flex;gap:14px;margin:22px 0;color:var(--artifact-indigo-text);font-weight:600;font-size:14.5px}
+.callout::before{content:"";flex:0 0 18px;height:2px;background:var(--artifact-indigo);margin-top:11px}
+.fourstat{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.fourstat .card b{display:block;font-size:30px;font-weight:750;color:var(--artifact-indigo);letter-spacing:-.02em}
+.fourstat .card span{font-size:13px;color:var(--artifact-muted)}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:16px 0}
+.two .card h4,.card h4.cap{margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--artifact-indigo)}
+.blist{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.blist li{display:flex;gap:10px;font-size:14.5px}
+.blist li::before{content:"";flex:0 0 7px;height:7px;border-radius:2px;background:var(--artifact-indigo);margin-top:8px}
+.blist.g li::before{background:var(--artifact-green);border-radius:50%}
+.blist.gr li::before{background:var(--artifact-faint);border-radius:50%}
+
+/* SOLUTION */
+.caps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:16px 0}
+.caps h3{margin:0 0 8px;font-size:16.5px}
+.caps p{margin:0;font-size:14px;color:var(--artifact-muted)}
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:start;gap:8px;margin:18px 0 22px}
+.fstep{text-align:center}
+.fstep .ic{width:46px;height:46px;margin:0 auto 10px;border-radius:12px;border:1.5px solid var(--artifact-indigo);display:grid;place-items:center;color:var(--artifact-indigo);font-size:18px;background:var(--artifact-bg);animation:pulse 4s infinite}
+.fstep:nth-child(3) .ic{animation-delay:1s}.fstep:nth-child(5) .ic{animation-delay:2s}.fstep:nth-child(7) .ic{animation-delay:3s}
+@keyframes pulse{0%,20%{background:var(--artifact-indigo);color:var(--artifact-indigo-ink)}30%,100%{background:var(--artifact-bg);color:var(--artifact-indigo)}}
+.fstep b{display:block;font-size:14px}
+.fstep span{font-size:12.5px;color:var(--artifact-muted)}
+.farrow{color:var(--artifact-indigo);font-size:20px;padding-top:12px}
+.srcs-title{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--artifact-muted);padding-top:14px;border-top:1px dashed var(--artifact-line);margin-bottom:12px}
+.tri{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.tri h4{margin:0 0 6px;color:var(--artifact-indigo-text);font-size:16px}
+.tri p{margin:0;font-size:14px;color:var(--artifact-muted)}
+
+/* BREAKTHROUGH SIM */
+.scen{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 16px}
+.sbtn{all:unset;cursor:pointer;padding:10px 14px;border-radius:10px;border:1px solid var(--artifact-line);font-size:14px;font-weight:600;background:var(--artifact-bg);color:var(--artifact-ink)}
+.sbtn small{display:block;font-family:var(--mono);font-weight:500;font-size:11px;color:var(--artifact-muted)}
+.sbtn:hover,.sbtn:focus-visible{border-color:var(--artifact-indigo)}
+.sbtn[aria-pressed="true"]{border-color:var(--artifact-indigo);background:var(--artifact-indigo-soft);color:var(--artifact-indigo-text)}
+.ask{display:inline-block;background:var(--artifact-indigo);color:var(--artifact-indigo-ink);font-weight:600;font-size:15px;padding:12px 18px;border-radius:12px;max-width:100%}
+.agent{margin:12px 0 16px;border:1px solid var(--artifact-line);border-radius:14px;padding:16px 18px;background:var(--artifact-bg);color:var(--artifact-ink);min-height:118px}
+.agent .who{font-size:11px;font-weight:700;letter-spacing:.2em;color:var(--artifact-indigo);display:flex;align-items:center;gap:8px}
+.agent .who::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--artifact-lime);box-shadow:0 0 0 3px rgba(212,245,60,.35)}
+.agent p{margin:8px 0 10px;font-size:15px;opacity:0;transition:opacity .35s}
+.agent p.on{opacity:1}
+.agent .chips{opacity:0;transition:opacity .35s}
+.agent .chips.on{opacity:1}
+.thinking{font-family:var(--mono);font-size:12.5px;color:var(--artifact-muted);margin-top:8px}
+.pinfo{position:absolute;left:16px;top:56px;width:270px;background:var(--artifact-dark-card);color:var(--artifact-dark-card-ink);border-radius:12px;padding:16px 18px;z-index:3;opacity:0;transform:translateY(8px);transition:opacity .35s,transform .35s}
+.pinfo.on{opacity:1;transform:none}
+.pinfo h4{margin:0 0 4px;font-size:17px}
+.pinfo p{margin:0 0 12px;font-size:12.5px;color:var(--artifact-dark-card-muted)}
+.pinfo dl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-family:var(--mono);font-size:11.5px;padding-top:10px;border-top:1px solid rgba(255,255,255,.12)}
+.pinfo dt{color:var(--artifact-dark-card-muted)}
+.pinfo dd{margin:0;text-align:right}
+.rel{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:var(--artifact-green);color:var(--artifact-indigo-ink);font-family:var(--mono);font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:5px}
+.act{all:unset;cursor:pointer;margin-top:12px;margin-left:6px;display:inline-block;background:var(--artifact-lime);color:var(--artifact-lime-ink);font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:5px}
+.toast{position:absolute;right:16px;bottom:16px;z-index:4;background:var(--artifact-ink);color:var(--artifact-bg);font-size:13px;padding:10px 14px;border-radius:10px;opacity:0;transform:translateY(6px);transition:opacity .3s,transform .3s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+.chain-title{display:flex;align-items:center;gap:12px;margin:20px 0 10px;font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--artifact-muted)}
+.chain-title .chip{font-size:10.5px;color:var(--artifact-indigo-text);border-color:var(--artifact-indigo-line);background:var(--artifact-indigo-soft);letter-spacing:.06em}
+.chain{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid var(--artifact-line);border-radius:12px;overflow:hidden}
+.ch{padding:14px;border-right:1px solid var(--artifact-line);opacity:.3;transition:opacity .3s,background .3s}
+.ch:last-child{border-right:0}
+.ch.on{opacity:1;background:var(--artifact-card)}
+.ch .k{width:22px;height:22px;border-radius:5px;background:var(--artifact-indigo);color:var(--artifact-indigo-ink);display:grid;place-items:center;font-size:12px;font-weight:700;margin-bottom:8px}
+.ch b{display:block;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--artifact-indigo-text)}
+.ch span{font-size:13px;color:var(--artifact-muted)}
+.fig{font-size:12px;font-style:italic;color:var(--artifact-muted);margin:8px 0 18px}
+
+/* FDE */
+.five{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid var(--artifact-line);border-radius:14px;overflow:hidden;margin:6px 0}
+.five div{padding:16px;border-right:1px solid var(--artifact-line);background:var(--artifact-card)}
+.five div:last-child{border-right:0}
+.five .k{width:24px;height:24px;border-radius:6px;background:var(--artifact-indigo);color:var(--artifact-indigo-ink);display:grid;place-items:center;font-size:12px;font-weight:700;margin-bottom:12px}
+.five b{display:block;font-size:15px;margin-bottom:6px}
+.five span{font-size:13px;color:var(--artifact-muted)}
+.havebuilt{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--artifact-line);border-radius:14px;overflow:hidden}
+.havebuilt>div{padding:22px}
+.havebuilt>div+div{background:var(--artifact-indigo-soft)}
+.havebuilt h4{margin:0 0 14px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--artifact-muted)}
+.havebuilt>div+div h4{color:var(--artifact-indigo-text)}
+.road{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.road .card{min-height:180px}
+.road .lbl{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--artifact-muted)}
+.road h3{margin:10px 0 8px;font-size:18px}
+.road p{margin:0;font-size:14px;color:var(--artifact-muted)}
+.road .beige{background:var(--artifact-beige);border-color:var(--artifact-beige-2);color:var(--artifact-beige-ink)}
+.road .vision{background:linear-gradient(135deg,var(--artifact-navy-3),var(--artifact-indigo));border-color:transparent;color:var(--artifact-navy-ink)}
+.road .vision .lbl{color:var(--artifact-lime)}
+.road .vision p{color:var(--artifact-navy-muted)}
+
+/* IMPACT */
+.ba{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center}
+.ba .card b{display:block;font-size:44px;font-weight:750;letter-spacing:-.03em}
+.ba .card b small{font-size:18px;font-weight:600}
+.ba .card .lbl{font-size:11px;font-weight:700;letter-spacing:.2em;color:var(--artifact-muted)}
+.ba .after{background:linear-gradient(135deg,var(--artifact-navy-3),var(--artifact-indigo));color:var(--artifact-navy-ink);border-color:transparent}
+.ba .after .lbl{color:var(--artifact-lime)}
+.ba .after span{color:var(--artifact-navy-muted)}
+.ba .card span{font-size:13.5px;color:var(--artifact-muted)}
+.delta{text-align:center;color:var(--artifact-green);font-weight:800;font-size:28px}
+.delta small{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--artifact-muted);font-weight:600}
+.res3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:14px 0}
+.res3 .lbl{font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--artifact-indigo)}
+.res3 b.big{display:block;font-size:40px;font-weight:750;color:var(--artifact-indigo);letter-spacing:-.02em}
+.res3 h3{margin:8px 0;font-size:18px}
+.res3 p{margin:0;font-size:14px;color:var(--artifact-muted)}
+.res3 .beige{background:var(--artifact-beige);border-color:var(--artifact-beige-2)}
+.res3 .indigo{background:linear-gradient(135deg,var(--artifact-navy-3),var(--artifact-indigo));color:var(--artifact-navy-ink);border-color:transparent}
+.res3 .indigo .lbl{color:var(--artifact-lime)}
+.res3 .indigo p{color:var(--artifact-navy-muted)}
+.calc{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);border:1px solid var(--artifact-line);border-radius:14px;overflow:hidden;margin:14px 0}
+.calc>div{padding:22px}
+.calc>div+div{border-left:1px solid var(--artifact-line)}
+.formula{font-family:var(--mono);font-size:13px;background:var(--artifact-card);border:1px solid var(--artifact-line);border-radius:8px;padding:12px 14px;margin:0 0 16px}
+.formula em{font-style:normal;color:var(--artifact-indigo)}
+.fld{margin-bottom:14px}
+.fld label{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;margin-bottom:4px}
+.fld output{font-family:var(--mono);color:var(--artifact-indigo)}
+input[type=range]{width:100%;accent-color:var(--artifact-indigo)}
+.calc-out b{display:block;font-size:46px;font-weight:750;letter-spacing:-.03em;color:var(--artifact-indigo)}
+.calc-out .row{display:flex;justify-content:space-between;font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--artifact-line)}
+.calc-out .row span:last-child{font-family:var(--mono)}
+.quote{background:var(--artifact-card);border-radius:14px;padding:22px 26px;margin:14px 0;position:relative}
+.quote::before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:3px;background:var(--artifact-lime)}
+.quote p{margin:0 0 10px;font-size:17px;font-style:italic}
+.quote span{font-size:11px;font-weight:700;letter-spacing:.18em;color:var(--artifact-muted)}
+
+/* WHERE */
+.where{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:22px;margin-top:22px}
+.where h4.cap{margin:0 0 12px}
+.capb{display:flex;gap:12px;border:1px solid var(--artifact-line);border-radius:12px;padding:14px;margin-bottom:10px}
+.capb .ico{flex:0 0 30px;width:30px;height:30px;font-size:14px;margin:0}
+.capb b{display:block;font-size:14.5px}
+.capb span{font-size:13px;color:var(--artifact-muted)}
+.uc{border:1px solid var(--artifact-line);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.uc b{font-size:15px}
+.uc p{margin:4px 0 10px;font-size:13.5px;color:var(--artifact-muted)}
+.cta{margin-top:30px;display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between}
+.cta h3{margin:0;font-size:24px;letter-spacing:-.02em;color:var(--artifact-navy-ink)}
+.cta h3 em{font-style:normal;color:var(--artifact-lime)}
+.cta p{margin:8px 0 0;color:var(--artifact-navy-muted);font-size:14.5px;max-width:58ch}
+.cta a{display:inline-block;background:var(--artifact-lime);color:var(--artifact-lime-ink);font-weight:700;text-decoration:none;padding:12px 20px;border-radius:10px}
+.foot{padding:26px 0 40px;text-align:center;font-size:12px;color:var(--artifact-muted)}
+.foot p{margin:2px 0}
+
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none !important;transition:none !important}}
+@media screen and (max-width:920px){
+  .cover-grid,.exec,.where,.calc{grid-template-columns:1fr}
+  .calc>div+div{border-left:0;border-top:1px solid var(--artifact-line)}
+  .cover h1{font-size:40px}
+  .meta,.stats,.fourstat{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stats div:nth-child(3){border-left:0}
+  .handoffs{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:18px}
+  .three,.caps,.tri,.road,.res3,.two{grid-template-columns:1fr}
+  .five,.chain{grid-template-columns:1fr}
+  .five div,.ch{border-right:0;border-bottom:1px solid var(--artifact-line)}
+  .havebuilt{grid-template-columns:1fr}
+  .flow{grid-template-columns:1fr}
+  .farrow{transform:rotate(90deg);text-align:center;padding:0}
+  .ba{grid-template-columns:1fr}
+  .pinfo{position:static;width:auto;margin:0 12px 12px}
+  h2{font-size:28px}
+}
+@media print{
+  @page { size: auto !important; }
+  body{padding:.4in .6in;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .wrap{max-width:100% !important;padding:0}
+  .page{break-inside:avoid;padding:24px 0}
+  .card,.ho,.viewer,.dark{break-inside:avoid;box-shadow:none !important}
+  .agent p,.agent .chips,.pinfo{opacity:1 !important;transform:none !important}
+  .ch{opacity:1 !important}
+  .player,.vctrl,.scen button:not([aria-pressed="true"]),.act,.hint{display:none !important}
+  *,*::before,*::after{animation:none !important;transition:none !important}
+}
+
+.disc{margin:30px 0 26px;padding-top:26px;border-top:1px solid var(--artifact-line)}
+.disc-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;margin-bottom:14px}
+.disc-head h4{margin:0;font-size:12px;letter-spacing:.2em;color:var(--artifact-indigo)}
+.disc-head p{margin:5px 0 0;color:var(--artifact-muted);font-size:14px}
+.disc-src{font-size:12px;color:var(--artifact-muted);text-align:right}
+.disc-src a{color:var(--artifact-indigo-text)}
+.disc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.disc-card{background:var(--artifact-card);color:var(--artifact-card-ink);border:1px solid var(--artifact-line);border-radius:14px;padding:18px}
+.disc-card .st{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--artifact-green-ink);background:var(--artifact-green-soft);border-radius:999px;padding:4px 8px;margin-bottom:10px}
+.disc-card b{display:block;font-size:16px;line-height:1.25;margin-bottom:8px}
+.disc-card p{font-size:13px;color:var(--artifact-muted);margin:0}
+.disc-card .nx{margin-top:10px;padding-top:10px;border-top:1px solid var(--artifact-line);color:var(--artifact-ink)}
+@media(max-width:820px){.disc-grid{grid-template-columns:1fr}.disc-head{display:block}.disc-src{text-align:left;margin-top:8px}}
+
+</style>
+<style>@page { size: auto !important; }</style>
+</head>
+<body>
+
+<!-- 01 COVER -->
+<header class="cover" data-glean-id="cover">
+  <div class="wrap">
+    <div class="runhead">
+      <div class="logo">glean<span class="sep"></span><span class="cs">CASE STUDY</span><span class="sep"></span><span class="gy">JOHN DEERE</span></div>
+      <span class="fde-pill">FORWARD DEPLOYED ENGINEERING</span>
+    </div>
+    <div class="cover-grid">
+      <div>
+        <div class="eyebrow">Equipment Digital Twin · Field-to-Engineering Intelligence</div>
+        <h1 data-glean-id="cover-title">From field signal to engineering insight in <em>one view</em></h1>
+        <p class="sub" data-glean-id="cover-sub">John Deere teams are exploring how to connect machine configuration, parts, service signals and engineering context. This illustrative concept shows how a governed agent could trace a field issue to a tractor component and bring its 3D view into the investigation.</p>
+      </div>
+      <div>
+        <div class="viewer" data-glean-id="cover-viewer">
+          <div class="vbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>&nbsp; Glean · equipment engineering agent: live investigation</div>
+          <canvas class="vcanvas" id="heroCanvas" aria-label="Illustrative exploded 3D tractor diesel engine. Drag to rotate."></canvas>
+          <div class="ftag" id="heroTag"><i></i><span>PART · TURBOCHARGER</span></div>
+          <div class="vkey" data-glean-id="cover-parts-key"><b>Component · Diesel engine</b><span><i class="k-f"></i>Turbocharger <em>focus part</em></span><span><i class="k-c"></i>Block &amp; valve cover</span><span><i class="k-g"></i>Head, pistons &amp; crank</span><span><i class="k-s"></i>Flywheel &amp; oil pan</span></div>
+          <div class="vinfo"><b>Component: 6-Cylinder Diesel Engine · Exploded</b><span>Part: Turbocharger · ENG-TRB-0462 · ● illustrative</span></div>
+          <span class="hint">drag to orbit</span>
+        </div>
+        <div class="vcap">Inline 3D viewer, rendered in a Glean Agent (illustrative).</div>
+      </div>
+    </div>
+    <div class="meta" data-glean-id="cover-meta">
+      <div><span>Industry</span><b>Agricultural Machinery · Advanced Manufacturing</b></div>
+      <div><span>Function</span><b>Engineering, Test, Issue history &amp; Dealer Network</b></div>
+      <div><span>Capability</span><b>Agentic AI + In-Workflow 3D / CAD Visualization</b></div>
+      <div><span>Reference</span><b>Separate anonymized automaker</b></div>
+    </div>
+    <div class="stats" data-glean-id="cover-stats">
+      <div><b class="l">82%</b><span>Reference benchmark · separate automaker</span></div>
+      <div><b>$100M+</b><span>Reference customer-valued annual capacity</span></div>
+      <div><b>6,000+</b><span>Reference engineers in scope</span></div>
+      <div><b>12+</b><span>Reference connected systems</span></div>
+    </div>
+    <div class="stats-cap"><span>Separate anonymized automaker reference · not John Deere results</span><span>Confidential: for client discussion</span></div>
+  </div>
+</header>
+
+<main>
+<!-- 02 EXEC SUMMARY -->
+<section class="page" data-glean-id="sec-exec">
+  <div class="wrap">
+    <div class="runhead"><div class="logo">glean<span class="sep"></span><span class="cs">CASE STUDY</span></div><span class="pg">02 · Executive Summary</span></div>
+    <div class="eyebrow">Executive Summary</div>
+    <h2>Connecting field evidence to the right machine configuration</h2>
+    <div class="exec">
+      <div data-glean-id="exec-body">
+        <p class="dropcap">Machine-specific investigations can require teams to reconcile model, options, parts, software or subsystem versions, service records and engineering history. The opportunity is to retrieve the right context for one machine without manually stitching together disconnected evidence.</p>
+        <p>The constraint to validate is whether relevant data can be connected: <b>configuration, parts and options, subsystem or software versions, field and service signals, issue records, and approved engineering content</b>. Access, identifiers and permissions determine what a prototype can resolve.</p>
+        <p>A potential John Deere exploration would bring the right machine configuration, service history, issue records and engineering content into a single workflow. An engineer could ask a question in plain language, review source-backed evidence and inspect the relevant component without switching between systems.</p>
+        <p>A separate, anonymized automaker reference engagement reported a reduction from <b>200+ minutes to under 40</b>. That result is <b>not a John Deere result or forecast</b>. For John Deere, this is an illustrative starting point: resolve a field signal to the applicable machine configuration and component, then return evidence for review.</p>
+      </div>
+      <aside class="glance" data-glean-id="exec-glance">
+        <div class="eyebrow">Separate automaker reference · not John Deere</div>
+        <div><b><em>82%</em></b><span>Separate automaker result · 200+ min → &lt;40 min</span></div>
+        <div><b><em>$</em>100M+</b><span>Reference customer-valued annual capacity · not a John Deere estimate</span></div>
+        <div><b><em>$</em>1B+</b><span>Reference opportunity estimate · not a John Deere estimate</span></div>
+        <div><b>6,000+</b><span>Engineers within the initial scope</span></div>
+        <div><b>CTO</b><span>Executive-sponsored, tied to the company's strategic priorities</span></div>
+      </aside>
+    </div>
+    <div class="rule-title">We embed deeply with the customer to build the solution</div>
+    <div class="three" data-glean-id="exec-embed">
+      <div><span class="n">01</span><h3>Map the real journey</h3><p>Co-design the end-to-end investigation flow with engineering, quality, warranty and dealer-network stakeholders before connecting a single system, so the agent fits how engineers actually work.</p></div>
+      <div><span class="n">02</span><h3>Build it to a measurable bar</h3><p>Define a John Deere evaluation set and baseline with business owners before measuring quality or impact.</p></div>
+      <div><span class="n">03</span><h3>Prototype the workflow</h3><p>Evaluate source access, resolve a representative component and test an approved visual in the same workflow before defining production scope.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 CHALLENGE -->
+<section class="page" data-glean-id="sec-challenge">
+  <div class="wrap">
+    <div class="runhead"><div class="logo">glean<span class="sep"></span><span class="cs">CASE STUDY</span></div><span class="pg">03 · The Challenge</span></div>
+    <div class="eyebrow">The Challenge</div>
+    <h2>The machine context is scattered across six investigation steps</h2>
+    <p class="lede">A field or test issue can require teams to reconcile machine configuration, parts, software versions, service records and engineering decisions before they can act. This concept illustrates the context path for one tractor engine issue; it is not a claim about John Deere’s current systems or measured workflow.</p>
+    <div class="handoffs" id="handoffs" data-glean-id="challenge-handoffs">
+      <div class="ho" data-glean-id="ho-1"><span class="n">01</span><h4>Review field / service signal</h4><p>Review field-service notes, issue records and technician observations.</p><div class="sys">Service &amp; issue records</div><div class="eg">e.g. Field teams report power loss under heavy load.</div><span class="t">~35 min</span></div>
+      <div class="ho" data-glean-id="ho-2"><span class="n">02</span><h4>Check machine configuration</h4><p>Confirm machine model, options and subsystem / software version.</p><div class="sys">Machine configuration data</div><div class="eg">e.g. Confirm model, option package and subsystem version.</div><span class="t">~40 min</span></div>
+      <div class="ho" data-glean-id="ho-3"><span class="n">03</span><h4>Resolve the exact part</h4><p>Resolve the applicable part, assembly and configuration.</p><div class="sys">Parts, options &amp; BOM</div><div class="eg">e.g. Resolve the applicable turbocharger assembly and revision.</div><span class="t">~30 min</span></div>
+      <div class="ho bn" data-glean-id="ho-4"><span class="n">04</span><h4>Inspect engineering model</h4><p>Open an approved engineering model for visual inspection.</p><div class="sys">CAD / PLM or model repository</div><div class="eg">e.g. Inspect the engine assembly and related interfaces.</div><span class="t">~55 min</span></div>
+      <div class="ho" data-glean-id="ho-5"><span class="n">05</span><h4>Trace issue history</h4><p>Compare related issue records and engineering changes.</p><div class="sys">Engineering issue history</div><div class="eg">e.g. Compare prior issue records and engineering changes.</div><span class="t">~25 min</span></div>
+      <div class="ho" data-glean-id="ho-6"><span class="n">06</span><h4>Align service & engineering</h4><p>Coordinate field service, test and engineering stakeholders.</p><div class="sys">Service, test &amp; engineering</div><div class="eg">e.g. Align engineering, quality &amp; plant on the fix.</div><span class="t">~20 min</span></div>
+    </div>
+    <div class="player" data-glean-id="challenge-player">
+      <button class="pbtn" id="playOld" type="button">▶ Play today's investigation</button>
+      <button class="pbtn alt" id="playNew" type="button" disabled>⚡ Now run it with Glean</button>
+      <div class="clock" id="clock">0<small>min</small></div>
+      <div class="track"><i id="trackBar"></i></div>
+      <div class="pnote" id="pnote">Step durations are illustrative only; a John Deere baseline has not been measured.</div>
+    </div>
+    <div class="callout">Opening the 3D model looked like the bottleneck, but the bigger win came from rethinking how the information is brought together. Today a single expert has to reconcile every system above to make a high-stakes decision.</div>
+    <div class="fourstat" data-glean-id="challenge-stats">
+      <div class="card"><b>Multiple steps</b><span>Configuration, service and engineering context to reconcile</span></div>
+      <div class="card"><b>Many</b><span>Potential sources involved; confirm during discovery</span></div>
+      <div class="card"><b>To validate</b><span>Current cycle time and queue impact not yet established</span></div>
+      <div class="card"><b>TBD</b><span>Potential value depends on validated scope, baseline and outcomes</span></div>
+    </div>
+    <div class="two">
+      <div class="card" data-glean-id="challenge-stall"><h4>Why investigations stall</h4><ul class="blist"><li>Evidence lives in systems that were never designed to talk to each other.</li><li>One issue may cross machine configuration, service, test and engineering context.</li><li>Every handoff adds queue time, lost context and rework.</li></ul></div>
+      <div class="card" data-glean-id="challenge-good"><h4>What good looks like</h4><ul class="blist"><li>One plain-language question over the approved evidence available to that user.</li><li>The applicable component resolved and shown for human confirmation.</li><li>Source-backed context and metadata returned to support the next decision.</li></ul></div>
+    </div>
+    <div class="dark" data-glean-id="challenge-cost"><div class="eyebrow">The opportunity to validate</div><p>Fragmented investigations may delay answers and consume specialist time. A John Deere pilot should establish the current workflow, data sources and baseline before estimating operational or financial impact.</p></div>
+  </div>
+</section>
+
+<!-- 04 SOLUTION -->
+<section class="page" data-glean-id="sec-solution">
+  <div class="wrap">
+    <div class="runhead"><div class="logo">glean<span class="sep"></span><span class="cs">CASE STUDY</span></div><span class="pg">04 · The Solution</span></div>
+    <div class="eyebrow">The Solution</div>
+    <h2>A machine-context agent: evidence and component view in one workflow</h2>
+    <p class="lede">The concept is an agent that could work across approved service, test and engineering sources and return evidence with the relevant machine component. Connector feasibility and authorized model access must be validated.</p>
+    <div class="dark" style="margin-top:22px" data-glean-id="solution-diff"><div class="eyebrow">The differentiator</div><p>The concept combines <b>permission-aware reasoning across enterprise context with an illustrative 3D component view</b>. Feasibility depends on source access, connector design, configuration identifiers and the ability to expose approved engineering models.</p></div>
+    <div class="caps">
+      <div class="card" data-glean-id="cap-governed"><div class="ico">◈</div><h3>Connected, governed data</h3><p>A scoped implementation would connect selected sources—such as service records, machine configuration, issue history and engineering content—while honoring source permissions. Any CAD / PLM or supplier-restricted data requires explicit feasibility and access review.</p></div>
+      <div class="card" data-glean-id="cap-orchestration"><div class="ico">✳</div><h3>Agentic orchestration</h3><p>A prototype could route questions across sources selected during discovery, retrieve relevant evidence and explain how the answer was assembled, subject to permissions and evaluation.</p></div>
+      <div class="card hi" data-glean-id="cap-3d"><div class="ico">⬡</div><h3>In-workflow 3D visualization</h3><p>An approved model could open inline in the workflow, ready to orbit, zoom, isolate, explode and inspect its metadata. A next step could be drafted for human review; any write-back action would require an approved workflow.</p></div>
+    </div>
+    <div class="card" data-glean-id="solution-flow">
+      <h4 class="cap">How a single question flows through the agent</h4>
+      <div class="flow">
+        <div class="fstep"><div class="ic">💬</div><b>Natural-language ask</b><span>"What is driving power-loss reports on this machine configuration?"</span></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ic">✳</div><b>Reason across systems</b><span>Gathers governed context from connected records</span></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ic">⌕</div><b>Resolve the component</b><span>Field symptom → machine model → configuration → part → issue history</span></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ic">⬡</div><b>Render 3D + metadata</b><span>Inspect &amp; continue the investigation in-chat</span></div>
+      </div>
+      <div class="srcs-title">Representative connected sources</div>
+      <div class="chips"><span class="chip">Field service / issue records</span><span class="chip">Service technician notes</span><span class="chip">Dealer / field service records</span><span class="chip">Issue / defect tracking</span><span class="chip">Test &amp; quality records</span><span class="chip">Parts &amp; configuration data</span><span class="chip">Engineering knowledge</span><span class="chip">CAD / PLM (if accessible)</span><span class="chip">Parts, options &amp; BOM</span><span class="chip">Change &amp; revision history</span><span class="chip">Test / manufacturing records</span><span class="chip">Structured data warehouse</span><span class="chip">Approved 3D model source</span></div>
+    </div>
+    <div class="tri" style="margin-top:14px">
+      <div class="card" data-glean-id="sol-open"><h4>Open-format</h4><p>If approved models require transformation, the team would assess a secure, fit-for-purpose extraction and rendering approach.</p></div>
+      <div class="card" data-glean-id="sol-perm"><h4>Permissions-aware</h4><p>Existing access controls are honored at every step, and John Deere remains the authority for data boundaries.</p></div>
+      <div class="card" data-glean-id="sol-ext"><h4>Extensible</h4><p>The same pattern applies to images, PDFs, cross-section drawings, manuals and other rich engineering assets.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 3D BREAKTHROUGH (SIMULATOR) -->
+<section class="page" data-glean-id="sec-breakthrough">
+  <div class="wrap">
+    <div class="runhead"><div class="logo">glean<span class="sep"></span><span class="cs">CASE STUDY</span></div><span class="pg">05 · The 3D Breakthrough</span></div>
+    <div class="eyebrow">The 3D Breakthrough · Try it</div>
+    <h2>The investigation and the component view, in one place</h2>
+    <p class="lede">Choose an illustrative field issue. The concept traces configuration and issue context, resolves a component, then displays an explodable 3D diesel-engine model. The scenario and geometry are fictional—not John Deere data or CAD.</p>
+    <div class="scen" role="group" aria-label="Choose an illustrative field issue" data-glean-id="sim-scenarios">
+      <button class="sbtn" type="button" data-s="power" aria-pressed="false">Power loss under load<small>Tractor · configuration-specific</small></button>
+      <button class="sbtn" type="button" data-s="knock" aria-pressed="false">Engine knock at idle<small>Tractor · service signal</small></button>
+      <button class="sbtn" type="button" data-s="coolant" aria-pressed="false">Coolant in oil<small>Tractor · technician note</small></button>
+    </div>
+    <div class="ask" id="askBubble" data-glean-id="sim-ask">Choose a scenario above to start the illustrative investigation.</div>
+    <div class="agent" data-glean-id="sim-agent">
+      <div class="who">GLEAN · ENGINEERING AGENT</div>
+      <div class="thinking" id="thinking">Waiting for a question…</div>
+      <p id="agentText"></p>
+      <div class="chips" id="agentSrc"></div>
+    </div>
+    <div class="viewer vbig" data-glean-id="sim-viewer">
+      <div class="vbar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>&nbsp; glean · equipment engineering agent: exploded view</div>
+      <canvas class="vcanvas" id="simCanvas" aria-label="Illustrative 3D tractor diesel engine. Drag to rotate; use the controls to zoom, explode, or isolate the focus part."></canvas>
+      <div class="ftag" id="simTag" style="opacity:0"><i></i><span>ILLUSTRATIVE PART</span></div>
+      <div class="vctrl">
+        <button class="vbtn" type="button" id="zIn" aria-label="Zoom in">+</button>
+        <button class="vbtn" type="button" id="zOut" aria-label="Zoom out">−</button>
+        <button class="vbtn" type="button" id="expl" aria-pressed="true" aria-label="Toggle exploded view">✣</button>
+        <button class="vbtn" type="button" id="iso" aria-pressed="false" aria-label="Isolate focus part">◎</button>
+        <button class="vbtn" type="button" id="rst" aria-label="Reset view">⤢</button>
+      </div>
+      <div class="pinfo" id="pinfo" data-glean-id="sim-part-card">
+        <h4 id="pName">—</h4><p id="pDesc"></p>
+        <dl id="pDl"></dl>
+        <span class="rel">● CONCEPT</span><button class="act" type="button" id="crBtn">+ Draft follow-up</button>
+      </div>
+      <div class="toast" id="toast">Draft change request created and linked to the investigation (illustrative).</div>
+      <span class="hint">drag to orbit</span>
+    </div>
+    <div class="chain-title">Example reasoning chain <span class="chip">5 illustrative evidence steps</span></div>
+    <div class="chain" id="chain" data-glean-id="sim-chain"></div>
+    <div class="fig">Figure 1: Each step names the system the agent reasoned across and what it returned. The scenario, component identifier, geometry and records are fictional; no John Deere source data is connected.</div>
+    <div class="dark" data-glean-id="sim-why"><div class="eyebrow">Why it matters</div><p>The reasoning and the component now sit on one surface. Teams can assess configuration-specific evidence and component context together, subject to source access and validation.</p></div>
+  </div>
+</section>
+
+<!-- 06 HOW FDE BUILDS IT -->
+<section class="page" data-glean-id="sec-fde">
+  <div class="wrap">
+    <div class="runhead"><div class="logo">glean<span class="sep"></span><span class="cs">CASE STUDY</span></div><span class="pg">06 · How FDE Builds It</span></div>
+    <div class="eyebrow">How FDE Builds It</div>
+    <h2>Embedded engineering, powered by Glean's platform</h2>
+    <p class="lede">A Forward Deployed Engineering team could work with John Deere stakeholders to map the workflow, validate data access and prototype the highest-value path on Glean’s platform.</p>
+    <div class="rule-title" style="border-top:0;margin-top:26px;padding-top:0">The embedding model</div>
+    <div class="five" data-glean-id="fde-model">
+      <div><span class="k">1</span><b>Discover</b><span>Work with field service, engineering, test and product-data owners to map one representative workflow.</span></div>
+      <div><span class="k">2</span><b>Co-design</b><span>Define the target workflow and success criteria with the people who live the process daily.</span></div>
+      <div><span class="k">3</span><b>Build</b><span>Assess connector feasibility, configuration resolution and approved model rendering.</span></div>
+      <div><span class="k">4</span><b>Validate</b><span>Build a representative evaluation set with approved sources and stakeholder-validated answers.</span></div>
+      <div><span class="k">5</span><b>Enable</b><span>Handoff, adoption support and an operating cadence to extend the pattern to new use cases.</span></div>
+    </div>
+    <div class="rule-title" style="border-top:0;margin-top:30px;padding-top:0">The starting point vs. what FDE builds</div>
+    <div class="havebuilt" data-glean-id="fde-have-built">
+      <div><h4>Starting point · Glean platform</h4><ul class="blist gr"><li>Enterprise search and assistant across existing connectors, starting with SharePoint and Confluence</li><li>Knowledge discovery across available enterprise content and technical knowledge sources</li><li>Permission-aware access to general enterprise content</li></ul></div>
+      <div><h4>What FDE engineers on top</h4><ul class="blist"><li>Potential connector targets: service, machine configuration, issue / defect, parts / BOM and approved CAD / PLM (subject to feasibility and access)</li><li>Component resolution: field symptom → machine model → configuration → component → approved model</li><li>Inline visualization of an approved component model, subject to data and IP access</li><li>An eval harness (John Deere-defined evaluation set) that holds answers to a measurable quality bar</li></ul></div>
+    </div>
+    <div class="rule-title" style="border-top:0;margin-top:30px;padding-top:0">Looking forward · Illustrative roadmap</div>
+    <div class="road" data-glean-id="fde-roadmap">
+      <div class="card"><span class="lbl">Now · Govern the foundation</span><h3>Trusted engineering answers</h3><p>Permission-aware answers across selected engineering and technical knowledge sources, subject to pilot scope.</p></div>
+      <div class="card beige"><span class="lbl">Next · Reason, resolve &amp; render</span><h3>Connect a field signal</h3><p>Explore an approved field/service signal, machine configuration and exact component; render the model with relevant issue history.</p></div>
+      <div class="card vision"><span class="lbl">Vision · Get ahead of it</span><h3>Proactive, network-wide detection</h3><p>Explore whether connected issue records could surface recurring patterns across machine configurations, subject to data access and validation.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 IMPACT -->
+<section class="page" data-glean-id="sec-impact">
+  <div class="wrap">
+    <div class="runhead"><div class="logo">glean<span class="sep"></span><span class="cs">CASE STUDY</span></div><span class="pg">07 · Impact &amp; Results</span></div>
+    <div class="eyebrow">Impact &amp; Results</div>
+    <h2>A measurable path to better machine-context decisions</h2>
+    <p class="lede">The potential value is better configuration-specific context and less time spent reconciling fragmented evidence. John Deere baselines, target outcomes and impact must be measured during discovery and a scoped pilot.</p>
+    <div class="ba" style="margin-top:24px" data-glean-id="impact-ba">
+      <div class="card"><span class="lbl">REFERENCE · BEFORE</span><b>200<small>+ min</small></b><span>Active investigation across Many systems and multiple handoffs</span></div>
+      <div class="delta">−Reference<small>BENCHMARK</small></div>
+      <div class="card after"><span class="lbl">REFERENCE · AFTER</span><b>&lt;40<small> min</small></b><span>Illustrative target workflow; John Deere baseline TBD</span></div>
+    </div>
+    <div class="res3">
+      <div class="card" data-glean-id="impact-faster"><span class="lbl">01 · FASTER</span><b class="big">82%</b><p>A separate automaker reported an 82% reduction in active investigation time. Validate any John Deere baseline and outcome in a scoped pilot.</p></div>
+      <div class="card beige" data-glean-id="impact-smarter"><span class="lbl">02 · SMARTER</span><h3>New signals + shared visual context</h3><p>Dealer, field, quality and design data that used to sit apart now inform root cause and are inspected together in 3D at the moment of decision.</p></div>
+      <div class="card indigo" data-glean-id="impact-cost"><span class="lbl">03 · LOWER COST</span><h3>Issue history at the source</h3><p>Acting on the true root cause prevents repeat issues and reduces adjustment, warranty and quality exposure, value that compounds well beyond the time saved.</p></div>
+    </div>
+    <div class="calc" data-glean-id="impact-calculator">
+      <div>
+        <h4 class="cap" style="margin:0 0 12px;font-size:12px;letter-spacing:.2em;color:var(--artifact-indigo)">ILLUSTRATIVE CAPACITY MODEL</h4>
+        <div class="formula">Illustrative capacity ≈ <em>users in scope</em> × <em>validated time saved</em> × <em>loaded labor cost</em></div>
+        <div class="fld"><label for="cEng">Users in scope <output id="oEng"></output></label><input type="range" id="cEng" min="50" max="3000" step="50" value="500"></div>
+        <div class="fld"><label for="cInv">Investigations per user / week <output id="oInv"></output></label><input type="range" id="cInv" min="0.25" max="3" step="0.25" value="0.5"></div>
+        <div class="fld"><label for="cCost">Loaded engineering cost / hour <output id="oCost"></output></label><input type="range" id="cCost" min="50" max="200" step="5" value="100"></div>
+        <div style="font-size:12px;color:var(--artifact-muted)">Illustrative scenario only. Inputs are placeholders, not John Deere data or a forecast; replace with a measured baseline and approved assumptions.</div>
+      </div>
+      <div class="calc-out">
+        <span class="lbl" style="font-size:11px;font-weight:700;letter-spacing:.2em;color:var(--artifact-muted)">ILLUSTRATIVE SCENARIO OUTPUT</span>
+        <b id="oVal">$0</b>
+        <div class="row"><span>Hours saved per week</span><span id="oHw">0</span></div>
+        <div class="row"><span>Hours saved per year</span><span id="oHy">0</span></div>
+        <div class="row"><span>Equivalent engineers returned (FTE)</span><span id="oFte">0</span></div>
+        <div style="font-size:12px;color:var(--artifact-muted);margin-top:10px">This counts productivity only. Lower warranty leakage and faster containment add value on top.</div>
+      </div>
+    </div>
+    <div class="two">
+      <div class="card"><h4>How to validate value</h4><p style="margin:0;font-size:14px;color:var(--artifact-muted)">No John Deere value estimate is asserted. Establish a baseline, scope, time saved and quality measures with business owners before calculating impact.</p></div>
+      <div class="card"><h4>Value beyond the productivity gain</h4><ul class="blist g"><li>Fewer repeat returns &amp; faster containment</li><li>Lower warranty and adjustment leakage &amp; shorter quality campaigns</li><li>Benchmarking, comparative analysis &amp; early-warning detection</li></ul></div>
+    </div>
+    <div class="quote" data-glean-id="impact-quote"><p>"A machine-specific view could bring configuration, parts and issue history into one place—if the underlying data and permissions support it."</p><span>ILLUSTRATIVE VALUE HYPOTHESIS · VALIDATE WITH JOHN DEERE</span></div>
+    <div class="dark" data-glean-id="impact-result"><div class="eyebrow">The result: changing how engineering decisions are made</div><p>The opportunity is to bring the right machine context into one governed investigation. Pilot outcomes should be judged against a John Deere-defined baseline—not assumed from an external reference case.</p></div>
+  </div>
+</section>
+
+<!-- 08 WHERE IT APPLIES -->
+<section class="page" style="border-bottom:0" data-glean-id="sec-where">
+  <div class="wrap">
+    <div class="runhead"><div class="logo">glean<span class="sep"></span><span class="cs">CASE STUDY</span></div><span class="pg">08 · Where It Applies at John Deere</span></div>
+    <div class="eyebrow">Where It Applies</div>
+    <h2>A reusable pattern for machine-specific engineering context</h2>
+    <p class="lede">The pattern is to connect approved machine and engineering context, resolve the exact configuration and component, then return evidence and an appropriate visual in the workflow. The initial scope and data access must be validated with John Deere.</p>
+    <div class="where">
+      <div data-glean-id="where-capabilities">
+        <h4 class="cap" style="font-size:12px;letter-spacing:.2em;color:var(--artifact-indigo)">CAPABILITIES TO VALIDATE</h4>
+        <div class="capb"><span class="ico">⌖</span><div><b>Exact component and asset resolution</b><span>Maps an ambiguous symptom or claim to the specific machine model, configuration, options, software version, revision or component involved.</span></div></div>
+        <div class="capb"><span class="ico">⬡</span><div><b>Rich engineering asset visualization</b><span>Brings approved component models, metadata and issue history into the workflow, so users can inspect the physical product without opening specialist tools.</span></div></div>
+        <div class="capb"><span class="ico">⊡</span><div><b>Governed engineering data connection</b><span>Connects protected systems of record across machine configuration, service, issue / defect, engineering and document sources while preserving source-system permissions.</span></div></div>
+        <div class="capb"><span class="ico">◉</span><div><b>Evidence-grounded investigation reasoning</b><span>Routes a question across the right sources, correlates dealer, product and engineering history, and returns a source-backed answer instead of a generic summary.</span></div></div>
+      </div>
+      <div data-glean-id="where-usecases">
+        <h4 class="cap" style="font-size:12px;letter-spacing:.2em;color:var(--artifact-indigo)">POTENTIAL JOHN DEERE APPLICATIONS</h4>
+        <div class="uc"><b>Equipment configuration &amp; digital twin context</b><p>Teams need to understand which parts, options, subsystems and software versions apply to a specific machine before making engineering decisions.</p><div class="chips"><span class="chip">Tractors</span><span class="chip">Sprayers</span><span class="chip">Planters &amp; combines</span></div></div>
+        <div class="uc"><b>Field service &amp; troubleshooting</b><p>Service teams may need relevant manuals, SOPs, troubleshooting history and machine-specific configuration in one workflow.</p><div class="chips"><span class="chip">Field service</span><span class="chip">Service teams</span><span class="chip">Machine owner</span></div></div>
+        <div class="uc"><b>Test triage &amp; issue analysis</b><p>Teams could correlate test and issue records with machine configuration to prioritize investigation; the actual sources and process need validation.</p><div class="chips"><span class="chip">Test</span><span class="chip">Issue history</span><span class="chip">Engineering</span></div></div>
+        <div class="uc"><b>Parts, options &amp; configuration history</b><p>Teams need to understand which configuration, options and subsystem versions apply to an individual machine and why changes were made.</p><div class="chips"><span class="chip">Spec management</span><span class="chip">Engineering</span><span class="chip">Compliance</span></div></div>
+      </div>
+    </div>
+    <div class="disc" data-glean-id="discovery-context">
+      <div class="disc-head">
+        <div><h4>CURRENT DISCOVERY CONTEXT</h4><p>Source-backed priorities from John Deere account discussions.</p></div>
+        <div class="disc-src" id="discSources" data-skip-annotation></div>
+      </div>
+      <div class="disc-grid" id="discGrid" data-skip-annotation></div>
+    </div>
+    <div class="dark cta" data-glean-id="where-cta">
+      <div><h3>From machine context to <em>engineering intelligence</em>, powered by Glean Forward Deployed.</h3><p>Start with a bounded use case: validate the data, permissions and machine identifiers, then co-design and evaluate a governed prototype with John Deere teams.</p></div>
+      <a href="mailto:kelli.mcivor@glean.com?subject=John Deere%20%C3%97%20Glean%20FDE%20discovery" target="_blank" rel="noopener">Book a discovery →</a>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="foot"><div class="wrap"><p>Prepared for John Deere by Glean. The 82% / 200+ to under-40-minute benchmark shown in the reference section is from a separate, anonymized automaker engagement—not John Deere results.</p><p>The tractor scenario, part identifier, geometry and workflow are fictional and illustrative; no John Deere records or CAD are represented. Illustrative concept only · © 2026 Glean Technologies, Inc.</p></div></footer>
+
+<script>
+(function(){
+var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var TAU = Math.PI*2, N = 72;
+
+/* ---------- illustrative exploded diesel engine ---------- */
+// ev = explode direction; slot = explode distance. Geometry is fictional, not John Deere CAD.
+var COMPS = {
+  block:{name:'Engine block',col:[.20,.42,.17],slot:0,ev:[0,1,0]},
+  liner:{name:'Cylinder liners',col:[.58,.60,.58],slot:0,ev:[0,1,0],steel:1},
+  gasket:{name:'Head gasket',col:[.30,.31,.30],slot:1.0,ev:[0,1,0],steel:1},
+  head:{name:'Cylinder head',col:[.60,.62,.60],slot:1.9,ev:[0,1,0],steel:1},
+  injector:{name:'Fuel injectors',col:[.78,.80,.78],slot:2.9,ev:[0,1,0],steel:1},
+  valve:{name:'Valve cover',col:[.20,.42,.17],slot:3.9,ev:[0,1,0]},
+  piston:{name:'Pistons',col:[.74,.76,.74],slot:-1.1,ev:[0,1,0],steel:1,inner:1},
+  crank:{name:'Crankshaft',col:[.50,.52,.54],slot:-2.2,ev:[0,1,0],steel:1},
+  pan:{name:'Oil pan',col:[.13,.14,.13],slot:-3.3,ev:[0,1,0]},
+  turbo:{name:'Turbocharger',col:[.66,.64,.60],slot:2.4,ev:[0,0,1],steel:1},
+  manifold:{name:'Exhaust manifold',col:[.36,.33,.30],slot:1.2,ev:[0,0,1]},
+  fly:{name:'Flywheel',col:[.42,.44,.46],slot:-2.4,ev:[1,0,0],steel:1},
+  pulley:{name:'Front pulley',col:[.16,.17,.16],slot:2.2,ev:[1,0,0]}
+};
+function quad(list, c, p, k){
+  var a=p[0], b=p[1], d=p[3];
+  var ux=b[0]-a[0], uy=b[1]-a[1], uz=b[2]-a[2], vx=d[0]-a[0], vy=d[1]-a[1], vz=d[2]-a[2];
+  var nx=uy*vz-uz*vy, ny=uz*vx-ux*vz, nz=ux*vy-uy*vx, l=Math.hypot(nx,ny,nz)||1;
+  list.push({c:c, p:p, n:[nx/l,ny/l,nz/l], k:k||1});
+}
+function ringPt(r,t,z){return [r*Math.cos(t), r*Math.sin(t), z];}
+function band(list,c,r,z0,z1,strips,kf){
+  for(var i=0;i<N;i++){var ta=i/N*TAU, tb=(i+1)/N*TAU;
+    for(var j=0;j<strips;j++){var za=z0+(z1-z0)*j/strips, zb=z0+(z1-z0)*(j+1)/strips;
+      quad(list,c,[ringPt(r,ta,za),ringPt(r,tb,za),ringPt(r,tb,zb),ringPt(r,ta,zb)], kf?kf(i,j):1);}}
+}
+function box(list,c,x0,x1,y0,y1,z0,z1,k){
+  var v=[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]];
+  [[0,1,2,3],[4,7,6,5],[0,4,5,1],[1,5,6,2],[2,6,7,3],[3,7,4,0]].forEach(function(f,i){quad(list,c,f.map(function(j){return v[j];}),(k||1)*(i===3?1:.96));});
+}
+// Cylinder along a chosen axis ('x','y','z'), optional inner radius and ribbing.
+function cyl(list,c,axis,cx,cy,cz,r,a0,a1,seg,r0,kf){
+  seg=seg||24; r0=r0||0;
+  function P(rr,t,a){var u=rr*Math.cos(t), w=rr*Math.sin(t);
+    if(axis==='x') return [cx+a,cy+u,cz+w]; if(axis==='y') return [cx+u,cy+a,cz+w]; return [cx+u,cy+w,cz+a];}
+  for(var i=0;i<seg;i++){var ta=i/seg*TAU, tb=(i+1)/seg*TAU, k=kf?kf(i):1;
+    quad(list,c,[P(r,ta,a0),P(r,tb,a0),P(r,tb,a1),P(r,ta,a1)],k);
+    quad(list,c,[P(r0,ta,a0),P(r,ta,a0),P(r,tb,a0),P(r0,tb,a0)],k*.92);
+    quad(list,c,[P(r0,ta,a1),P(r0,tb,a1),P(r,tb,a1),P(r,ta,a1)],k*.92);}
+}
+function buildModel(){
+  var L=[], i, x, CX=[-.55,-.33,-.11,.11,.33,.55];
+  // Block with cooling ribs and side bosses
+  box(L,'block',-.70,.70,-.30,.30,-.30,.30);
+  for(i=0;i<7;i++){x=-.66+i*.22; box(L,'block',x-.025,x+.025,-.26,.22,.30,.35,.85); box(L,'block',x-.025,x+.025,-.26,.22,-.35,-.30,.85);}
+  box(L,'block',-.72,.72,-.36,-.30,-.34,.34,.8);
+  CX.forEach(function(cx){ cyl(L,'liner','y',cx,0,0,.095,.30,.32,20,.07); });
+  // Head gasket, cylinder head, injectors, valve cover
+  box(L,'gasket',-.70,.70,.32,.34,-.30,.30);
+  box(L,'head',-.70,.70,.34,.50,-.30,.30);
+  for(i=0;i<6;i++){ box(L,'head',CX[i]-.06,CX[i]+.06,.40,.47,.30,.36,.8); }
+  CX.forEach(function(cx){ cyl(L,'injector','y',cx,.62,-.04,.025,0,.16,10); cyl(L,'injector','y',cx,.78,-.04,.04,0,.04,10); });
+  box(L,'valve',-.66,.66,.52,.64,-.24,.24);
+  for(i=0;i<6;i++){ box(L,'valve',CX[i]-.07,CX[i]+.07,.64,.67,-.18,.18,.9); }
+  cyl(L,'valve','y',-.45,.67,.10,.05,0,.06,14);
+  // Pistons with crowns and rods, crankshaft with counterweights
+  CX.forEach(function(cx,j){ var yy=j%2?.04:-.04; cyl(L,'piston','y',cx,yy,0,.085,0,.16,20); box(L,'piston',cx-.022,cx+.022,yy-.30,yy,-.02,.02); });
+  cyl(L,'crank','x',0,-.42,0,.045,-.82,.82,16);
+  CX.forEach(function(cx,j){ var s=j%2?1:-1; box(L,'crank',cx-.035,cx+.035,-.48+.06*s,-.36+.06*s,-.10,.10); cyl(L,'crank','x',cx,-.42+.08*s,0,.035,-.05,.05,12); });
+  // Oil pan with sump
+  box(L,'pan',-.66,.66,-.58,-.40,-.26,.26);
+  box(L,'pan',-.20,.40,-.70,-.58,-.18,.18,.9);
+  // Exhaust manifold and turbocharger on the side
+  box(L,'manifold',-.62,.62,.38,.46,.36,.44,.9);
+  CX.forEach(function(cx){ box(L,'manifold',cx-.045,cx+.045,.36,.46,.32,.38,.85); });
+  cyl(L,'turbo','z',.25,.42,.62,.17,-.08,.08,28,0,function(i){return i%4?1:.8;});
+  cyl(L,'turbo','z',.25,.42,.62,.10,.08,.20,22);
+  cyl(L,'turbo','z',.25,.42,.62,.14,-.20,-.08,24);
+  cyl(L,'turbo','x',.48,.42,.62,.06,-.10,.18,14);
+  // Flywheel with ring gear, front pulley
+  cyl(L,'fly','x',-.86,-.20,0,.40,-.06,.06,36,.06,function(i){return i%2?1:.82;});
+  cyl(L,'pulley','x',.84,-.30,0,.16,-.04,.04,26,.04);
+  cyl(L,'pulley','x',.84,.05,.18,.08,-.03,.03,20,.02);
+  return L;
+}
+var MODEL = buildModel();
+var LIGHT = (function(){var l=[-.4,.6,.75], m=Math.hypot(l[0],l[1],l[2]); return [l[0]/m,l[1]/m,l[2]/m];})();
+
+function Viewer(canvas, tag, o){
+  this.cv=canvas; this.ctx=canvas.getContext('2d'); this.tag=tag;
+  this.yaw0=o.yaw; this.pitch0=o.pitch; this.yaw=o.yaw; this.pitch=o.pitch;
+  this.zoom=1; this.ex=o.explode; this.exT=o.explode; this.focus=o.focus||[]; this.iso=false; this.isoA=0;
+  this.auto=true; this.idleUntil=0; this.running=true; this.showTag=o.showTag!==false;
+  var self=this, drag=null;
+  canvas.addEventListener('pointerdown',function(e){drag={x:e.clientX,y:e.clientY}; canvas.setPointerCapture(e.pointerId); self.idleUntil=Date.now()+5000;});
+  canvas.addEventListener('pointermove',function(e){ if(!drag) return; self.yaw+=(e.clientX-drag.x)*.01; self.pitch=Math.max(-1.2,Math.min(1.2,self.pitch+(e.clientY-drag.y)*.01)); drag={x:e.clientX,y:e.clientY}; self.idleUntil=Date.now()+5000;});
+  canvas.addEventListener('pointerup',function(){drag=null;});
+  canvas.addEventListener('pointercancel',function(){drag=null;});
+  if('IntersectionObserver' in window){ new IntersectionObserver(function(en){ self.running=en[0].isIntersecting; if(self.running) self.loop(); }).observe(canvas); }
+  this.loop();
+}
+Viewer.prototype.resize=function(){
+  var dpr=Math.min(window.devicePixelRatio||1,2), w=this.cv.clientWidth, h=this.cv.clientHeight;
+  if(this.cv.width!==Math.round(w*dpr)||this.cv.height!==Math.round(h*dpr)){this.cv.width=Math.round(w*dpr); this.cv.height=Math.round(h*dpr);}
+  this.dpr=dpr; this.W=w; this.H=h;
+};
+Viewer.prototype.reset=function(){this.yaw=this.yaw0; this.pitch=this.pitch0; this.zoom=1; this.idleUntil=0;};
+Viewer.prototype.loop=function(){
+  if(this._raf) return; var self=this;
+  function step(){ self._raf=null; if(!self.running) return; self.frame(); self._raf=requestAnimationFrame(step); }
+  this._raf=requestAnimationFrame(step);
+};
+Viewer.prototype.frame=function(){
+  this.resize(); var ctx=this.ctx, dpr=this.dpr, W=this.W, H=this.H;
+  if(this.auto && !reduce && Date.now()>this.idleUntil) this.yaw+=.004;
+  var k = reduce?1:.08;
+  this.ex += (this.exT-this.ex)*k; this.isoA += ((this.iso?1:0)-this.isoA)*k;
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+  var cy=Math.cos(this.yaw), sy=Math.sin(this.yaw), cp=Math.cos(this.pitch), sp=Math.sin(this.pitch);
+  var F=Math.min(W,H)*2.05*this.zoom/(1+this.ex*.55), D=5.0, cx=W/2, cyy=H/2+8;
+  var ex=this.ex, focus=this.focus, out=[], tagBest=null;
+  for(var q=0;q<MODEL.length;q++){
+    var Q=MODEL[q], C=COMPS[Q.c], off=C.slot*ex*.22, ev=C.ev||[0,0,1], pts=[], zs=0;
+    if(C.inner && ex<.04 && focus.indexOf(Q.c)<0) continue;
+    for(var v=0;v<4;v++){
+      var p=Q.p[v], x=p[0]+ev[0]*off, y=p[1]+ev[1]*off, z=p[2]+ev[2]*off;
+      var x1=x*cy+z*sy, z1=-x*sy+z*cy, y2=y*cp-z1*sp, z2=y*sp+z1*cp, s=F/(D-z2);
+      pts.push(cx+x1*s, cyy-y2*s); zs+=z2;
+    }
+    var n=Q.n, nx1=n[0]*cy+n[2]*sy, nz1=-n[0]*sy+n[2]*cy, ny2=n[1]*cp-nz1*sp, nz2=n[1]*sp+nz1*cp;
+    var d=Math.abs(nx1*LIGHT[0]+ny2*LIGHT[1]+nz2*LIGHT[2]);
+    var isF=focus.indexOf(Q.c)>=0;
+    out.push({pts:pts, z:zs/4, d:d, c:Q.c, k:Q.k, f:isF});
+    if(isF && this.showTag){ var sx=(pts[0]+pts[2])/2, sy2=(pts[1]+pts[5])/2; if(!tagBest || sx>tagBest[0]) tagBest=[sx,sy2,zs/4]; }
+  }
+  out.sort(function(a,b){return a.z-b.z;});
+  for(var i=0;i<out.length;i++){
+    var o=out[i], C2=COMPS[o.c], base=o.f?[1,.84,0]:C2.col;
+    var sh=(.32+.68*o.d)*o.k, spec=C2.steel&&!o.f? Math.pow(o.d,10)*.35 : (o.f? Math.pow(o.d,14)*.25:0);
+    var r=Math.min(255,(base[0]*sh+spec)*255)|0, g=Math.min(255,(base[1]*sh+spec)*255)|0, b=Math.min(255,(base[2]*sh+spec)*255)|0;
+    var a = (!o.f && focus.length) ? 1-.9*this.isoA : 1;
+    var col='rgba('+r+','+g+','+b+','+a.toFixed(3)+')';
+    ctx.fillStyle=col; ctx.strokeStyle=col; ctx.lineWidth=.6;
+    var P=o.pts; ctx.beginPath(); ctx.moveTo(P[0],P[1]); ctx.lineTo(P[2],P[3]); ctx.lineTo(P[4],P[5]); ctx.lineTo(P[6],P[7]); ctx.closePath(); ctx.fill(); if(a>.5) ctx.stroke();
+  }
+  if(this.tag){
+    if(tagBest && focus.length){ this.tag.style.left=Math.min(W-110,tagBest[0])+'px'; this.tag.style.top=(tagBest[1]+(this.cv.offsetTop||0))+'px'; this.tag.style.opacity=1; }
+    else this.tag.style.opacity=0;
+  }
+};
+
+var hero = new Viewer(document.getElementById('heroCanvas'), document.getElementById('heroTag'), {yaw:-.62, pitch:.38, explode:.85, focus:['turbo']});
+var sim = new Viewer(document.getElementById('simCanvas'), document.getElementById('simTag'), {yaw:-.62, pitch:.38, explode:.85, focus:[]});
+
+/* viewer controls */
+var $=function(id){return document.getElementById(id);};
+$('zIn').onclick=function(){sim.zoom=Math.min(2.2,sim.zoom*1.15); sim.idleUntil=Date.now()+5000;};
+$('zOut').onclick=function(){sim.zoom=Math.max(.5,sim.zoom/1.15); sim.idleUntil=Date.now()+5000;};
+$('rst').onclick=function(){sim.reset();};
+$('expl').onclick=function(){var on=this.getAttribute('aria-pressed')!=='true'; this.setAttribute('aria-pressed',on); sim.exT=on?.85:0;};
+$('iso').onclick=function(){var on=this.getAttribute('aria-pressed')!=='true'; this.setAttribute('aria-pressed',on); sim.iso=on;};
+var toastT; $('crBtn').onclick=function(){var t=$('toast'); t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(function(){t.classList.remove('on');},2600);};
+
+/* ---------- scenarios ---------- */
+var SC = {
+  power:{ask:'Field teams report power loss under heavy load on one tractor configuration. What context should we review, and which engine component is implicated?',
+    ans:'Illustrative finding: <b>Turbocharger assembly (ENG-TRB-0462)</b>. A real investigation would confirm machine model, engine option, software / calibration version and related service records before drawing a conclusion. Rendering the engine below and isolating the turbocharger.',
+    src:['field service notes','machine configuration','parts / BOM','issue & defect records','approved 3D model source'],focus:['turbo'],name:'Turbocharger Assembly',desc:'Illustrative turbocharger with compressor, turbine housing and center section. Geometry and identifiers are fictional; replace with an approved John Deere model and metadata.',
+    dl:[['Part ID','ENG-TRB-0462 · illustrative'],['Machine','Tractor configuration · fictional'],['Subsystem','Engine air system'],['Revision','Not connected to John Deere data'],['Evidence','Example only'],['Change log','To validate']],
+    chain:[['field service notes','Power-loss symptom captured (fictional)'],['machine configuration','Model / engine option / calibration to resolve'],['parts / BOM','Illustrative turbocharger identified'],['issue / defect records','Related history to validate with owners'],['3D model source','Engine rendered, turbo isolated']]},
+  knock:{ask:'A technician reports engine knock at idle after service. Which machine and component details would help engineering investigate?',
+    ans:'Illustrative target: <b>Pistons and crankshaft (ENG-CRK-0218)</b>. A production workflow would resolve the machine configuration and compare service, test and engineering records before drawing a conclusion. Rendering the engine below and isolating the rotating assembly.',
+    src:['technician notes','machine configuration','service history','test / quality records','approved 3D model source'],focus:['piston','crank'],name:'Pistons & Crankshaft',desc:'Illustrative rotating assembly: six pistons, connecting rods and crankshaft. Actual fitment, tolerances and revisions must come from approved John Deere sources.',
+    dl:[['Part ID','ENG-CRK-0218 · illustrative'],['Machine','Configuration unresolved'],['Subsystem','Engine rotating assembly'],['Revision','Not connected to John Deere data'],['Evidence','Example only'],['Change log','To validate']],
+    chain:[['technician notes','Knock at idle after service (fictional)'],['machine configuration','Resolve model and engine option'],['service history','Compare recent service events'],['test / issue records','Check related evidence with owners'],['3D model source','Pistons and crankshaft highlighted']]},
+  coolant:{ask:'A service record flags coolant in the oil on one engine. What configuration, gasket and issue history should be checked?',
+    ans:'Illustrative focus: <b>Head gasket and cylinder head (ENG-HGK-0915)</b>. A real workflow would retrieve only authorized records, identify the correct machine configuration and return source evidence for human review. Rendering the engine below and isolating the head interface.',
+    src:['service record','machine configuration','parts / BOM','engineering issue history','approved 3D model source'],focus:['gasket','head'],name:'Head Gasket & Cylinder Head',desc:'Illustrative head-to-block sealing interface. No actual John Deere component geometry or service record is represented.',
+    dl:[['Part ID','ENG-HGK-0915 · illustrative'],['Machine','Configuration unresolved'],['Subsystem','Engine cylinder head'],['Revision','Not connected to John Deere data'],['Evidence','Example only'],['Change log','To validate']],
+    chain:[['service record','Coolant-in-oil finding (fictional)'],['machine configuration','Resolve applicable engine option'],['parts / BOM','Identify gasket and head interface'],['engineering history','Review similar issue records'],['3D model source','Head interface highlighted']]}
+};
+var timers=[];
+function esc(s){return s.replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function renderChain(sc, lit){
+  $('chain').innerHTML = sc.chain.map(function(c,i){return '<div class="ch'+(i<lit?' on':'')+'" data-glean-id="chain-step-'+(i+1)+'"><span class="k">'+(i+1)+'</span><b>'+esc(c[0])+'</b><span>'+esc(c[1])+'</span></div>';}).join('');
+}
+function runScenario(key){
+  timers.forEach(clearTimeout); timers=[];
+  var sc=SC[key];
+  document.querySelectorAll('.sbtn').forEach(function(b){b.setAttribute('aria-pressed', b.dataset.s===key?'true':'false');});
+  $('askBubble').textContent=sc.ask;
+  $('agentText').classList.remove('on'); $('agentSrc').classList.remove('on'); $('pinfo').classList.remove('on');
+  $('agentText').innerHTML=sc.ans;
+  $('agentSrc').innerHTML=sc.src.map(function(s){return '<span class="chip">'+esc(s)+'</span>';}).join('');
+  $('pName').textContent=sc.name; $('pDesc').textContent=sc.desc;
+  $('pDl').innerHTML=sc.dl.map(function(r){return '<dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd>';}).join('');
+  sim.focus=[]; sim.iso=false; $('iso').setAttribute('aria-pressed','false');
+  renderChain(sc,0);
+  var d = reduce?0:520;
+  sc.chain.forEach(function(c,i){
+    timers.push(setTimeout(function(){ $('thinking').textContent='Reasoning across '+c[0]+'…'; renderChain(sc,i+1);
+      if(i===2){ sim.focus=sc.focus; }
+      if(i===4){ sim.iso=true; $('iso').setAttribute('aria-pressed','true'); sim.exT=.85; $('expl').setAttribute('aria-pressed','true'); }
+    }, d*(i+1)));
+  });
+  timers.push(setTimeout(function(){ $('thinking').textContent='✓ 5 illustrative evidence steps · permissions applied'; $('agentText').classList.add('on'); $('agentSrc').classList.add('on'); $('pinfo').classList.add('on'); }, d*6));
+}
+document.querySelectorAll('.sbtn').forEach(function(b){b.addEventListener('click',function(){runScenario(b.dataset.s);});});
+renderChain(SC.power,0);
+
+/* ---------- handoff player ---------- */
+var STEPS=[35,40,30,55,25,20], TOTAL=205, playT=[];
+var hos=document.querySelectorAll('#handoffs .ho');
+function setClock(m,max,green){ $('clock').innerHTML=Math.round(m)+'<small>min</small>'; var b=$('trackBar'); b.style.width=(m/max*100)+'%'; b.classList.toggle('g',!!green); }
+$('playOld').onclick=function(){
+  playT.forEach(clearTimeout); playT=[]; $('playNew').disabled=true;
+  hos.forEach(function(h){h.classList.remove('live','dim');}); setClock(0,TOTAL);
+  $('pnote').textContent='Illustrative current-state path: six evidence-gathering steps.';
+  var t=0, acc=0, speed=reduce?0:520;
+  STEPS.forEach(function(m,i){
+    playT.push(setTimeout(function(){ hos.forEach(function(h){h.classList.remove('live');}); hos[i].classList.add('live');
+      var start=acc; acc+=m; var a0=Date.now();
+      (function tick(){ var p=speed?Math.min(1,(Date.now()-a0)/speed):1; setClock(start+m*p,TOTAL); if(p<1) playT.push(setTimeout(tick,30)); })();
+    }, t)); t+=speed+60;
+  });
+  playT.push(setTimeout(function(){ hos.forEach(function(h){h.classList.remove('live');}); setClock(TOTAL,TOTAL); $('pnote').textContent='Illustrative sequence complete. Validate actual time and system count with John Deere teams.'; $('playNew').disabled=false; }, t));
+};
+$('playNew').onclick=function(){
+  playT.forEach(clearTimeout); playT=[];
+  hos.forEach(function(h){h.classList.add('dim'); h.classList.remove('live');});
+  var a0=Date.now(), dur=reduce?0:1200;
+  (function tick(){ var p=dur?Math.min(1,(Date.now()-a0)/dur):1; setClock(38*p,TOTAL,true); if(p<1) playT.push(setTimeout(tick,30)); else $('pnote').textContent='Concept workflow: one question, connected context and an illustrative component view. No John Deere time-saving claim is implied.'; })();
+  playT.push(setTimeout(function(){ hos.forEach(function(h){h.classList.remove('dim');}); }, 4000));
+};
+
+/* ---------- calculator ---------- */
+function money(v){ return v>=1e6? '$'+(v/1e6).toFixed(1)+'M' : '$'+Math.round(v/1e3)+'K'; }
+function calc(){
+  var e=+$('cEng').value, inv=+$('cInv').value, c=+$('cCost').value;
+  var hw=e*inv*(160/60), hy=hw*48, val=hy*c;
+  $('oEng').textContent=e.toLocaleString('en-US'); $('oInv').textContent=inv; $('oCost').textContent='$'+c;
+  $('oVal').textContent=money(val); $('oHw').textContent=Math.round(hw).toLocaleString('en-US');
+  $('oHy').textContent=Math.round(hy).toLocaleString('en-US'); $('oFte').textContent=(hy/1840).toFixed(0);
+}
+['cEng','cInv','cCost'].forEach(function(id){$(id).addEventListener('input',calc);}); calc();
+
+/* reveal hook (all content stays in DOM) */
+window.gleanArtifact = window.gleanArtifact || {};
+window.gleanArtifact.revealElement = function(id){
+  if(id==='sim-part-card') $('pinfo').classList.add('on');
+  return new Promise(function(r){requestAnimationFrame(function(){requestAnimationFrame(r);});});
+};
+window.addEventListener('beforeprint',function(){ if(!document.querySelector('.sbtn[aria-pressed="true"]')){ runScenario('power'); } $('agentText').classList.add('on'); $('agentSrc').classList.add('on'); $('pinfo').classList.add('on'); renderChain(SC[(document.querySelector('.sbtn[aria-pressed="true"]')||{dataset:{s:'power'}}).dataset.s],5); hero.frame(); sim.frame(); });
+})();
+</script>
+
+<script>
+(function(){
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  var grid=document.getElementById('discGrid'), src=document.getElementById('discSources');
+  var data=window.APP_DATA||{};
+  if(!grid||!src) return;
+  if(data.error||!data.discovery_context||!Array.isArray(data.discovery_context.items)){grid.innerHTML='<div class="disc-card"><p>Discovery context unavailable.</p></div>'; return;}
+  grid.innerHTML=data.discovery_context.items.map(function(it){return '<div class="disc-card" data-glean-id="discovery-'+esc(it.id)+'"><span class="st">'+esc(it.status)+'</span><b>'+esc(it.title)+'</b><p>'+esc(it.evidence)+'</p><p class="nx"><strong>Next:</strong> '+esc(it.next_validation)+'</p></div>';}).join('');
+  var links=(data.sources||[]).map(function(s){return '<a href="'+esc(s.url)+'" target="_blank" rel="noopener">'+esc(s.label)+'</a>';}).join(' · ');
+  src.textContent='Source: John Deere × Glean use-case discussion, Nov 12, 2026';
+})();
+</script>
+</body>
+</html>
