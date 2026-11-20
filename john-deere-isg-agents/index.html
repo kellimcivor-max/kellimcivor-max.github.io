@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="glean-text-binding" content="yjs"><script data-glean-runtime="text-binding">
+(() => {
+  const runtimeKey = Symbol.for("glean.text-binding.runtime");
+  const connectionKey = Symbol.for("glean.text-binding.connection");
+  if (window.GleanText || window[runtimeKey]) return;
+
+  // Same page-level decision as the host: the Yjs editor owns the whole page only when
+  // collaborative text editing is on and bind-text wrote its marker.
+  if (
+    window.GleanBridge?.getParams?.().get("collab") !== "1" ||
+    !document.head?.querySelector('meta[name="glean-text-binding"][content="yjs"]')
+  )
+    return;
+
+  const collaboration = window.GleanBridge?.collaboration;
+  const state = { bound: false, connection: undefined };
+  window[runtimeKey] = state;
+
+  if (collaboration && typeof collaboration.connect === "function") {
+    let connection = collaboration[connectionKey];
+    if (!connection) {
+      const originalConnect = collaboration.connect;
+      connection = {
+        connected: false,
+        doc: undefined,
+        provider: undefined,
+        bridgedDocs: new WeakSet(),
+      };
+      collaboration.connect = function (doc, ...args) {
+        if (connection.connected) {
+          if (doc === connection.doc) return connection.provider;
+          if (!connection.bridgedDocs.has(doc)) {
+            const { Y } = collaboration;
+            const bridgeOrigin = Symbol("glean-text-doc-bridge");
+            const textDoc = connection.doc;
+            Y.applyUpdate(doc, Y.encodeStateAsUpdate(textDoc), bridgeOrigin);
+            Y.applyUpdate(textDoc, Y.encodeStateAsUpdate(doc), bridgeOrigin);
+            textDoc.on("update", (update, origin) => {
+              if (origin !== bridgeOrigin) {
+                Y.applyUpdate(doc, update, bridgeOrigin);
+              }
+            });
+            doc.on("update", (update, origin) => {
+              if (origin !== bridgeOrigin) {
+                Y.applyUpdate(textDoc, update, bridgeOrigin);
+              }
+            });
+            connection.bridgedDocs.add(doc);
+          }
+          return connection.provider;
+        }
+
+        const provider = Reflect.apply(originalConnect, this, [doc, ...args]);
+        connection.connected = true;
+        connection.doc = doc;
+        connection.provider = provider;
+        return provider;
+      };
+      Object.defineProperty(collaboration, connectionKey, {
+        value: connection,
+      });
+    }
+    state.connection = connection;
+  }
+
+  const start = () => {
+    if (state.bound) return;
+    state.bound = true;
+
+    const allFields = Array.from(
+      document.querySelectorAll("[data-glean-edit-id]"),
+    );
+
+    if (!collaboration || typeof collaboration.connect !== "function") return;
+
+    if (!state.connection?.connected) {
+      collaboration.connect(new collaboration.Y.Doc());
+    }
+
+    const { doc, provider } = state.connection;
+    if (!doc || !provider) return;
+
+    const { Y } = collaboration;
+    const text = doc.getMap("glean:text");
+    const textSource = doc.getMap("glean:textSource");
+    const localOrigin = Symbol("glean-text-input");
+    const editIdOf = (field) => field.getAttribute("data-glean-edit-id");
+    const boundIds = new Set();
+    const fields = allFields.filter((field) => {
+      const id = editIdOf(field);
+      if (
+        !id ||
+        boundIds.has(id) ||
+        field.closest(
+          "a, button, input, select, textarea, [data-skip-annotation]",
+        )
+      )
+        return false;
+      boundIds.add(id);
+      return true;
+    });
+    const leafFields = new Set(
+      fields.filter((field) => !field.querySelector("*")),
+    );
+    const isLeaf = (field) => leafFields.has(field);
+    let undoManager;
+
+    window.GleanText = { doc, provider };
+
+    const observedTexts = new WeakMap();
+    const safeBlockHtml = (html) => {
+      const template = document.createElement("template");
+      template.innerHTML = html;
+      const allowed = new Set(
+        "b strong i em u s mark small sub sup code span a br abbr cite q time kbd var del ins".split(
+          " ",
+        ),
+      );
+      for (const element of template.content.querySelectorAll("*")) {
+        if (!allowed.has(element.tagName.toLowerCase())) return undefined;
+        for (const attribute of [...element.attributes]) {
+          const name = attribute.name.toLowerCase();
+          if (name.startsWith("on")) return undefined;
+          if (name === "href" || name === "src") {
+            const value = attribute.value.trim();
+            if (value.startsWith("#")) continue;
+            try {
+              const protocol = new URL(value, document.baseURI).protocol;
+              if (!["http:", "https:", "mailto:"].includes(protocol))
+                return undefined;
+            } catch {
+              return undefined;
+            }
+          }
+        }
+      }
+      return template.innerHTML;
+    };
+    const sourceDefaults = new Map();
+    for (const field of fields) {
+      const id = editIdOf(field);
+      const value = isLeaf(field)
+        ? (field.textContent ?? "")
+        : safeBlockHtml(field.innerHTML);
+      if (value !== undefined) sourceDefaults.set(id, value);
+    }
+    const textOffset = (field, node, offset) => {
+      if (node !== field && !field.contains(node)) return undefined;
+      const range = document.createRange();
+      range.selectNodeContents(field);
+      range.setEnd(node, offset);
+      return range.toString().length;
+    };
+    const transformOffset = (offset, delta) => {
+      let oldPosition = 0;
+      let transformed = offset;
+      for (const operation of delta) {
+        if (typeof operation.retain === "number")
+          oldPosition += operation.retain;
+        if (typeof operation.insert === "string" && oldPosition <= offset) {
+          transformed += operation.insert.length;
+        }
+        if (typeof operation.delete === "number") {
+          if (oldPosition < offset) {
+            const removedBeforeOffset = Math.min(
+              operation.delete,
+              offset - oldPosition,
+            );
+            transformed -= removedBeforeOffset;
+          }
+          oldPosition += operation.delete;
+        }
+      }
+      return Math.max(0, transformed);
+    };
+    const renderField = (field) => {
+      const id = editIdOf(field);
+      const value = text.get(id);
+      if (value === undefined) return;
+      // A changed HTML default is not applied until an editor reseeds, so
+      // viewers keep the new default instead of the outdated stored text.
+      if (
+        sourceDefaults.has(id) &&
+        textSource.has(id) &&
+        textSource.get(id) !== sourceDefaults.get(id)
+      )
+        return;
+      if (
+        isLeaf(field) &&
+        value instanceof Y.Text &&
+        field.textContent !== value.toString()
+      ) {
+        field.textContent = value.toString();
+      } else if (!isLeaf(field) && typeof value === "string") {
+        const safe = safeBlockHtml(value);
+        if (safe !== undefined && field.innerHTML !== safe)
+          field.innerHTML = safe;
+      }
+    };
+    const render = (onlyField, force = false) => {
+      for (const field of fields) {
+        if (onlyField && field !== onlyField) continue;
+        if (!force && field === document.activeElement) continue;
+        renderField(field);
+      }
+    };
+    const observeLeafText = (field) => {
+      const value = text.get(editIdOf(field));
+      const observed = observedTexts.get(field);
+      if (
+        !isLeaf(field) ||
+        !(value instanceof Y.Text) ||
+        observed?.value === value
+      )
+        return;
+      if (observed) observed.value.unobserve(observed.listener);
+      const listener = (event) => {
+        if (text.get(editIdOf(field)) !== value) return;
+        if (event.transaction.origin === localOrigin) return;
+        const next = value.toString();
+        if (field !== document.activeElement) {
+          field.textContent = next;
+          return;
+        }
+        const selection = document.getSelection();
+        const anchor =
+          selection?.anchorNode &&
+          textOffset(field, selection.anchorNode, selection.anchorOffset);
+        const focus =
+          selection?.focusNode &&
+          textOffset(field, selection.focusNode, selection.focusOffset);
+        if (anchor === undefined || focus === undefined) {
+          field.textContent = next;
+          return;
+        }
+        const anchorOffset = Math.min(
+          next.length,
+          transformOffset(anchor, event.delta),
+        );
+        const focusOffset = Math.min(
+          next.length,
+          transformOffset(focus, event.delta),
+        );
+        field.textContent = next;
+        const textNode =
+          field.firstChild ?? field.appendChild(document.createTextNode(""));
+        selection.setBaseAndExtent(
+          textNode,
+          anchorOffset,
+          textNode,
+          focusOffset,
+        );
+      };
+      observedTexts.set(field, { listener, value });
+      value.observe(listener);
+    };
+
+    const hasEditRole = () =>
+      provider.synced &&
+      ["owner", "editor"].includes(provider.connectionContext?.role) &&
+      provider.connectionContext?.canEdit === true;
+
+    const canEdit = () =>
+      hasEditRole() &&
+      document.documentElement.getAttribute(
+        "data-glean-html-annotation-mode",
+      ) === "true" &&
+      document.documentElement.getAttribute("data-glean-html-edit-tool") ===
+        "true";
+
+    const updateAccess = () => {
+      const editable = canEdit();
+      fields.forEach((field) => {
+        const id = editIdOf(field);
+        if (editable && sourceDefaults.has(id)) {
+          field.setAttribute("contenteditable", "plaintext-only");
+        } else {
+          if (field === document.activeElement && field instanceof HTMLElement)
+            field.blur();
+          field.removeAttribute("contenteditable");
+        }
+      });
+      presence?.schedule();
+    };
+
+    // Other editors' carets. The local selection is published to Yjs awareness
+    // as relative positions in the field's Y.Text, so it stays put under their
+    // edits, and is drawn into a fixed overlay while this user is in Edit mode.
+    const presence = (() => {
+      const awareness = provider.awareness;
+      if (!awareness) return;
+      const cursorKey = "glean:textCursor";
+      const fieldById = new Map(fields.map((field) => [editIdOf(field), field]));
+      let layer;
+      let frame;
+
+      const publish = () => {
+        const field = document.activeElement;
+        const selection = document.getSelection();
+        const context = provider.connectionContext;
+        let cursor = null;
+        if (canEdit() && context && isLeaf(field) && selection?.anchorNode) {
+          const value = text.get(editIdOf(field));
+          const anchor = textOffset(field, selection.anchorNode, selection.anchorOffset);
+          const head = textOffset(field, selection.focusNode, selection.focusOffset);
+          if (
+            value instanceof Y.Text &&
+            anchor !== undefined &&
+            head !== undefined &&
+            field.textContent === value.toString()
+          ) {
+            const at = (index) =>
+              Y.relativePositionToJSON(
+                Y.createRelativePositionFromTypeIndex(value, index),
+              );
+            cursor = {
+              id: editIdOf(field),
+              anchor: at(anchor),
+              head: at(head),
+              name: context.userName,
+              color: context.userColor,
+            };
+          }
+        }
+        const current = awareness.getLocalState()?.[cursorKey] ?? null;
+        if (JSON.stringify(current) !== JSON.stringify(cursor))
+          awareness.setLocalStateField(cursorKey, cursor);
+      };
+
+      // Leaf fields hold only text nodes, so a text index maps straight to one.
+      const pointAt = (field, index) => {
+        for (const node of field.childNodes) {
+          if (node.nodeType !== Node.TEXT_NODE) continue;
+          if (index <= node.length) return [node, index];
+          index -= node.length;
+        }
+        return [field, field.childNodes.length];
+      };
+      const indexOf = (value, position) => {
+        const absolute = Y.createAbsolutePositionFromRelativePosition(
+          Y.createRelativePositionFromJSON(position),
+          doc,
+        );
+        return absolute?.type === value ? absolute.index : undefined;
+      };
+      const ensureLayer = () => {
+        if (layer) return layer;
+        const host = document.createElement("div");
+        host.setAttribute("data-skip-annotation", "");
+        host.setAttribute("aria-hidden", "true");
+        host.style.cssText =
+          "all:initial;position:fixed;inset:0;pointer-events:none;z-index:2147483647";
+        const shadow = host.attachShadow({ mode: "open" });
+        shadow.innerHTML = `<style>
+          div { position: absolute; }
+          .selection { opacity: .2; }
+          .caret { width: 2px; }
+          .label { position: absolute; bottom: 100%; left: -1px; padding: 1px 4px;
+            border-radius: 3px; color: #fff; font: 11px/14px system-ui, sans-serif;
+            white-space: nowrap; }
+        </style>`;
+        layer = document.createElement("div");
+        layer.style.cssText = "position:absolute;inset:0";
+        shadow.append(layer);
+        document.body.append(host);
+        return layer;
+      };
+      const render = () => {
+        layer?.replaceChildren();
+        if (!canEdit()) return;
+        for (const [clientId, state] of awareness.getStates()) {
+          const cursor = state?.[cursorKey];
+          if (clientId === awareness.clientID || !cursor) continue;
+          try {
+            const field = fieldById.get(cursor.id);
+            const value = field && text.get(cursor.id);
+            if (!isLeaf(field) || !(value instanceof Y.Text)) continue;
+            const anchor = indexOf(value, cursor.anchor);
+            const head = indexOf(value, cursor.head);
+            if (anchor === undefined || head === undefined) continue;
+            // Carets inside scrolled or clipped containers stay inside them.
+            const clip = { left: 0, top: 0, right: innerWidth, bottom: innerHeight };
+            for (let element = field.parentElement; element; element = element.parentElement) {
+              if (getComputedStyle(element).overflow === "visible") continue;
+              const rect = element.getBoundingClientRect();
+              clip.left = Math.max(clip.left, rect.left);
+              clip.top = Math.max(clip.top, rect.top);
+              clip.right = Math.min(clip.right, rect.right);
+              clip.bottom = Math.min(clip.bottom, rect.bottom);
+            }
+            // Peer-controlled: only ever assigned through backgroundColor, which
+            // rejects anything but a color, so it cannot add declarations or URLs.
+            const color = (typeof cursor.color === "string" && cursor.color) || "#2563eb";
+            const draw = (rect, className) => {
+              const left = Math.max(rect.left, clip.left);
+              const top = Math.max(rect.top, clip.top);
+              const right = Math.min(rect.right, clip.right);
+              const bottom = Math.min(rect.bottom, clip.bottom);
+              if (right <= left || bottom <= top) return;
+              const box = document.createElement("div");
+              box.className = className;
+              box.style.cssText = `left:${left}px;top:${top}px;width:${right - left}px;height:${bottom - top}px`;
+              box.style.backgroundColor = color;
+              ensureLayer().append(box);
+              return box;
+            };
+            const range = document.createRange();
+            range.setStart(...pointAt(field, Math.min(anchor, head)));
+            range.setEnd(...pointAt(field, Math.max(anchor, head)));
+            for (const rect of range.getClientRects()) draw(rect, "selection");
+            range.setStart(...pointAt(field, head));
+            range.collapse(true);
+            // An empty field has no text rect; stand at its start edge instead.
+            const at = range.getClientRects()[0] ?? field.getBoundingClientRect();
+            const marker = draw(
+              { left: at.left, top: at.top, right: at.left + 2, bottom: at.bottom },
+              "caret",
+            );
+            if (!marker) continue;
+            const label = document.createElement("span");
+            label.className = "label";
+            label.textContent = cursor.name || "Collaborator";
+            label.style.backgroundColor = color;
+            marker.append(label);
+          } catch {
+            // A peer's cursor may be malformed or refer to text that no longer exists.
+          }
+        }
+      };
+      const schedule = () => {
+        frame ??= requestAnimationFrame(() => {
+          frame = undefined;
+          publish();
+          render();
+        });
+      };
+      awareness.on("change", schedule);
+      for (const type of ["selectionchange", "focusin", "focusout", "scroll"])
+        document.addEventListener(type, schedule, true);
+      window.addEventListener("resize", schedule);
+      return { schedule };
+    })();
+
+    fields.forEach((field) => {
+      field.addEventListener("input", () => {
+        if (!canEdit()) return;
+        const id = editIdOf(field);
+        const next = isLeaf(field)
+          ? (field.textContent ?? "")
+          : safeBlockHtml(field.innerHTML);
+        if (next === undefined) {
+          render();
+          return;
+        }
+        const current = text.get(id);
+        doc.transact(() => {
+          if (current === undefined) {
+            text.set(id, isLeaf(field) ? new Y.Text(next) : next);
+            return;
+          }
+          if (!isLeaf(field)) {
+            text.set(id, next);
+            return;
+          }
+          if (!(current instanceof Y.Text)) return;
+
+          const previous = current.toString();
+          let prefix = 0;
+          while (
+            prefix < previous.length &&
+            prefix < next.length &&
+            previous[prefix] === next[prefix]
+          ) {
+            prefix += 1;
+          }
+
+          let suffix = 0;
+          while (
+            suffix < previous.length - prefix &&
+            suffix < next.length - prefix &&
+            previous[previous.length - 1 - suffix] ===
+              next[next.length - 1 - suffix]
+          ) {
+            suffix += 1;
+          }
+
+          const removed = previous.length - prefix - suffix;
+          const inserted = next.slice(prefix, next.length - suffix);
+          if (removed > 0) current.delete(prefix, removed);
+          if (inserted.length > 0) current.insert(prefix, inserted);
+        }, localOrigin);
+      });
+      field.addEventListener("keydown", (event) => {
+        if (canEdit() && undoManager && (event.metaKey || event.ctrlKey)) {
+          const key = event.key.toLowerCase();
+          if (key === "z") {
+            event.preventDefault();
+            if (event.shiftKey) undoManager.redo();
+            else undoManager.undo();
+            return;
+          }
+          if (key === "y") {
+            event.preventDefault();
+            undoManager.redo();
+            return;
+          }
+        }
+        if (event.key === "Enter") {
+          event.preventDefault();
+          field.blur();
+        }
+      });
+      field.addEventListener("blur", () => render(field, true));
+      field.addEventListener("paste", (event) => {
+        if (!canEdit()) return;
+        event.preventDefault();
+        const value = event.clipboardData?.getData("text/plain") ?? "";
+        document.execCommand("insertText", false, value);
+      });
+    });
+
+    fields.forEach(observeLeafText);
+    text.observeDeep((_events, transaction) => {
+      fields.forEach(observeLeafText);
+      if (transaction.origin !== localOrigin) {
+        render(undefined, transaction.origin === undoManager);
+      }
+      presence?.schedule();
+    });
+    const initialize = () => {
+      if (!provider.synced) return;
+      const changedFields = [];
+      // Viewers render HTML defaults and never seed; the next editor does.
+      if (hasEditRole()) {
+        doc.transact(() => {
+          for (const field of fields) {
+            const id = editIdOf(field);
+            if (!sourceDefaults.has(id)) continue;
+            const value = sourceDefaults.get(id);
+            if (!text.has(id)) {
+              text.set(id, isLeaf(field) ? new Y.Text(value) : value);
+              textSource.set(id, value);
+              continue;
+            }
+            if (!textSource.has(id)) {
+              textSource.set(id, value);
+              continue;
+            }
+            if (textSource.get(id) === value) continue;
+
+            text.set(id, isLeaf(field) ? new Y.Text(value) : value);
+            textSource.set(id, value);
+            changedFields.push(field);
+          }
+        });
+      }
+      undoManager ??= new Y.UndoManager(text, {
+        trackedOrigins: new Set([localOrigin]),
+      });
+      render();
+      changedFields.forEach((field) => render(field, true));
+    };
+    provider.on("sync", (synced) => {
+      if (synced) initialize();
+      updateAccess();
+    });
+    provider.on("connection-context", () => {
+      initialize();
+      updateAccess();
+    });
+
+    if (provider.synced) initialize();
+    updateAccess();
+    new MutationObserver(updateAccess).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: [
+        "data-glean-html-annotation-mode",
+        "data-glean-html-edit-tool",
+      ],
+    });
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, { once: true });
+  } else {
+    start();
+  }
+})();
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="glean-artifact-type" content="customer_proposal">
+<meta name="glean-artifact-type" content="dashboards">
+<title>Glean × John Deere ISG · Agents, Skills &amp; Pilot</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<style>
+:root {
+  --artifact-background: #ffffff;
+  --artifact-background-light: #f4f6f1;
+  --artifact-background-mid: #e9eee5;
+  --artifact-border-light: #e0e6da;
+  --artifact-border-dark: #c6cfbe;
+  --artifact-primary-brand: #367c2b;
+  --artifact-primary-hover: #2a6321;
+  --artifact-primary-deep: #1e4417;
+  --artifact-on-brand: #ffffff;
+  --artifact-accent: #ffde00;
+  --artifact-on-accent: #1a1d12;
+  --artifact-selected: #eaf3e5;
+  --artifact-text-primary: #151a12;
+  --artifact-text-secondary: #5a6454;
+  --artifact-text-highlight: #fff7c2;
+  --artifact-positive: #2f7d32;
+  --artifact-positive-background: #e6f4e6;
+  --artifact-warn: #9a6a00;
+  --artifact-warn-background: #fbf1d6;
+  --artifact-neutral-background: #eef1eb;
+  --artifact-chart-muted: #c6cfbe;
+}
+html[data-theme='dark'] {
+  --artifact-background: #0c0f0b;
+  --artifact-background-light: #141a12;
+  --artifact-background-mid: #1b2418;
+  --artifact-border-light: #253021;
+  --artifact-border-dark: #36442f;
+  --artifact-primary-brand: #74c35f;
+  --artifact-primary-hover: #8fd57b;
+  --artifact-primary-deep: #c9ebbf;
+  --artifact-on-brand: #0c0f0b;
+  --artifact-accent: #ffde00;
+  --artifact-on-accent: #1a1d12;
+  --artifact-selected: #1a2b16;
+  --artifact-text-primary: #eef2ea;
+  --artifact-text-secondary: #a2ad9a;
+  --artifact-text-highlight: #2c2808;
+  --artifact-positive: #74c35f;
+  --artifact-positive-background: #15291a;
+  --artifact-warn: #f0c04a;
+  --artifact-warn-background: #2b230b;
+  --artifact-neutral-background: #1b2418;
+  --artifact-chart-muted: #36442f;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--artifact-background); color: var(--artifact-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 16px; line-height: 1.55;
+}
+h1, h2, h3, h4 { margin: 0; color: var(--artifact-text-primary); letter-spacing: -0.02em; }
+h1 { font-size: clamp(2.4rem, 5.6vw, 4.2rem); font-weight: 650; line-height: 1.02; letter-spacing: -0.035em; }
+h2 { font-size: clamp(1.7rem, 3.4vw, 2.5rem); font-weight: 650; line-height: 1.08; }
+h3 { font-size: 1.1rem; font-weight: 600; letter-spacing: -0.01em; }
+p { margin: 0; }
+button { font: inherit; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--artifact-primary-brand); }
+.muted { color: var(--artifact-text-secondary); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+
+/* Nav */
+.nav { position: sticky; top: 0; z-index: 30; background: var(--artifact-background); color: var(--artifact-text-primary); border-bottom: 1px solid var(--artifact-border-light); }
+.nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 58px; }
+.mark { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; }
+.mark .x { color: var(--artifact-text-secondary); font-weight: 400; }
+.mark .dot { width: 10px; height: 10px; border-radius: 2px; background: var(--artifact-accent); box-shadow: 0 0 0 3px var(--artifact-primary-brand); }
+.nav ul { list-style: none; display: flex; gap: 4px; margin: 0; padding: 0; overflow-x: auto; }
+.nav a { display: block; padding: 6px 12px; border-radius: 999px; font-size: 14px; color: var(--artifact-text-secondary); text-decoration: none; white-space: nowrap; }
+.nav a:hover { color: var(--artifact-text-primary); background: var(--artifact-background-light); }
+.nav a.active { color: var(--artifact-primary-brand); background: var(--artifact-selected); }
+
+/* Hero */
+.hero { padding: 72px 0 56px; position: relative; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr); gap: 48px; align-items: end; }
+.hero h1 .hl { background: linear-gradient(transparent 62%, var(--artifact-accent) 62%); color: var(--artifact-text-primary); padding: 0 2px; }
+.hero .lede { margin-top: 22px; font-size: 1.2rem; color: var(--artifact-text-secondary); max-width: 640px; }
+.prepared { margin-top: 28px; font-size: 14px; color: var(--artifact-text-secondary); }
+.prepared b { color: var(--artifact-text-primary); font-weight: 600; }
+.facts { display: grid; gap: 0; border-top: 2px solid var(--artifact-primary-brand); }
+.fact { display: grid; grid-template-columns: 76px 1fr; gap: 14px; align-items: baseline; padding: 14px 0; border-bottom: 1px solid var(--artifact-border-light); }
+.fact .n { font-size: 2rem; font-weight: 650; letter-spacing: -0.03em; color: var(--artifact-primary-brand); font-variant-numeric: tabular-nums; line-height: 1; }
+.fact .t { font-size: 14.5px; }
+.fact .t span { display: block; color: var(--artifact-text-secondary); font-size: 13px; }
+
+/* Sections */
+section.sec { padding: 72px 0; border-top: 1px solid var(--artifact-border-light); scroll-margin-top: 58px; }
+.sec-head { display: grid; gap: 12px; max-width: 760px; margin-bottom: 36px; }
+.sec-head p { font-size: 1.05rem; color: var(--artifact-text-secondary); }
+.tagline { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--artifact-warn); background: var(--artifact-warn-background); padding: 4px 10px; border-radius: 999px; justify-self: start; font-weight: 600; }
+
+/* Simulator */
+.sim { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 20px; }
+.picker { display: grid; gap: 10px; align-content: start; }
+.pick {
+  text-align: left; border: 1px solid var(--artifact-border-light); background: var(--artifact-background); color: var(--artifact-text-primary);
+  border-radius: 10px; padding: 14px 16px; cursor: pointer; display: grid; gap: 4px; transition: border-color .15s, background .15s;
+}
+.pick:hover { border-color: var(--artifact-border-dark); }
+.pick[aria-pressed="true"] { border-color: var(--artifact-primary-brand); background: var(--artifact-selected); color: var(--artifact-text-primary); box-shadow: inset 3px 0 0 var(--artifact-primary-brand); }
+.pick .k { font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--artifact-text-secondary); }
+.pick .nm { font-weight: 600; font-size: 15.5px; }
+.pick .ds { font-size: 13.5px; color: var(--artifact-text-secondary); }
+.pick:focus-visible, .btn:focus-visible, .chip:focus-visible, .copy:focus-visible, .seg button:focus-visible { outline: 2px solid var(--artifact-primary-brand); outline-offset: 2px; }
+
+.console { border: 1px solid var(--artifact-border-dark); border-radius: 12px; overflow: hidden; background: var(--artifact-background); color: var(--artifact-text-primary); display: grid; }
+.console-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 16px; background: var(--artifact-background-light); color: var(--artifact-text-primary); border-bottom: 1px solid var(--artifact-border-light); font-size: 13px; }
+.console-bar .who { display: flex; gap: 8px; align-items: center; font-weight: 600; }
+.console-bar .who i { width: 8px; height: 8px; border-radius: 50%; background: var(--artifact-primary-brand); display: inline-block; }
+.console-body { padding: 20px; display: grid; gap: 18px; }
+.ask { display: flex; gap: 12px; align-items: flex-start; }
+.ask .q { flex: 1; background: var(--artifact-background-light); color: var(--artifact-text-primary); border: 1px solid var(--artifact-border-light); border-radius: 10px; padding: 14px 16px; font-size: 15.5px; min-height: 54px; }
+.btn { border: 0; border-radius: 8px; padding: 12px 18px; cursor: pointer; font-weight: 600; font-size: 14.5px; background: var(--artifact-primary-brand); color: var(--artifact-on-brand); white-space: nowrap; }
+.btn:hover { background: var(--artifact-primary-hover); color: var(--artifact-on-brand); }
+.btn.ghost { background: transparent; color: var(--artifact-primary-brand); border: 1px solid var(--artifact-border-dark); }
+.btn.ghost:hover { background: var(--artifact-selected); color: var(--artifact-primary-brand); }
+.btn:disabled { opacity: .55; cursor: default; }
+.trace { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.tstep { border: 1px solid var(--artifact-border-light); border-radius: 8px; padding: 10px 12px; font-size: 13px; display: grid; gap: 4px; align-content: start; color: var(--artifact-text-secondary); background: var(--artifact-background); transition: border-color .2s, color .2s, background .2s; }
+.tstep b { font-size: 13px; font-weight: 600; }
+.tstep .st { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; }
+.tstep.run { border-color: var(--artifact-accent); color: var(--artifact-text-primary); }
+.tstep.done { border-color: var(--artifact-primary-brand); color: var(--artifact-text-primary); background: var(--artifact-selected); }
+.tstep.done .st { color: var(--artifact-primary-brand); }
+.sources { display: flex; flex-wrap: wrap; gap: 8px; }
+.src { font-size: 12.5px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--artifact-border-light); color: var(--artifact-text-secondary); background: var(--artifact-background); transition: all .2s; }
+.src.on { border-color: var(--artifact-primary-brand); color: var(--artifact-primary-brand); background: var(--artifact-selected); }
+.result { display: grid; gap: 16px; transition: opacity .3s; }
+.result.pending { opacity: .28; }
+.answer { font-size: 16px; line-height: 1.6; }
+.cite { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 4px; font-size: 11px; font-weight: 700; background: var(--artifact-selected); color: var(--artifact-primary-brand); vertical-align: 2px; margin-left: 2px; }
+.evid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.evid > div { border: 1px solid var(--artifact-border-light); border-radius: 8px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; }
+.evid h4 { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--artifact-text-secondary); }
+.evid ul { margin: 0; padding-left: 18px; font-size: 14px; display: grid; gap: 4px; }
+.evid .gap h4 { color: var(--artifact-warn); }
+.brief { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.brief > div { border-top: 3px solid var(--artifact-primary-brand); padding-top: 10px; display: grid; gap: 4px; align-content: start; }
+.brief h4 { font-size: 13px; font-weight: 700; }
+.brief p { font-size: 14px; color: var(--artifact-text-secondary); }
+.refs { font-size: 12.5px; color: var(--artifact-text-secondary); display: grid; gap: 3px; }
+.refs span b { color: var(--artifact-primary-brand); font-weight: 700; margin-right: 4px; }
+.approve { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding: 14px 16px; border-radius: 10px; background: var(--artifact-text-highlight); color: var(--artifact-text-primary); }
+.approve .lbl { display: grid; gap: 2px; font-size: 14.5px; }
+.approve .lbl small { font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: var(--artifact-text-secondary); }
+.approve .acts { display: flex; gap: 8px; }
+.approved { font-weight: 600; color: var(--artifact-positive); font-size: 14.5px; }
+
+/* Prompt library */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+.chip { border: 1px solid var(--artifact-border-dark); background: var(--artifact-background); color: var(--artifact-text-primary); border-radius: 999px; padding: 7px 14px; cursor: pointer; font-size: 14px; }
+.chip[aria-pressed="true"] { background: var(--artifact-primary-brand); color: var(--artifact-on-brand); border-color: var(--artifact-primary-brand); }
+.prompts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.pcard { border: 1px solid var(--artifact-border-light); border-radius: 10px; padding: 18px; display: grid; gap: 10px; align-content: start; background: var(--artifact-background); color: var(--artifact-text-primary); }
+.pcard[hidden] { display: none; }
+.pcard .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.role { font-size: 11.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--artifact-primary-brand); }
+.ptext { font-family: "SF Mono", "Cascadia Code", Consolas, monospace; font-size: 13px; line-height: 1.6; background: var(--artifact-background-light); color: var(--artifact-text-primary); padding: 12px 14px; border-radius: 8px; }
+.copy { border: 1px solid var(--artifact-border-dark); background: var(--artifact-background); color: var(--artifact-text-secondary); border-radius: 6px; padding: 4px 10px; font-size: 12.5px; cursor: pointer; }
+.copy:hover { color: var(--artifact-primary-brand); border-color: var(--artifact-primary-brand); }
+.pcard .use { font-size: 13.5px; color: var(--artifact-text-secondary); }
+
+/* Skills */
+.skills { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.skill { border: 1px solid var(--artifact-border-light); border-radius: 10px; padding: 20px; display: grid; gap: 12px; align-content: start; background: var(--artifact-background); color: var(--artifact-text-primary); }
+.skill .ix { font-size: 13px; font-weight: 700; color: var(--artifact-primary-brand); }
+.skill p { font-size: 14px; color: var(--artifact-text-secondary); }
+.mini { border-radius: 8px; background: var(--artifact-background-light); color: var(--artifact-text-primary); padding: 12px; font-size: 12.5px; display: grid; gap: 6px; min-height: 104px; align-content: center; }
+.mini .row { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.bar { height: 6px; border-radius: 3px; background: var(--artifact-border-dark); position: relative; overflow: hidden; }
+.bar i { position: absolute; inset: 0 auto 0 0; background: var(--artifact-primary-brand); border-radius: 3px; }
+.tiny-pill { font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 999px; letter-spacing: .04em; }
+.tp-g { background: var(--artifact-positive-background); color: var(--artifact-positive); }
+.tp-a { background: var(--artifact-warn-background); color: var(--artifact-warn); }
+.tp-n { background: var(--artifact-neutral-background); color: var(--artifact-text-secondary); }
+.split3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; text-align: center; }
+.split3 span { background: var(--artifact-background); color: var(--artifact-text-primary); border: 1px solid var(--artifact-border-light); border-radius: 6px; padding: 8px 4px; font-weight: 600; }
+
+/* Dashboard */
+.dash { border: 1px solid var(--artifact-border-dark); border-radius: 14px; overflow: hidden; background: var(--artifact-background); color: var(--artifact-text-primary); }
+.dash-top { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; padding: 16px 22px; background: var(--artifact-background-light); color: var(--artifact-text-primary); border-bottom: 1px solid var(--artifact-border-light); }
+.dash-top .ttl { display: grid; gap: 2px; }
+.dash-top .ttl b { font-size: 17px; }
+.dash-top .ttl span { font-size: 13px; color: var(--artifact-text-secondary); }
+.seg { display: inline-flex; background: var(--artifact-background); color: var(--artifact-text-primary); border: 1px solid var(--artifact-border-dark); border-radius: 8px; padding: 3px; gap: 2px; }
+.seg button { border: 0; background: transparent; color: var(--artifact-text-secondary); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13.5px; }
+.seg button[aria-pressed="true"] { background: var(--artifact-primary-brand); color: var(--artifact-on-brand); }
+.dash-body { padding: 22px; display: grid; gap: 26px; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--artifact-border-light); border-radius: 10px; }
+.kpi { padding: 18px; display: grid; gap: 6px; border-left: 1px solid var(--artifact-border-light); }
+.kpi:first-child { border-left: 0; }
+.kpi .lab { font-size: 13px; color: var(--artifact-text-secondary); }
+.kpi .val { font-size: clamp(2rem, 3.8vw, 2.8rem); font-weight: 650; letter-spacing: -0.035em; line-height: 1; font-variant-numeric: tabular-nums; }
+.kpi .val small { font-size: .42em; font-weight: 500; color: var(--artifact-text-secondary); letter-spacing: 0; }
+.kpi .dl { font-size: 13px; font-weight: 600; color: var(--artifact-positive); }
+.dgrid { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 26px; }
+.dgrid h3 { font-size: 1rem; margin-bottom: 8px; }
+.chart { width: 100%; height: 260px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--artifact-text-secondary); font-weight: 700; padding: 8px 10px; border-bottom: 1px solid var(--artifact-border-dark); }
+td { padding: 11px 10px; border-bottom: 1px solid var(--artifact-border-light); vertical-align: top; font-variant-numeric: tabular-nums; }
+td small { display: block; color: var(--artifact-text-secondary); font-size: 12.5px; }
+tr.dim td { opacity: .38; }
+tr.hl td { background: var(--artifact-selected); color: var(--artifact-text-primary); }
+.call { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; letter-spacing: .04em; }
+.call.scale { background: var(--artifact-positive-background); color: var(--artifact-positive); }
+.call.fix { background: var(--artifact-warn-background); color: var(--artifact-warn); }
+.tscroll { overflow-x: auto; }
+.covg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.cov { border: 1px solid var(--artifact-border-light); border-radius: 10px; padding: 14px 16px; display: grid; gap: 8px; align-content: start; }
+.cov.p1 { border-color: var(--artifact-primary-brand); }
+.cov .h { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--artifact-text-secondary); }
+.cov.p1 .h { color: var(--artifact-primary-brand); }
+.cov ul { margin: 0; padding-left: 18px; font-size: 14px; display: grid; gap: 2px; }
+.dash-note { font-size: 13px; color: var(--artifact-text-secondary); }
+
+/* Timeline */
+.tl { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); position: relative; }
+.tl::before { content: ""; position: absolute; left: 0; right: 0; top: 11px; height: 2px; background: var(--artifact-border-dark); }
+.ms { position: relative; padding: 32px 14px 0 0; display: grid; gap: 6px; align-content: start; }
+.ms::before { content: ""; position: absolute; top: 4px; left: 0; width: 16px; height: 16px; border-radius: 50%; background: var(--artifact-background); border: 3px solid var(--artifact-primary-brand); }
+.ms.key::before { background: var(--artifact-accent); border-color: var(--artifact-primary-deep); }
+.ms .d { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--artifact-primary-brand); }
+.ms h3 { font-size: 1rem; }
+.ms p { font-size: 13.5px; color: var(--artifact-text-secondary); }
+
+/* Close */
+.close { background: var(--artifact-primary-deep); color: var(--artifact-background); border-radius: 16px; padding: 44px; display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 40px; }
+.close h2 { color: var(--artifact-background); }
+.close .eyebrow { color: var(--artifact-accent); }
+.close ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 14px; counter-reset: c; }
+.close li { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; font-size: 15.5px; counter-increment: c; }
+.close li::before { content: counter(c); width: 28px; height: 28px; border-radius: 50%; background: var(--artifact-accent); color: var(--artifact-on-accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+.close li b { display: block; }
+.close .contact { margin-top: 22px; font-size: 14.5px; opacity: .85; }
+footer { padding: 28px 0 48px; font-size: 13px; color: var(--artifact-text-secondary); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .rise { animation: rise .5s ease both; }
+  .rise.d1 { animation-delay: .07s; } .rise.d2 { animation-delay: .14s; } .rise.d3 { animation-delay: .21s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+}
+@media screen and (max-width: 960px) {
+  .hero-grid, .sim, .dgrid, .close { grid-template-columns: minmax(0, 1fr); }
+  .picker { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .skills { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .trace { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tl { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 24px; }
+  .tl::before { display: none; }
+  .nav ul { display: none; }
+}
+@media screen and (max-width: 640px) {
+  .wrap { padding: 0 18px; }
+  .picker, .prompts, .skills, .evid, .brief, .covg, .kpis, .tl { grid-template-columns: minmax(0, 1fr); }
+  .kpi { border-left: 0; border-top: 1px solid var(--artifact-border-light); }
+  .kpi:first-child { border-top: 0; }
+  .trace { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ask { flex-direction: column; }
+  .close { padding: 28px; }
+}
+@media print {
+  .nav, .chips, .copy, .seg, .ask .btn, .approve .acts { display: none !important; }
+  .rise { animation: none !important; }
+  .result.pending { opacity: 1 !important; }
+  section.sec { padding: 28px 0; break-inside: auto; }
+  .console, .dash, .pcard, .skill, .close, .ms { break-inside: avoid; }
+  .pcard[hidden] { display: grid !important; }
+  .hero-grid { grid-template-columns: 1.25fr .75fr; }
+  .sim { grid-template-columns: 240px 1fr; }
+  .kpis { grid-template-columns: repeat(4, 1fr); }
+  .dgrid { grid-template-columns: .95fr 1.05fr; }
+  .chart { height: 240px !important; }
+  .close { background: #ffffff !important; color: #151a12 !important; border: 2px solid #367c2b; }
+  .close h2 { color: #151a12 !important; }
+  .close .eyebrow { color: #367c2b !important; }
+  @page { size: auto !important; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav" data-glean-id="nav">
+  <div class="wrap">
+    <div class="mark" data-glean-edit-id="t-bd3679fa"><span class="dot" aria-hidden="true"></span>Glean <span class="x">×</span> John Deere ISG</div>
+    <ul>
+      <li data-glean-edit-id="t-941748e1"><a href="#agents">Agents in action</a></li>
+      <li data-glean-edit-id="t-1b577e36"><a href="#prompts">Prompt library</a></li>
+      <li data-glean-edit-id="t-4a80fcaa"><a href="#skills">Skills</a></li>
+      <li data-glean-edit-id="t-dbe3c915"><a href="#dashboard">Pilot dashboard</a></li>
+      <li data-glean-edit-id="t-6b9d5f9f"><a href="#path">Path to pilot</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" data-glean-id="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow rise" data-glean-edit-id="t-6ec61371">Work AI for ISG product development</span>
+      <h1 class="rise d1" style="margin-top:14px" data-glean-edit-id="t-c184402c">From field question to <span class="hl">engineering decision</span>.</h1>
+      <p class="lede rise d2" data-glean-edit-id="t-6d55e6fb">Glean agents connect engineering, product, and UX context across ISG—so teams get grounded, cited, permission-aware answers and move to the right next step faster.</p>
+      <p class="prepared rise d3" data-glean-edit-id="t-405289f7">Prepared for <b>Sarah Schinckel</b>, Director, Future Technology Enablement · November 2026</p>
+    </div>
+    <div class="facts rise d2" data-glean-id="hero-facts">
+      <div class="fact" data-glean-id="fact-domains" data-glean-edit-id="t-3761f7c1"><span class="n">3</span><span class="t">Pilot domains<span>GenOS · Digital · PV&amp;V</span></span></div>
+      <div class="fact" data-glean-id="fact-sources" data-glean-edit-id="t-b75f5e80"><span class="n">5</span><span class="t">Connected source groups in Phase 1<span>GitHub · Azure DevOps · Confluence · SharePoint · manuals &amp; schematics</span></span></div>
+      <div class="fact" data-glean-id="fact-weeks" data-glean-edit-id="t-a09e0376"><span class="n">4</span><span class="t">Week pilot, starting Jan 11<span>Executive readout the week of Feb 15</span></span></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="sec" id="agents" data-glean-id="sec-agents">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow" data-glean-edit-id="t-0a476c51">01 · Agents in action</span>
+        <h2 data-glean-edit-id="t-f1a2f744">Ask one question. Get the answer, the evidence, and the next step.</h2>
+        <p data-glean-edit-id="t-4febbb48">Pick an agent and run it. Each one reasons across connected engineering systems, shows its sources, flags what it couldn’t confirm, and waits for a person to approve any follow-up.</p>
+        <span class="tagline" data-glean-edit-id="t-ef31a20c">Illustrative scenarios with sample data</span>
+      </div>
+
+      <div class="sim">
+        <div class="picker" role="group" aria-label="Choose an agent" id="picker" data-glean-id="agent-picker"></div>
+
+        <div class="console" data-glean-id="agent-console">
+          <div class="console-bar">
+            <span class="who"><i aria-hidden="true"></i><span id="agentName" data-skip-annotation>Agent</span></span>
+            <span class="muted" data-glean-edit-id="t-78e3cd24">Permission-aware · runs with the user’s access</span>
+          </div>
+          <div class="console-body">
+            <div class="ask">
+              <div class="q" id="question" data-skip-annotation></div>
+              <button type="button" class="btn" id="runBtn">Run agent ▸</button>
+            </div>
+            <div class="trace" id="trace" data-glean-id="agent-trace"></div>
+            <div class="sources" id="sources" data-glean-id="agent-sources"></div>
+            <div class="result pending" id="result" data-glean-id="agent-result" data-skip-annotation>
+              <p class="answer" id="answer"></p>
+              <div class="evid">
+                <div><h4>Confirmed</h4><ul id="confirmed"></ul></div>
+                <div class="gap"><h4>Not yet confirmed</h4><ul id="gaps"></ul></div>
+              </div>
+              <div class="brief" id="brief"></div>
+              <div class="refs" id="refs"></div>
+              <div class="approve" id="approve">
+                <div class="lbl"><small>Proposed next step · needs approval</small><span id="nextStep"></span></div>
+                <div class="acts" id="acts">
+                  <button type="button" class="btn ghost" id="editBtn">Edit</button>
+                  <button type="button" class="btn" id="approveBtn">Approve</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="prompts" data-glean-id="sec-prompts">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow" data-glean-edit-id="t-7cbd1b54">02 · Prompt library</span>
+        <h2 data-glean-edit-id="t-04254eb8">Prompts ready for engineering, product, UX, and leadership</h2>
+        <p data-glean-edit-id="t-6851fd91">Start with these prompts, then save the ones that work as shared agents for each team.</p>
+      </div>
+      <div class="chips" role="group" aria-label="Filter prompts by role" id="chips" data-glean-id="prompt-filters">
+        <button type="button" class="chip" data-role="all" aria-pressed="true">All</button>
+        <button type="button" class="chip" data-role="Engineering" aria-pressed="false">Engineering</button>
+        <button type="button" class="chip" data-role="Product" aria-pressed="false">Product</button>
+        <button type="button" class="chip" data-role="UX" aria-pressed="false">UX</button>
+        <button type="button" class="chip" data-role="Leadership" aria-pressed="false">Leadership</button>
+      </div>
+      <div class="prompts" id="promptGrid">
+        <article class="pcard" data-role="Engineering" data-glean-id="prompt-config">
+          <div class="top"><span class="role" data-glean-edit-id="t-02d07ad9">Engineering</span><button type="button" class="copy">Copy</button></div>
+          <h3 data-glean-edit-id="t-f14a9645">Configuration check</h3>
+          <div class="ptext" data-glean-edit-id="t-a4deb24f">For [machine/configuration] and symptom [issue], find the applicable parts, software versions, prior issues, and service information. Separate confirmed matches from possible ones. Don’t infer compatibility.</div>
+          <p class="use" data-glean-edit-id="t-6fa36b73">Keeps machine variants and software versions straight.</p>
+        </article>
+        <article class="pcard" data-role="Engineering" data-glean-id="prompt-defect">
+          <div class="top"><span class="role" data-glean-edit-id="t-f8782046">Engineering</span><button type="button" class="copy">Copy</button></div>
+          <h3 data-glean-edit-id="t-bcd3953d">Defect trace</h3>
+          <div class="ptext" data-glean-edit-id="t-f7ee26d5">Trace defect [ID] back to its requirements, related code changes, and test results. Show what changed recently, who owns each area, and which tests cover it.</div>
+          <p class="use" data-glean-edit-id="t-b105fc3b">Shortens the time to the first useful lead.</p>
+        </article>
+        <article class="pcard" data-role="Engineering" data-glean-id="prompt-triage">
+          <div class="top"><span class="role" data-glean-edit-id="t-bfb9de40">Engineering</span><button type="button" class="copy">Copy</button></div>
+          <h3 data-glean-edit-id="t-1c35f2df">Test-failure triage</h3>
+          <div class="ptext" data-glean-edit-id="t-06a894a2">For failing test [name], find similar past failures, their root causes, and the fixes applied. Rank the likely causes and cite the evidence behind each one.</div>
+          <p class="use" data-glean-edit-id="t-9b32afed">Helps PV&amp;V teams reuse what’s already known.</p>
+        </article>
+        <article class="pcard" data-role="Product" data-glean-id="prompt-impact">
+          <div class="top"><span class="role" data-glean-edit-id="t-0ad459ba">Product</span><button type="button" class="copy">Copy</button></div>
+          <h3 data-glean-edit-id="t-60315009">Change-impact review</h3>
+          <div class="ptext" data-glean-edit-id="t-96fec4d1">For this proposed change to [product or feature], find the relevant design decisions, technical dependencies, test results, defects, and customer feedback. Summarize impacts for engineering, product, and UX. Cite sources and call out gaps or conflicting evidence.</div>
+          <p class="use" data-glean-edit-id="t-b0999ef3">One review, framed for every discipline.</p>
+        </article>
+        <article class="pcard" data-role="Product" data-glean-id="prompt-history">
+          <div class="top"><span class="role" data-glean-edit-id="t-9c0413dc">Product</span><button type="button" class="copy">Copy</button></div>
+          <h3 data-glean-edit-id="t-1fc61123">Decision history</h3>
+          <div class="ptext" data-glean-edit-id="t-1d276ddc">Why did we choose [approach] for [feature]? Find the original decision, the alternatives considered, and anything that has changed since. Link each point to its source.</div>
+          <p class="use" data-glean-edit-id="t-eaf8f152">Recovers context that usually lives in people’s heads.</p>
+        </article>
+        <article class="pcard" data-role="UX" data-glean-id="prompt-feedback">
+          <div class="top"><span class="role" data-glean-edit-id="t-2b8b8e0a">UX</span><button type="button" class="copy">Copy</button></div>
+          <h3 data-glean-edit-id="t-9448aa33">Field-feedback themes</h3>
+          <div class="ptext" data-glean-edit-id="t-9d54afae">Summarize evidence about [customer or field issue] across available service and product sources. Group it by configuration or use context, then list the implications for product, engineering, and user experience.</div>
+          <p class="use" data-glean-edit-id="t-71d0a5f2">Connects the field experience to design decisions.</p>
+        </article>
+        <article class="pcard" data-role="UX" data-glean-id="prompt-flow">
+          <div class="top"><span class="role" data-glean-edit-id="t-540428f7">UX</span><button type="button" class="copy">Copy</button></div>
+          <h3 data-glean-edit-id="t-f9d6edba">Workflow pain points</h3>
+          <div class="ptext" data-glean-edit-id="t-6d0787c2">For the [display or app] workflow [name], find known usability issues, related tickets, and research findings. Show which issues recur and which teams own the fixes.</div>
+          <p class="use" data-glean-edit-id="t-b4d15e90">Turns scattered signals into a prioritized view.</p>
+        </article>
+        <article class="pcard" data-role="Leadership" data-glean-id="prompt-opportunity">
+          <div class="top"><span class="role" data-glean-edit-id="t-f7835d4a">Leadership</span><button type="button" class="copy">Copy</button></div>
+          <h3 data-glean-edit-id="t-90a22709">Technology opportunity brief</h3>
+          <div class="ptext" data-glean-edit-id="t-2c826b48">Review [initiative or technology] and prepare a decision brief covering the customer problem, evidence, affected teams, dependencies, risks, and the smallest useful next test. Cite sources and list unanswered questions.</div>
+          <p class="use" data-glean-edit-id="t-e3a591ee">Gives every bet a clear next test.</p>
+        </article>
+        <article class="pcard" data-role="Leadership" data-glean-id="prompt-portfolio">
+          <div class="top"><span class="role" data-glean-edit-id="t-e3ffc490">Leadership</span><button type="button" class="copy">Copy</button></div>
+          <h3 data-glean-edit-id="t-e616c6d9">Weekly enablement pulse</h3>
+          <div class="ptext" data-glean-edit-id="t-83f6acd6">Summarize this week’s progress, blockers, and decisions across [teams or initiatives]. Highlight what needs my attention and who owns each item.</div>
+          <p class="use" data-glean-edit-id="t-4ba86c58">A one-page view of the work across teams.</p>
+        </article>
+        <article class="pcard" data-role="Leadership" data-glean-id="prompt-onboard">
+          <div class="top"><span class="role" data-glean-edit-id="t-01ff0165">Leadership</span><button type="button" class="copy">Copy</button></div>
+          <h3 data-glean-edit-id="t-f9ab52a6">New-team-member ramp</h3>
+          <div class="ptext" data-glean-edit-id="t-b836b145">Create a ramp guide for a new engineer joining [team]: key systems, recent decisions, important documents, and the people to meet—with links to each.</div>
+          <p class="use" data-glean-edit-id="t-a264b2d4">Helps new engineers become productive sooner.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="skills" data-glean-id="sec-skills">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow" data-glean-edit-id="t-64fd1c50">03 · Skills</span>
+        <h2 data-glean-edit-id="t-5662adcb">What makes these agents trustworthy</h2>
+        <p data-glean-edit-id="t-43e1c32e">Every ISG agent is built on the same four skills.</p>
+      </div>
+      <div class="skills">
+        <div class="skill" data-glean-id="skill-evidence">
+          <span class="ix" data-glean-edit-id="t-2e2068d1">01</span><h3 data-glean-edit-id="t-1d13de2e">Evidence first</h3>
+          <div class="mini" aria-hidden="true">
+            <div data-glean-edit-id="t-8d68e25d">Calibration changed in v4.2 <span class="cite">1</span><span class="cite">2</span></div>
+            <div class="row" data-glean-edit-id="t-caffc957"><span class="muted">Confidence</span><span class="tiny-pill tp-g">High</span></div>
+            <div class="row" data-glean-edit-id="t-635cb07c"><span class="muted">Test coverage</span><span class="tiny-pill tp-a">Unknown</span></div>
+          </div>
+          <p data-glean-edit-id="t-d3b7dc34">Every answer shows its sources, how current they are, and what remains unconfirmed.</p>
+        </div>
+        <div class="skill" data-glean-id="skill-translate">
+          <span class="ix" data-glean-edit-id="t-59fb8a59">02</span><h3 data-glean-edit-id="t-44ad5a46">Cross-discipline translation</h3>
+          <div class="mini" aria-hidden="true">
+            <div class="muted" style="text-align:center" data-glean-edit-id="t-da2e3d69">One investigation</div>
+            <div class="split3" data-glean-edit-id="t-e9ec1c55"><span>Eng</span><span>Product</span><span>UX</span></div>
+          </div>
+          <p data-glean-edit-id="t-00e772fe">One investigation, framed for what engineering, product, and UX each need to decide.</p>
+        </div>
+        <div class="skill" data-glean-id="skill-config">
+          <span class="ix" data-glean-edit-id="t-f22436de">03</span><h3 data-glean-edit-id="t-79ea5f15">Configuration awareness</h3>
+          <div class="mini" aria-hidden="true">
+            <div class="row" data-glean-edit-id="t-1b279998"><span>Model · options</span><span class="tiny-pill tp-g">Matched</span></div>
+            <div class="row" data-glean-edit-id="t-793a93ab"><span>Software v4.2</span><span class="tiny-pill tp-g">Matched</span></div>
+            <div class="row" data-glean-edit-id="t-a95c0796"><span>Subsystem rev C</span><span class="tiny-pill tp-n">Possible</span></div>
+          </div>
+          <p data-glean-edit-id="t-fe98d45b">Keeps machine variants, options, and software versions straight across records.</p>
+        </div>
+        <div class="skill" data-glean-id="skill-hitl">
+          <span class="ix" data-glean-edit-id="t-9ec5e937">04</span><h3 data-glean-edit-id="t-02a0a64b">Human approval</h3>
+          <div class="mini" aria-hidden="true">
+            <div class="row" data-glean-edit-id="t-b5a3bdeb"><span>Draft test request</span><span class="tiny-pill tp-a">Awaiting</span></div>
+            <div class="bar"><i style="width:66%"></i></div>
+            <div class="row" data-glean-edit-id="t-87535664"><span class="muted">Prepared by agent</span><span class="muted">Approved by owner</span></div>
+          </div>
+          <p data-glean-edit-id="t-c953eb66">Agents recommend and prepare work; people approve anything that changes a system or starts work.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="dashboard" data-glean-id="sec-dashboard">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow" data-glean-edit-id="t-f6d8cf6f">04 · Pilot dashboard</span>
+        <h2 data-glean-edit-id="t-98f1a72f">How you’ll decide whether to scale</h2>
+        <p data-glean-edit-id="t-6da847b6">Every pilot workflow gets a baseline, a target, and evidence. You’ll see this view at the midpoint and at the executive readout.</p>
+        <span class="tagline" data-glean-edit-id="t-16868151">Sample values · live results start at kickoff</span>
+      </div>
+
+      <div class="dash" data-glean-id="dash">
+        <div class="dash-top">
+          <div class="ttl" data-glean-edit-id="t-ade5a4e7"><b>ISG Engineering Pilot · Value &amp; Readiness</b><span>Pilot week 4 · sample view</span></div>
+          <div class="seg" role="group" aria-label="Filter by domain" id="seg" data-glean-id="dash-filter">
+            <button type="button" data-d="all" aria-pressed="true">All domains</button>
+            <button type="button" data-d="genos" aria-pressed="false">GenOS</button>
+            <button type="button" data-d="digital" aria-pressed="false">Digital</button>
+            <button type="button" data-d="pvv" aria-pressed="false">PV&amp;V</button>
+          </div>
+        </div>
+        <div class="dash-body">
+          <div class="kpis" data-glean-id="dash-kpis" data-skip-annotation>
+            <div class="kpi" data-glean-id="kpi-time"><span class="lab">Time to engineering context</span><span class="val" id="kTime">11<small> min</small></span><span class="dl" id="kTimeD">▼ 74% vs. 42-min baseline</span></div>
+            <div class="kpi" data-glean-id="kpi-cite"><span class="lab">Answers with verified citations</span><span class="val" id="kCite">91<small>%</small></span><span class="dl" id="kCiteD">Above 85% target</span></div>
+            <div class="kpi" data-glean-id="kpi-perm"><span class="lab">Permission tests passed</span><span class="val" id="kPerm">48<small> / 48</small></span><span class="dl" id="kPermD">Positive and negative tests</span></div>
+            <div class="kpi" data-glean-id="kpi-adopt"><span class="lab">Weekly active pilot users</span><span class="val" id="kAdopt">78<small>%</small></span><span class="dl" id="kAdoptD">▲ 22 pts since week 1</span></div>
+          </div>
+
+          <div class="dgrid">
+            <div data-glean-id="dash-trend">
+              <h3 data-glean-edit-id="t-786cc635">Time to context falls as sources and agents come online</h3>
+              <div id="trend" class="chart" role="img" aria-label="Line chart of median minutes to engineering context by pilot week, sample values" data-glean-id="chart-trend"></div>
+            </div>
+            <div data-glean-id="dash-scorecard">
+              <h3 data-glean-edit-id="t-c6b4ec56">Workflow scorecard</h3>
+              <div class="tscroll">
+                <table>
+                  <thead><tr><th data-glean-edit-id="t-2c313340">Domain · workflow</th><th data-glean-edit-id="t-6a425871">Baseline</th><th data-glean-edit-id="t-32aa61ad">Pilot</th><th data-glean-edit-id="t-6c8b80f2">Call</th></tr></thead>
+                  <tbody id="scoreBody">
+                    <tr data-d="genos" data-glean-id="row-genos"><td data-glean-edit-id="t-c0f9b3ac">GenOS<small>Trace a display defect to requirements, code &amp; tests</small></td><td data-glean-edit-id="t-89472038">55 min</td><td data-glean-edit-id="t-5a76b535">14 min</td><td data-glean-edit-id="t-7739a38c"><span class="call scale">Scale</span></td></tr>
+                    <tr data-d="digital" data-glean-id="row-digital"><td data-glean-edit-id="t-6a87657e">Digital · Operations Center<small>Feature-change impact review</small></td><td data-glean-edit-id="t-14b8437c">3.5 hrs</td><td data-glean-edit-id="t-1a352329">40 min</td><td data-glean-edit-id="t-01891483"><span class="call scale">Scale</span></td></tr>
+                    <tr data-d="pvv" data-glean-id="row-pvv"><td data-glean-edit-id="t-e2bea2d7">PV&amp;V<small>Test-failure triage with prior results</small></td><td data-glean-edit-id="t-53b83a87">48 min</td><td data-glean-edit-id="t-671e7b86">31 min</td><td data-glean-edit-id="t-09c48b35"><span class="call fix">Fix</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="dash-note" style="margin-top:10px" data-glean-edit-id="t-57db3a8c">Final workflows and measures are set in the Pilot Blueprint. A “Fix” call means the workflow stays in the pilot with a targeted improvement before the scale decision.</p>
+            </div>
+          </div>
+
+          <div data-glean-id="dash-coverage">
+            <h3 style="font-size:1rem; margin-bottom:10px" data-glean-edit-id="t-ee9679fb">Source coverage: start focused, then expand</h3>
+            <div class="covg">
+              <div class="cov p1" data-glean-id="cov-p1"><span class="h" data-glean-edit-id="t-8c3bdd25">Phase 1 · pilot</span><ul><li data-glean-edit-id="t-62e9baea">GitHub</li><li data-glean-edit-id="t-326db861">Azure DevOps</li><li data-glean-edit-id="t-4e12dd56">Confluence</li><li data-glean-edit-id="t-efae0f01">Curated SharePoint sites</li><li data-glean-edit-id="t-707db25d">Curated manuals &amp; schematics</li></ul></div>
+              <div class="cov" data-glean-id="cov-p2"><span class="h" data-glean-edit-id="t-5a6df22c">Phase 2 · next</span><ul><li data-glean-edit-id="t-75db2a82">OneDrive</li><li data-glean-edit-id="t-257c8f61">Outlook</li><li data-glean-edit-id="t-6963668a">Teams</li></ul></div>
+              <div class="cov" data-glean-id="cov-custom"><span class="h" data-glean-edit-id="t-a8dd8a31">Custom · to scope</span><ul><li data-glean-edit-id="t-c856466f">CAR</li><li data-glean-edit-id="t-157db098">PREEVision</li><li data-glean-edit-id="t-a42ed22d">Machine &amp; configuration data</li></ul></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="path" data-glean-id="sec-path">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow" data-glean-edit-id="t-01679a56">05 · Path to pilot</span>
+        <h2 data-glean-edit-id="t-f3f8386d">From approval to a scale decision in about 10 weeks</h2>
+      </div>
+      <div class="tl">
+        <div class="ms" data-glean-id="ms-gate"><span class="d" data-glean-edit-id="t-20be7523">By Dec 4</span><h3 data-glean-edit-id="t-96c6e48f">Pilot gate</h3><p data-glean-edit-id="t-31e14a58">Agreement, Work Order, security approval, and Pilot Blueprint finalized.</p></div>
+        <div class="ms" data-glean-id="ms-connect"><span class="d" data-glean-edit-id="t-0adfbd6f">Dec 7–14</span><h3 data-glean-edit-id="t-ffdeb876">Connect &amp; index</h3><p data-glean-edit-id="t-c1a27699">SSO, people data, and Phase 1 sources connected; indexing runs over the shutdown.</p></div>
+        <div class="ms" data-glean-id="ms-ready"><span class="d" data-glean-edit-id="t-8a557d53">Jan 4–8</span><h3 data-glean-edit-id="t-6fe7da8a">Verified readiness</h3><p data-glean-edit-id="t-dcba3bbd">Champions run cross-source questions and permission tests.</p></div>
+        <div class="ms key" data-glean-id="ms-kickoff"><span class="d" data-glean-edit-id="t-56b420e9">Jan 11</span><h3 data-glean-edit-id="t-738d912a">Kickoff</h3><p data-glean-edit-id="t-09e7e9ce">Cohort launches across GenOS, Digital, and PV&amp;V; baselines captured.</p></div>
+        <div class="ms" data-glean-id="ms-mid"><span class="d" data-glean-edit-id="t-11bd7e1f">Jan 22</span><h3 data-glean-edit-id="t-2d3d2b53">Midpoint checkpoint</h3><p data-glean-edit-id="t-71b4feac">Decide what to double down on, fix, or stop.</p></div>
+        <div class="ms key" data-glean-id="ms-readout"><span class="d" data-glean-edit-id="t-094cebd8">Week of Feb 15</span><h3 data-glean-edit-id="t-b530b6be">Executive readout</h3><p data-glean-edit-id="t-782329e7">Results by workflow and a scale / no-scale decision.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" style="border-top:0; padding-top:24px" data-glean-id="sec-close">
+    <div class="wrap">
+      <div class="close">
+        <div>
+          <span class="eyebrow" data-glean-edit-id="t-d79da66f">Today</span>
+          <h2 style="margin-top:12px" data-glean-edit-id="t-6069a28e">What we’d like to align on</h2>
+          <p class="contact" data-glean-edit-id="t-887268eb">Kelli McIvor · Strategic Account Executive, Glean · kelli.mcivor@glean.com</p>
+        </div>
+        <ol>
+          <li data-glean-id="align-outcome" data-glean-edit-id="t-1b85fc0c"><span><b>The outcome that matters most</b>What should be different for ISG engineering, product, and UX teams by February?</span></li>
+          <li data-glean-id="align-measures" data-glean-edit-id="t-376b3dfb"><span><b>The measures you’ll trust</b>Which evidence would support scaling beyond the pilot?</span></li>
+          <li data-glean-id="align-dates" data-glean-edit-id="t-41409cbf"><span><b>The decision path</b>Clear the pilot gate by Dec 4, and hold Jan 22 and the week of Feb 15 for review.</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap" data-glean-edit-id="t-668fedca">Agent scenarios and dashboard values are illustrative examples for discussion. They don’t reflect John Deere data or pilot results.</div>
+</footer>
+
+<script>
+(function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var STEPS = ['Understand the ask', 'Resolve context', 'Search sources', 'Check access', 'Compose answer'];
+  var AGENTS = [
+    {
+      id: 'config', kicker: 'Lead agent', name: 'Machine configuration investigator',
+      desc: 'Field symptom → configuration → component → evidence.',
+      q: 'What’s driving power-loss reports on tractor configuration TX-410, and where should engineering look first?',
+      sources: ['Azure DevOps defects', 'GitHub · engine-control', 'Confluence design notes', 'Service manuals', 'Schematics'],
+      answer: 'Reports cluster on TX-410 units running display software v4.2 with the high-flow hydraulics option. Two open defects and a recent calibration change in the engine-control repository are the most likely contributors.',
+      cites: [1, 2, 3],
+      confirmed: ['Configuration match: model, option set, and software v4.2', '2 open defects reference the same symptom', 'Calibration change merged three weeks before the first report'],
+      gaps: ['No test results found for v4.2 with high-flow hydraulics', 'Subsystem revision C is a possible match only'],
+      brief: [['Engineering', 'Review the calibration change against both defects; start with the engine-control module.'], ['Product', 'Hold the v4.2 rollout for affected option sets until testing confirms the cause.'], ['UX', 'Check whether the in-cab alert explains power derating clearly to operators.']],
+      refs: ['Defect DE-2187 · Azure DevOps', 'PR #482 calibration update · GitHub', 'Hydraulics integration notes · Confluence'],
+      next: 'Draft a test request for v4.2 + high-flow hydraulics and route it to the test owner.'
+    },
+    {
+      id: 'impact', kicker: 'Product', name: 'Product-change impact analyst',
+      desc: 'Proposed change → dependencies → impact by discipline.',
+      q: 'We’re changing how field boundaries sync between Operations Center and the in-cab display. What’s affected?',
+      sources: ['Confluence design decisions', 'Azure DevOps work items', 'GitHub · sync service', 'GitHub · display app', 'SharePoint release notes'],
+      answer: 'The change touches three services and one display workflow. The highest risk is offline sync: the display currently assumes last-write-wins, which conflicts with the new merge behavior.',
+      cites: [1, 2],
+      confirmed: ['3 services call the boundary sync API', 'Original design decision documents last-write-wins', '4 open work items reference boundary edits'],
+      gaps: ['No owner listed for the legacy sync adapter', 'Dealer communication plan not found'],
+      brief: [['Engineering', 'Update conflict handling in the display app and the sync adapter; add offline tests.'], ['Product', 'Decide whether the merge behavior ships behind a setting for the first release.'], ['UX', 'Design a clear conflict-resolution prompt for boundary edits made offline.']],
+      refs: ['Boundary sync decision record · Confluence', 'Sync service repository · GitHub', 'Work item backlog · Azure DevOps'],
+      next: 'Draft an impact review for the change board, with owners for each affected service.'
+    },
+    {
+      id: 'field', kicker: 'UX', name: 'Field-feedback synthesizer',
+      desc: 'Scattered feedback → themes → implications.',
+      q: 'Summarize what we know about operator issues with guidance-line setup this season.',
+      sources: ['SharePoint field reports', 'Azure DevOps tickets', 'Confluence UX research', 'Operator manuals'],
+      answer: 'Three themes recur: setup steps differ between display generations, error messages don’t say which input is missing, and operators often re-create lines they already saved.',
+      cites: [1, 2, 3],
+      confirmed: ['Theme 1 appears in field reports and UX research', '11 tickets reference missing-input errors', 'The manual describes two different setup flows'],
+      gaps: ['Volume by region isn’t available in the connected sources', 'No research yet on the saved-line workflow'],
+      brief: [['Engineering', 'Make error messages identify the missing input.'], ['Product', 'Prioritize one consistent setup flow across display generations.'], ['UX', 'Test a “reuse saved line” step with operators before the next season.']],
+      refs: ['Field report summaries · SharePoint', 'Guidance setup study · Confluence', 'Ticket cluster · Azure DevOps'],
+      next: 'Share the theme summary with the product and UX leads for the guidance workflow.'
+    },
+    {
+      id: 'opportunity', kicker: 'Leadership', name: 'Technology opportunity brief',
+      desc: 'An idea → evidence, risks, and the smallest useful test.',
+      q: 'Should we test on-device AI for in-cab troubleshooting next quarter?',
+      sources: ['Confluence architecture notes', 'GitHub · display platform', 'Azure DevOps roadmap items', 'SharePoint strategy decks'],
+      answer: 'The idea is promising, but compute headroom on current displays is the gating question. The smallest useful test is a two-week feasibility spike on one display generation using existing troubleshooting content.',
+      cites: [1, 2],
+      confirmed: ['Troubleshooting content is already structured in the manuals', 'Display roadmap includes a compute upgrade', 'Two related prototypes are documented'],
+      gaps: ['No benchmark for model size on current hardware', 'Owner for in-cab AI policy not identified'],
+      brief: [['Engineering', 'Benchmark a small model on one display generation.'], ['Product', 'Define the troubleshooting tasks worth automating first.'], ['UX', 'Prototype how operators would ask and confirm answers in the cab.']],
+      refs: ['Display platform architecture · Confluence', 'Prototype notes · GitHub', 'Roadmap items · Azure DevOps'],
+      next: 'Propose a two-week feasibility spike with a named owner and success criteria.'
+    }
+  ];
+
+  var picker = document.getElementById('picker');
+  var els = {
+    name: document.getElementById('agentName'), q: document.getElementById('question'),
+    run: document.getElementById('runBtn'), trace: document.getElementById('trace'),
+    sources: document.getElementById('sources'), result: document.getElementById('result'),
+    answer: document.getElementById('answer'), confirmed: document.getElementById('confirmed'),
+    gaps: document.getElementById('gaps'), brief: document.getElementById('brief'),
+    refs: document.getElementById('refs'), next: document.getElementById('nextStep'),
+    acts: document.getElementById('acts')
+  };
+  var current = AGENTS[0], timers = [];
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  AGENTS.forEach(function (a, i) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'pick'; b.dataset.gleanId = 'agent-' + a.id; b.dataset.agent = a.id;
+    b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+    b.innerHTML = '<span class="k">' + esc(a.kicker) + '</span><span class="nm">' + esc(a.name) + '</span><span class="ds">' + esc(a.desc) + '</span>';
+    b.addEventListener('click', function () { select(a.id, true); });
+    picker.appendChild(b);
+  });
+
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+
+  function render(a) {
+    els.name.textContent = a.name;
+    els.q.textContent = a.q;
+    els.trace.innerHTML = STEPS.map(function (s, i) {
+      return '<div class="tstep" data-i="' + i + '"><span class="st">Step ' + (i + 1) + '</span><b>' + esc(s) + '</b></div>';
+    }).join('');
+    els.sources.innerHTML = a.sources.map(function (s) { return '<span class="src">' + esc(s) + '</span>'; }).join('');
+    els.answer.innerHTML = esc(a.answer) + a.cites.map(function (c) { return '<span class="cite">' + c + '</span>'; }).join('');
+    els.confirmed.innerHTML = a.confirmed.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('');
+    els.gaps.innerHTML = a.gaps.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('');
+    els.brief.innerHTML = a.brief.map(function (b) { return '<div><h4>' + esc(b[0]) + '</h4><p>' + esc(b[1]) + '</p></div>'; }).join('');
+    els.refs.innerHTML = a.refs.map(function (r, i) { return '<span><b>' + (i + 1) + '</b>' + esc(r) + '</span>'; }).join('');
+    els.next.textContent = a.next;
+    resetApproval();
+  }
+
+  function resetApproval() {
+    els.acts.innerHTML = '<button type="button" class="btn ghost" id="editBtn">Edit</button><button type="button" class="btn" id="approveBtn">Approve</button>';
+    document.getElementById('approveBtn').addEventListener('click', function () {
+      els.acts.innerHTML = '<span class="approved">✓ Approved · draft sent to the owner for review</span>';
+    });
+    document.getElementById('editBtn').addEventListener('click', function () {
+      els.next.focus && els.next.setAttribute('contenteditable', 'true');
+      els.next.focus();
+    });
+  }
+
+  function showAll() {
+    els.trace.querySelectorAll('.tstep').forEach(function (t) { t.className = 'tstep done'; t.querySelector('.st').textContent = '✓ Done'; });
+    els.sources.querySelectorAll('.src').forEach(function (s) { s.classList.add('on'); });
+    els.result.classList.remove('pending');
+    els.run.disabled = false; els.run.textContent = 'Run again ▸';
+  }
+
+  function run() {
+    clearTimers();
+    render(current);
+    els.result.classList.add('pending');
+    if (reduce) { showAll(); return; }
+    els.run.disabled = true; els.run.textContent = 'Running…';
+    var steps = els.trace.querySelectorAll('.tstep');
+    var srcs = els.sources.querySelectorAll('.src');
+    var t = 0;
+    steps.forEach(function (s, i) {
+      timers.push(setTimeout(function () {
+        s.className = 'tstep run'; s.querySelector('.st').textContent = 'Working';
+        if (i > 0) { steps[i - 1].className = 'tstep done'; steps[i - 1].querySelector('.st').textContent = '✓ Done'; }
+        if (i === 2) srcs.forEach(function (c, j) { timers.push(setTimeout(function () { c.classList.add('on'); }, j * 140)); });
+      }, t));
+      t += i === 2 ? 900 : 480;
+    });
+    timers.push(setTimeout(showAll, t + 200));
+  }
+
+  function select(id, autorun) {
+    var a = AGENTS.filter(function (x) { return x.id === id; })[0];
+    if (!a) return;
+    current = a;
+    picker.querySelectorAll('.pick').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.agent === id ? 'true' : 'false'); });
+    render(a);
+    if (autorun) run(); else { els.result.classList.add('pending'); els.run.disabled = false; els.run.textContent = 'Run agent ▸'; }
+  }
+
+  els.run.addEventListener('click', run);
+  select('config', false);
+
+  // Auto-run once when the agent section first scrolls into view
+  var ran = false;
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (en) {
+      if (!ran && en[0].isIntersecting) { ran = true; run(); io.disconnect(); }
+    }, { threshold: 0.35 });
+    io.observe(document.querySelector('.console'));
+  } else { showAll(); }
+
+  // Prompt filters and copy
+  var chips = document.querySelectorAll('.chip');
+  function filter(role) {
+    chips.forEach(function (c) { c.setAttribute('aria-pressed', c.dataset.role === role ? 'true' : 'false'); });
+    document.querySelectorAll('.pcard').forEach(function (p) {
+      if (role === 'all' || p.dataset.role === role) p.removeAttribute('hidden'); else p.setAttribute('hidden', '');
+    });
+  }
+  chips.forEach(function (c) { c.addEventListener('click', function () { filter(c.dataset.role); }); });
+  document.querySelectorAll('.copy').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var txt = b.closest('.pcard').querySelector('.ptext').innerText;
+      var done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1400); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, done);
+      else { var ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} ta.remove(); done(); }
+    });
+  });
+
+  // Dashboard
+  var D = {
+    all:     { time: 11, base: 42, cite: 91, perm: '48', permT: '48', adopt: 78, adoptD: '▲ 22 pts since week 1', trend: [42, 30, 19, 14, 11], target: 15 },
+    genos:   { time: 14, base: 55, cite: 93, perm: '16', permT: '16', adopt: 82, adoptD: '▲ 25 pts since week 1', trend: [55, 38, 24, 17, 14], target: 20 },
+    digital: { time: 9,  base: 38, cite: 92, perm: '16', permT: '16', adopt: 80, adoptD: '▲ 24 pts since week 1', trend: [38, 27, 16, 11, 9], target: 15 },
+    pvv:     { time: 31, base: 48, cite: 88, perm: '16', permT: '16', adopt: 71, adoptD: '▲ 15 pts since week 1', trend: [48, 41, 36, 33, 31], target: 25 }
+  };
+  var chart = null, dom = 'all';
+  function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  function drawChart() {
+    var el = document.getElementById('trend');
+    if (!el || typeof echarts === 'undefined') return;
+    if (!chart) chart = echarts.init(el, null, { renderer: 'svg' });
+    var d = D[dom], brand = css('--artifact-primary-brand'), t2 = css('--artifact-text-secondary'), bd = css('--artifact-border-light'), mu = css('--artifact-warn');
+    chart.setOption({
+      animationDuration: reduce ? 0 : 400,
+      grid: { left: 34, right: 18, top: 26, bottom: 28 },
+      tooltip: { trigger: 'axis', valueFormatter: function (v) { return v + ' min'; } },
+      xAxis: { type: 'category', data: ['Baseline', 'Week 1', 'Week 2', 'Week 3', 'Week 4'], axisTick: { show: false }, axisLine: { lineStyle: { color: bd } }, axisLabel: { color: t2, fontSize: 12 } },
+      yAxis: { type: 'value', min: 0, max: 60, interval: 15, splitLine: { lineStyle: { color: bd } }, axisLabel: { color: t2, fontSize: 12 } },
+      series: [{
+        type: 'line', data: d.trend, symbolSize: 8, lineStyle: { color: brand, width: 3 }, itemStyle: { color: brand },
+        areaStyle: { color: brand, opacity: 0.08 },
+        label: { show: true, position: 'top', color: t2, fontSize: 12 },
+        markLine: { silent: true, symbol: 'none', data: [{ yAxis: d.target }], lineStyle: { color: mu, type: 'dashed' }, label: { formatter: 'Target ' + d.target, color: t2, fontSize: 11, position: 'insideEndTop' } }
+      }]
+    }, true);
+  }
+  function setDomain(d) {
+    dom = d; var v = D[d];
+    document.querySelectorAll('#seg button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.d === d ? 'true' : 'false'); });
+    document.getElementById('kTime').innerHTML = v.time + '<small> min</small>';
+    document.getElementById('kTimeD').textContent = '▼ ' + Math.round((1 - v.time / v.base) * 100) + '% vs. ' + v.base + '-min baseline';
+    document.getElementById('kCite').innerHTML = v.cite + '<small>%</small>';
+    document.getElementById('kPerm').innerHTML = v.perm + '<small> / ' + v.permT + '</small>';
+    document.getElementById('kAdopt').innerHTML = v.adopt + '<small>%</small>';
+    document.getElementById('kAdoptD').textContent = v.adoptD;
+    document.querySelectorAll('#scoreBody tr').forEach(function (r) {
+      r.className = d === 'all' ? '' : (r.dataset.d === d ? 'hl' : 'dim');
+    });
+    drawChart();
+  }
+  document.querySelectorAll('#seg button').forEach(function (b) { b.addEventListener('click', function () { setDomain(b.dataset.d); }); });
+  setDomain('all');
+  window.addEventListener('resize', function () { if (chart) chart.resize(); });
+  new MutationObserver(function () { if (chart) { chart.dispose(); chart = null; } drawChart(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // Nav active state
+  var links = document.querySelectorAll('.nav a');
+  if ('IntersectionObserver' in window) {
+    var nio = new IntersectionObserver(function (en) {
+      en.forEach(function (e) { if (e.isIntersecting) links.forEach(function (a) { a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id); }); });
+    }, { rootMargin: '-30% 0px -60% 0px' });
+    document.querySelectorAll('section.sec[id]').forEach(function (s) { nio.observe(s); });
+  }
+
+  // Reveal hidden comment targets
+  window.gleanArtifact = window.gleanArtifact || {};
+  window.gleanArtifact.revealElement = function (id) {
+    id = String(id || '');
+    if (id.indexOf('agent-') === 0 && AGENTS.some(function (a) { return 'agent-' + a.id === id; })) select(id.slice(6), false);
+    var el = document.querySelector('[data-glean-id="' + id.replace(/"/g, '') + '"]');
+    if (el && el.closest('.pcard') && el.closest('.pcard').hasAttribute('hidden')) filter('all');
+    if (id.indexOf('row-') === 0 && dom !== 'all') setDomain('all');
+    return new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); });
+  };
+})();
+</script>
+
+<script>
+  if (window.GleanBridge) {
+    window.GleanBridge.postMessage({
+      actionId: 'export-pdf',
+      type: 'glean-add-menu',
+      metadata: { label: 'Export as PDF', icon: 'export' }
+    });
+    window.GleanBridge.onMessage('action', function(data) {
+      if (data.actionId === 'export-pdf') window.print();
+    });
+  }
+
+  function prepareChartsForPrint() {
+    if (typeof echarts === 'undefined') return;
+    document.querySelectorAll('[_echarts_instance_]').forEach(function(el) {
+      var chart = echarts.getInstanceByDom(el);
+      if (!chart) return;
+      var img = new Image();
+      img.src = chart.getDataURL({ type: 'png', pixelRatio: 2 });
+      img.className = 'print-chart-img';
+      img.style.cssText =
+        'width:100%;height:100%;object-fit:contain;' +
+        'position:absolute;top:0;left:0;z-index:10;';
+      el.dataset.prevPosition = el.style.position;
+      el.style.position = 'relative';
+      el.appendChild(img);
+    });
+  }
+
+  function cleanUpAfterPrint() {
+    document.querySelectorAll('[_echarts_instance_]').forEach(function(el) {
+      var img = el.querySelector('.print-chart-img');
+      if (!img) return;
+      img.remove();
+      el.style.position = el.dataset.prevPosition || '';
+      delete el.dataset.prevPosition;
+    });
+  }
+
+  window.addEventListener('beforeprint', prepareChartsForPrint);
+  window.addEventListener('afterprint', cleanUpAfterPrint);
+</script>
+</body>
+</html>
